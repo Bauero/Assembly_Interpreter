@@ -5,108 +5,123 @@ Stan naszych rejestrów a następnie dokonuje wpisanych przez nas operacji
 zadaniem tego kodu będzie wizualizacja zmian poprzez wypisywanie tego co dzieje się z naszym kodem
 """
 
-from functions import *
 from errors import *
-from memory import register
+from linkedList import *
 
-#to jest wersja najbardziej podstawowa
+AX = [Node(0) for _ in range(16)]
+AH, AL = AX[:9], AX[9:]
+BX = [Node(0) for _ in range(16)]
+BH, BL = BX[:9], BX[9:]
+CX = [Node(0) for _ in range(16)]
+CH, CL = CX[:9], CX[9:]
+DX = [Node(0) for _ in range(16)]
+DH, DL = DX[:9], DX[9:]
+SI = [Node(0) for _ in range(16)]
+DI = [Node(0) for _ in range(16)]
+BI = [Node(0) for _ in range(16)]
+BP = [Node(0) for _ in range(16)]
 
-pol_bez_arg = [ "ret" ]
-#   rejestry wielozadaniowe
-rejwielz = ["ax","bx","cx","dx"]
-#   podrejestry
-podrejestry = ["al","ah","bl","bh","cl","ch","dl","dh"]
-#   rejestry dodatkowe
-rejdod = ["si","bi","bp","di"]
-#   rejestry wielozadaniowe i podrejestry (rejestry wszystkie)
-rejwsz = rejwielz + podrejestry + rejdod
-#   podział rejestrów (na przyszłość)
-subrejestry = {"ax" : ["ah","al"],
-               "bx" : ["bh","bl"],
-               "cx" : ["ch","cl"],
-               "dx" : ["dh","dl"]}
+listaRejestrow = {"AX" : AX, "AH" : AH, "AL" : AL,
+                  "BX" : BX, "BH" : BH, "BL" : BL,
+                  "CX" : CX, "CH" : CH, "CL" : CL,
+                  "DX" : DX, "DH" : DH, "DL" : DL}
 
-listaRejestrow = {}
-
-for r in rejwielz:
-    listaRejestrow[r] = register(r,"",16,dividible=True)
-    listaRejestrow[subrejestry[r][0]] = listaRejestrow[r].upperRegister
-    listaRejestrow[subrejestry[r][1]] = listaRejestrow[r].lowerRegister
-
-for r in rejdod:
-    listaRejestrow[r] = register(r,"",16)
-
-def firstChar(string, char):
-    for i in range(len(string)):
-        if string[i] == char:
-            return i
-    return -1
-
-while True:
-
-    #   krojenie rozkazu
-    polecenie = input(">>> ").rstrip().lstrip()
-    try:
-        polecenie.lower()
-        sp1 = firstChar(polecenie," ")
-
-        if sp1 == -1:
-            raise ValueError
-
-        rozkaz = polecenie[:sp1]
-        argumenty = polecenie[sp1+1:]
-
-        if len(argumenty) < 2 and not rozkaz in pol_bez_arg:
-            raise InvalidAmountOfArguments
+def mov(r, s):
+    listaRej = list(listaRejestrow.keys())
+    if r not in listaRej:
+        raise RegisterNotImplemented
     
-        argumenty = argumenty.split(",")
-        
-    except InvalidAmountOfArguments:
-        print("Podano złą liczbę argumentów !!!")
-        continue    
-    
-    except ValueError:
-        print("Błąd polecenia !!! - wprowadź poprawne polecenie")
-        continue
+    if s in listaRej:
+        if len(listaRejestrow[s]) > len(listaRejestrow[r]):
+            raise RegisterTooSmallToMove
 
+        for i in range(-1,-len(listaRejestrow[s]),-1):
+            listaRejestrow[r][i].data = listaRejestrow[s][i].data
 
-    #   podjecie dzialania ze względu na operacje do wykonania
-    try:
-        match rozkaz:
+    else:
+        listaDoWpisania = []
+        liczba = s.split(" ")[-1].lower()
+        if "byte" in s:
+            try:
+                podstawa = 10
 
-            case "mov":
-                if len(argumenty) != 2:
-                    raise InvalidAmountOfArguments
-                
-                if argumenty[0] not in rejwsz:
-                    raise InvalidRegister
-                
-                if not argumenty[1].isalpha():
-                    if "byte" in argumenty[1]:
-                        liczba = argumenty[1].split(" ")[-1]
-                        liczba = int("0b{0:08b}".format(liczba),10)
-                        
+                if liczba.startswith("0b"):
+                    if len(s[2:]) > 8:
+                        raise NumberTooBig
+                    podstawa = 2
+
+                elif liczba.startswith("0x"):
+                    if liczba.endswith("h"):
+                        liczba = liczba[:-1]
+                    if len(liczba[2:]) > 2:
+                        raise NumberTooBig
+                    podstawa = 16
                     
-                    elif "word" in argumenty[1]:
-                        pass
-                    else:
-                        raise InvalidArgumentValue
-                
-                mov(argumenty[0],argumenty[1],listaRejestrow)
+                elif liczba.endswith("h"):
+                    liczba = liczba[:-1]
+                    liczba = "0x" + liczba
+                    if len(liczba[2:]) > 2:
+                        raise NumberTooBig
+                    podstawa = 16
+                    
+                else:
+                    if len(liczba[2:]) > 3:
+                        raise NumberTooBig
 
-            case "add":
-                
+                listaDoWpisania = list("{0:08b}".format(int(liczba,podstawa)))
+            except:
+                raise WrongNumberBase
+        
+        elif "word" in s:
+            try:
+                podstawa = 10
 
-                pass
+                if liczba.startswith("0b"):
+                    if len(s[2:]) > 16:
+                        raise NumberTooBig
+                    podstawa = 2
 
-                
-    except InvalidAmountOfArguments:
-        print("Podano złą ilość argumentów")
+                elif liczba.startswith("0x"):
+                    if liczba.endswith("h"):
+                        liczba = liczba[:-1]
+                    if len(liczba[2:]) > 4:
+                        raise NumberTooBig
+                    podstawa = 16
+                    
+                elif liczba.endswith("h"):
+                    liczba = liczba[:-1]
+                    liczba = "0x" + liczba
+                    if len(liczba[2:]) > 4:
+                        raise NumberTooBig
+                    podstawa = 16
+                    
+                else:
+                    if len(liczba[2:]) > 5:
+                        raise NumberTooBig
 
-    except InvalidRegister:
-        print("Podano nieistniejący rejestr")
+                listaDoWpisania = list("{0:016b}".format(int(liczba,podstawa)))
+            except:
+                raise WrongNumberBase
 
-    except InvalidArgumentValue:
-        print("Podano niewłaściwą wartość - jeśli to liczba to sprawdź czy jest" 
-              + "proprzedzona rozmiarem 'byte' (8) lub 'word' (16)")
 
+        for i in range(-1,-len(listaDoWpisania),-1):
+            listaRejestrow[r][i].data = int(listaDoWpisania[i])
+        
+mov("BX","byte 10")
+mov("AX","BX")
+mov("AX","word 18")
+mov("AX","word 0x98f")
+
+napis1 = "BX : "
+napis2 = "AX : "
+
+
+for i in BX:
+    napis1 += str(i.printInt())
+
+for i in AX:
+    napis2 += str(i.printInt())
+
+print(napis1)
+print(napis2)
+input()
