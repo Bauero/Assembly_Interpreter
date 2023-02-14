@@ -23,9 +23,10 @@ CX = [Node(0) for _ in range(16)]
 CH, CL = CX[:9], CX[9:]
 DX = [Node(0) for _ in range(16)]
 DH, DL = DX[:9], DX[9:]
+
 SI = [Node(0) for _ in range(16)]
 DI = [Node(0) for _ in range(16)]
-BI = [Node(0) for _ in range(16)]
+SP = [Node(0) for _ in range(16)]
 BP = [Node(0) for _ in range(16)]
 
 #?  to implement leater
@@ -37,7 +38,10 @@ FLAGS = [Node(0) for _ in range(16)]
 listaRejestrow = {"AX" : AX, "AH" : AH, "AL" : AL,
                   "BX" : BX, "BH" : BH, "BL" : BL,
                   "CX" : CX, "CH" : CH, "CL" : CL,
-                  "DX" : DX, "DH" : DH, "DL" : DL}
+                  "DX" : DX, "DH" : DH, "DL" : DL,
+
+                  "SP" : SP, "BP" : BP, "DI" : DI, 
+                  "SI" : SI}
 
 listaRej = list(listaRejestrow.keys())
 
@@ -255,7 +259,7 @@ def INC(r):
 def DEC(r):
     SUB(r,"byte 1")
 
-def XOR(r,s):
+def XOR(r, s):
 
     if r not in listaRej:
         raise RegisterNotImplemented
@@ -282,6 +286,9 @@ def XOR(r,s):
 
         writeIntoRegister(r, wynik)
 
+def ORR(r, s):
+    pass
+
 #   print the value of the registers bitly
 def printRegisters():
 
@@ -289,24 +296,28 @@ def printRegisters():
     vbxbin = ''
     vcxbin = ''
     vdxbin = ''
-
-    for i in AX:
-        vaxbin += str(i.printInt())
-
-    for i in BX:
-        vbxbin += str(i.printInt())
+    vsibin = ''
+    vdibin = ''
+    vbpbin = ''
+    vspbin = ''
     
-    for i in CX:
-        vcxbin += str(i.printInt())
-    
-    for i in DX:
-        vdxbin += str(i.printInt())
-
+    for i in AX:    vaxbin += str(i.printInt())
+    for i in BX:    vbxbin += str(i.printInt())
+    for i in CX:    vcxbin += str(i.printInt())
+    for i in DX:    vdxbin += str(i.printInt())
+    for i in SI:    vsibin += str(i.printInt())
+    for i in DI:    vdibin += str(i.printInt())
+    for i in SP:    vspbin += str(i.printInt())
+    for i in BP:    vbpbin += str(i.printInt())
 
     print("AX : ",vaxbin, " = ",int("0b"+vaxbin,2))
     print("BX : ",vbxbin, " = ",int("0b"+vbxbin,2))
     print("CX : ",vcxbin, " = ",int("0b"+vcxbin,2))
     print("DX : ",vdxbin, " = ",int("0b"+vdxbin,2))
+    print("SI : ",vsibin, " = ",int("0b"+vsibin,2))
+    print("DI : ",vdibin, " = ",int("0b"+vdibin,2))
+    print("SP : ",vspbin, " = ",int("0b"+vspbin,2))
+    print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
 
 if __name__ == "__main__":
 
@@ -323,4 +334,3 @@ if __name__ == "__main__":
     INC("DX")
     
     printRegisters()
-    
