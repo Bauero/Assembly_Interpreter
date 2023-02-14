@@ -30,6 +30,7 @@ BP = [Node(0) for _ in range(16)]
 #?  to implement leater
 STACK = []
 
+#   flag register
 FLAGS = [Node(0) for _ in range(16)]
 
 listaRejestrow = {"AX" : AX, "AH" : AH, "AL" : AL,
@@ -39,22 +40,37 @@ listaRejestrow = {"AX" : AX, "AH" : AH, "AL" : AL,
 
 listaRej = list(listaRejestrow.keys())
 
-def bitAddition(num1:str, num2:str) -> int:
-    strnum1 = "0b" + "".join([i.printStr() for i in listaRejestrow[num1]])
-    strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
-
-    return (int(strnum1,2) + int(strnum2,2)) % 2**len(listaRejestrow[num1])
-
-def bitSubstraction(num1:str, num2:str) -> int:
+def bitAddition(num1:str, num2:str, argReady = False):
     regSize = len(listaRejestrow[num1])
+    overFlow = False
     strnum1 = "0b" + "".join([i.printStr() for i in listaRejestrow[num1]])
-    strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
+    if not argReady:
+        strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
+    else:
+        strnum2 = "0b" + num2
 
     wynik = int(strnum1,2) + int(strnum2,2)
+    if wynik > 2**regSize:
+        wynik -= 2**regSize
+        overFlow = True
+
+    return overFlow, wynik
+
+def bitSubstraction(num1:str, num2:str, argReady = False):
+    regSize = len(listaRejestrow[num1])
+    overFlow = False
+    strnum1 = "0b" + "".join([i.printStr() for i in listaRejestrow[num1]])
+    if not argReady:
+        strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
+    else:
+        strnum2 = "0b" + num2
+
+    wynik = int(strnum1,2) - int(strnum2,2)
     if wynik < 0:
         wynik += 2**regSize
+        overFlow = True
     
-    return wynik
+    return overFlow, wynik
 
 def numberToList(s, liczba:str):
     listaDoWpisania = []
@@ -145,7 +161,9 @@ def ADD(r, s):
             raise RegisterSizeTooSmall
         
         #   reduction of the result to the register size
-        wynik = bitAddition(r,s) % 2**len(listaRejestrow[r])
+        OF, wynik = bitAddition(r,s)
+        if OF:
+            FLAGS[-12].data = 1
         #?  overflow flag needed
 
         #   converstion of the number to list of binary (in str)
@@ -165,7 +183,9 @@ def ADD(r, s):
         liczba2 = "".join(binList)
 
         #?  overflow flag needed
-        wynik = bitAddition(r,liczba2)
+        OF, wynik = bitAddition(r,liczba2,argReady = True)
+        if OF:
+            FLAGS[-12].data = 1
 
         #   converstion of the number to list of binary (in str)
         listaDoWpisania = []
@@ -187,8 +207,9 @@ def SUB(r, s):
             raise RegisterSizeTooSmall
         
         #   reduction of the result to the register size
-        wynik = bitSubstraction(r,s)
-        #?  overflow flag needed
+        OF, wynik = bitSubstraction(r,s)
+        if OF:
+            FLAGS[-12].data = 1
 
         #   converstion of the number to list of binary (in str)
         listaDoWpisania = []
@@ -206,7 +227,9 @@ def SUB(r, s):
         liczba2 = "".join(binList)
 
         #?  overflow flag needed
-        wynik = bitSubstraction(r,liczba2)
+        OF, wynik = bitSubstraction(r,liczba2, True)
+        if OF:
+            FLAGS[-12].data = 1
 
         #   converstion of the number to list of binary (in str)
         listaDoWpisania = []
@@ -219,24 +242,46 @@ def SUB(r, s):
         for i in range(-1,-len(listaDoWpisania),-1):
             listaRejestrow[r][i].data = int(listaDoWpisania[i])
 
+def INC(r):
+    ADD(r,"byte 1")
 
-if __name__ == "__main__":     
+def DEC(r):
+    SUB(r,"byte 1")
+
+def printRegisters():
+    napis1 = "AX : "
+    napis2 = "BX : "
+    napis3 = "CX : "
+    napis4 = "DX : "
+
+    for i in AX:
+        napis1 += str(i.printInt())
+
+    for i in BX:
+        napis2 += str(i.printInt())
+    
+    for i in CX:
+        napis3 += str(i.printInt())
+    
+    for i in DX:
+        napis4 += str(i.printInt())
+
+    print(napis1)
+    print(napis2)
+    print(napis3)
+    print(napis4)
+
+if __name__ == "__main__":
+
+    #   testowe operaacje   
     MOV("BX","byte 10")
     MOV("AX","BX")
     MOV("AX","word 18")
     MOV("AX","word 0x98f")
     ADD("AX","BX")
     ADD("BL","byte 12")
-
-    napis1 = "BX : "
-    napis2 = "AX : "
-
-
-    for i in BX:
-        napis1 += str(i.printInt())
-
-    for i in AX:
-        napis2 += str(i.printInt())
-
-    print(napis1)
-    print(napis2)
+    MOV("CX","word 128")
+    DEC("CX")
+    INC("DX")
+    
+    printRegisters()
