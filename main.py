@@ -9,7 +9,7 @@ zadaniem tego kodu będzie wizualizacja zmian poprzez wypisywanie tego co dzieje
 #   2. dodanie obsługu odwołań po adresach
 
 #   Oznaczenia
-#   "#?"    - something need to be added later
+#   "#?"    - something need to be added later !!!
 
 from errors import *
 from linkedList import *
@@ -29,6 +29,8 @@ BP = [Node(0) for _ in range(16)]
 
 #?  to implement leater
 STACK = []
+
+FLAGS = [Node(0) for _ in range(16)]
 
 listaRejestrow = {"AX" : AX, "AH" : AH, "AL" : AL,
                   "BX" : BX, "BH" : BH, "BL" : BL,
@@ -163,7 +165,7 @@ def ADD(r, s):
         liczba2 = "".join(binList)
 
         #?  overflow flag needed
-        wynik = bitAddition(r,s)
+        wynik = bitAddition(r,liczba2)
 
         #   converstion of the number to list of binary (in str)
         listaDoWpisania = []
@@ -204,7 +206,7 @@ def SUB(r, s):
         liczba2 = "".join(binList)
 
         #?  overflow flag needed
-        wynik = bitSubstraction(r,s)
+        wynik = bitSubstraction(r,liczba2)
 
         #   converstion of the number to list of binary (in str)
         listaDoWpisania = []
@@ -217,13 +219,14 @@ def SUB(r, s):
         for i in range(-1,-len(listaDoWpisania),-1):
             listaRejestrow[r][i].data = int(listaDoWpisania[i])
 
+
 if __name__ == "__main__":     
     MOV("BX","byte 10")
     MOV("AX","BX")
     MOV("AX","word 18")
     MOV("AX","word 0x98f")
     ADD("AX","BX")
-    ADD("BX","byte 340")
+    ADD("BL","byte 12")
 
     napis1 = "BX : "
     napis2 = "AX : "
