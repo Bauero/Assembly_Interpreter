@@ -9,3 +9,6 @@ class NumberTooBig (Exception):
 
 class RegisterTooSmallToMove (Exception):
     pass
+
+class RegisterSizeTooSmall (Exception):
+    pass

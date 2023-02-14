@@ -4,5 +4,8 @@ class Node:
     def __init__(self, data = 0): 
         self.data = data
 
-    def printInt(self):
+    def printInt(self) -> int:
         return int(self.data)
+    
+    def printStr(self) -> str:
+        return str(self.data)
