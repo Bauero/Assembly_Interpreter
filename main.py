@@ -2,7 +2,8 @@
 To jest program który ma za zadanie pomagać w pracy z Assemblerem 16 bit
 Celem tego programu będzie zrobienie aplikacji która w okienku wyświetla
 Stan naszych rejestrów a następnie dokonuje wpisanych przez nas operacji
-zadaniem tego kodu będzie wizualizacja zmian poprzez wypisywanie tego co dzieje się z naszym kodem
+zadaniem tego kodu będzie wizualizacja zmian poprzez wypisywanie tego co 
+dzieje się z naszym kodem
 """
 #   Todo
 #   1. dodanie stostu
@@ -40,14 +41,35 @@ listaRejestrow = {"AX" : AX, "AH" : AH, "AL" : AL,
 
 listaRej = list(listaRejestrow.keys())
 
+#   inputs the restult into register r, bit by bit
+def writeIntoRegister(r, resutl):
+    #   converstion of the number to list of binary (in str)
+    listaDoWpisania = []
+    if len(listaRejestrow[r]) == 16:
+        listaDoWpisania = list("{0:016b}".format(resutl))
+    elif len(listaRejestrow[r]) == 8:
+        listaDoWpisania = list("{0:08b}".format(resutl))
+
+    #   update of the register (using int, not string)
+    for i in range(-1,-len(listaDoWpisania),-1):
+        listaRejestrow[r][i].data = int(listaDoWpisania[i])
+
+#   extract value from register 'AX', 'BX' -> "0b1010" & "0b0101"
+#   extract + change 'AX', '101110' -> "0b1010" & "0b101110"
+def prepToBinConv(n1, n2, argReady):
+    sn1 = "0b" + "".join([i.printStr() for i in listaRejestrow[n1]])
+    if not argReady:
+        sn2 = "0b" + "".join([i.printStr() for i in listaRejestrow[n2]])
+    else:
+        sn2 = "0b" + n2
+
+    return sn1, sn2
+
+#   add two numbers bit by bit and activate OF flag
 def bitAddition(num1:str, num2:str, argReady = False):
     regSize = len(listaRejestrow[num1])
     overFlow = False
-    strnum1 = "0b" + "".join([i.printStr() for i in listaRejestrow[num1]])
-    if not argReady:
-        strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
-    else:
-        strnum2 = "0b" + num2
+    strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
 
     wynik = int(strnum1,2) + int(strnum2,2)
     if wynik > 2**regSize:
@@ -56,14 +78,11 @@ def bitAddition(num1:str, num2:str, argReady = False):
 
     return overFlow, wynik
 
+#   sub two numbers bit by bit and activate OF flag
 def bitSubstraction(num1:str, num2:str, argReady = False):
     regSize = len(listaRejestrow[num1])
     overFlow = False
-    strnum1 = "0b" + "".join([i.printStr() for i in listaRejestrow[num1]])
-    if not argReady:
-        strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
-    else:
-        strnum2 = "0b" + num2
+    strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
 
     wynik = int(strnum1,2) - int(strnum2,2)
     if wynik < 0:
@@ -72,86 +91,88 @@ def bitSubstraction(num1:str, num2:str, argReady = False):
     
     return overFlow, wynik
 
+#   xor two numbers bit by bit and activate OF flag
 def bitXOR(num1:str, num2: str, argReady = False):
     regSize = len(listaRejestrow[num1])
     overFlow = False
-    strnum1 = "0b" + "".join([i.printStr() for i in listaRejestrow[num1]])
-    if not argReady:
-        strnum2 = "0b" + "".join([i.printStr() for i in listaRejestrow[num2]])
-    else:
-        strnum2 = "0b" + num2
+    strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
     
     wynik = int(strnum1,2) ^ int(strnum2,2)
 
     return wynik
 
-def numberToList(s, liczba:str):
-    listaDoWpisania = []
-    podstawa = 10
+#   transform 'word 0xf2' -> list('0000000011110010')
+#   transform 'byte 0b11' -> list('00000011')
+#   transform 'word 728'  -> list('0000001011011000')
+def numberToList(s, number:str):
+    listToWrite = []
+    base = 10
     if "byte" in s:
         
-        if liczba.startswith("0b"):
+        if number.startswith("0b"):
             if len(s[2:]) > 8:
                 raise NumberTooBig
-            podstawa = 2
+            base = 2
 
-        elif liczba.startswith("0x"):
-            if liczba.endswith("h"):
-                liczba = liczba[:-1]
-            if len(liczba[2:]) > 2:
+        elif number.startswith("0x"):
+            if number.endswith("h"):
+                number = number[:-1]
+            if len(number[2:]) > 2:
                 raise NumberTooBig
-            podstawa = 16
+            base = 16
             
-        elif liczba.endswith("h"):
-            liczba = liczba[:-1]
-            liczba = "0x" + liczba
-            if len(liczba[2:]) > 2:
+        elif number.endswith("h"):
+            number = number[:-1]
+            number = "0x" + number
+            if len(number[2:]) > 2:
                 raise NumberTooBig
-            podstawa = 16
+            base = 16
             
         else:
-            if int(liczba) > 255:
+            if int(number) > 255:
                 raise NumberTooBig
 
-        listaDoWpisania = list("{0:08b}".format(int(liczba,podstawa)))
+        listToWrite = list("{0:08b}".format(int(number,base)))
         
         
     elif "word" in s:
         
-        if liczba.startswith("0b"):
+        if number.startswith("0b"):
             if len(s[2:]) > 16:
                 raise NumberTooBig
-            podstawa = 2
+            base = 2
 
-        elif liczba.startswith("0x"):
-            if liczba.endswith("h"):
-                liczba = liczba[:-1]
-            if len(liczba[2:]) > 4:
+        elif number.startswith("0x"):
+            if number.endswith("h"):
+                number = number[:-1]
+            if len(number[2:]) > 4:
                 raise NumberTooBig
-            podstawa = 16
+            base = 16
             
-        elif liczba.endswith("h"):
-            liczba = liczba[:-1]
-            liczba = "0x" + liczba
-            if len(liczba[2:]) > 4:
+        elif number.endswith("h"):
+            number = number[:-1]
+            number = "0x" + number
+            if len(number[2:]) > 4:
                 raise NumberTooBig
-            podstawa = 16
+            base = 16
             
         else:
-            if int(liczba) > 65535:
+            if int(number) > 65535:
                 raise NumberTooBig
 
-        listaDoWpisania = list("{0:016b}".format(int(liczba,podstawa)))
+        listToWrite = list("{0:016b}".format(int(number,base)))
     else:
         raise OperandSizeNotSpecified
 
-    return listaDoWpisania
+    return listToWrite
 
+#   copy value from the source to the register
 def MOV(r, s):
     #?  indirect addressing is not implemented
     if r not in listaRej:
         raise RegisterNotImplemented
     
+    #   if source is a register itself
     if s in listaRej:
         if len(listaRejestrow[s]) > len(listaRejestrow[r]):
             raise RegisterTooSmallToMove
@@ -167,10 +188,12 @@ def MOV(r, s):
         for i in range(-1,-len(binList),-1):
             listaRejestrow[r][i].data = int(binList[i])
 
+#   add value from the source to the register
 def ADD(r, s):
     if r not in listaRej:
         raise RegisterNotImplemented
     
+    #   if source is a register itself
     if s in listaRej:
         if len(listaRejestrow[s]) > len(listaRejestrow[r]):
             raise RegisterSizeTooSmall
@@ -181,16 +204,7 @@ def ADD(r, s):
             FLAGS[-12].data = 1
         #?  overflow flag needed
 
-        #   converstion of the number to list of binary (in str)
-        listaDoWpisania = []
-        if len(listaRejestrow[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(wynik))
-        elif len(listaRejestrow[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(wynik))
-
-        #   update of the register (using int, not string)
-        for i in range(-1,-len(listaDoWpisania),-1):
-            listaRejestrow[r][i].data = int(listaDoWpisania[i])
+        writeIntoRegister(r, wynik)
     
     else:
         liczba = s.split(" ")[-1].lower()
@@ -202,40 +216,25 @@ def ADD(r, s):
         if OF:
             FLAGS[-12].data = 1
 
-        #   converstion of the number to list of binary (in str)
-        listaDoWpisania = []
-        if len(listaRejestrow[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(wynik))
-        elif len(listaRejestrow[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(wynik))
+        writeIntoRegister(r, wynik)
 
-        #   update of the register (using int, not string)
-        for i in range(-1,-len(listaDoWpisania),-1):
-            listaRejestrow[r][i].data = int(listaDoWpisania[i])
-    
+#   substract value from source from the register    
 def SUB(r, s):
     if r not in listaRej:
         raise RegisterNotImplemented
     
+    
+    #   if source is a register itself
     if s in listaRej:
         if len(listaRejestrow[s]) > len(listaRejestrow[r]):
             raise RegisterSizeTooSmall
         
-        #   reduction of the result to the register size
+        #   reduction of the result to the register size + OF flag
         OF, wynik = bitSubstraction(r,s)
         if OF:
             FLAGS[-12].data = 1
 
-        #   converstion of the number to list of binary (in str)
-        listaDoWpisania = []
-        if len(listaRejestrow[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(wynik))
-        elif len(listaRejestrow[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(wynik))
-
-        #   update of the register (using int, not string)
-        for i in range(-1,-len(listaDoWpisania),-1):
-            listaRejestrow[r][i].data = int(listaDoWpisania[i])
+        writeIntoRegister(r, wynik)
     else:
         liczba = s.split(" ")[-1].lower()
         binList = numberToList(s,liczba)
@@ -246,20 +245,13 @@ def SUB(r, s):
         if OF:
             FLAGS[-12].data = 1
 
-        #   converstion of the number to list of binary (in str)
-        listaDoWpisania = []
-        if len(listaRejestrow[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(wynik))
-        elif len(listaRejestrow[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(wynik))
+        writeIntoRegister(r, wynik)
 
-        #   update of the register (using int, not string)
-        for i in range(-1,-len(listaDoWpisania),-1):
-            listaRejestrow[r][i].data = int(listaDoWpisania[i])
-
+#   increment register by 1 (ADD register, byte 1)
 def INC(r):
     ADD(r,"byte 1")
 
+#   decrement register by 1 (SUB register, byte 1)
 def DEC(r):
     SUB(r,"byte 1")
 
@@ -268,6 +260,7 @@ def XOR(r,s):
     if r not in listaRej:
         raise RegisterNotImplemented
     
+    #   if source is a register itself
     if s in listaRej:
         if len(listaRejestrow[s]) > len(listaRejestrow[r]):
             raise RegisterSizeTooSmall
@@ -277,16 +270,7 @@ def XOR(r,s):
         
         #?  overflow flag needed
 
-        #   converstion of the number to list of binary (in str)
-        listaDoWpisania = []
-        if len(listaRejestrow[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(wynik))
-        elif len(listaRejestrow[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(wynik))
-
-        #   update of the register (using int, not string)
-        for i in range(-1,-len(listaDoWpisania),-1):
-            listaRejestrow[r][i].data = int(listaDoWpisania[i])
+        writeIntoRegister(r, wynik)
     
     else:
         liczba = s.split(" ")[-1].lower()
@@ -296,40 +280,33 @@ def XOR(r,s):
         #?  overflow flag needed
         wynik = bitXOR(r,liczba2,True)
 
-        #   converstion of the number to list of binary (in str)
-        listaDoWpisania = []
-        if len(listaRejestrow[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(wynik))
-        elif len(listaRejestrow[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(wynik))
+        writeIntoRegister(r, wynik)
 
-        #   update of the register (using int, not string)
-        for i in range(-1,-len(listaDoWpisania),-1):
-            listaRejestrow[r][i].data = int(listaDoWpisania[i])
-
-
+#   print the value of the registers bitly
 def printRegisters():
-    napis1 = "AX : "
-    napis2 = "BX : "
-    napis3 = "CX : "
-    napis4 = "DX : "
+
+    vaxbin = ''
+    vbxbin = ''
+    vcxbin = ''
+    vdxbin = ''
 
     for i in AX:
-        napis1 += str(i.printInt())
+        vaxbin += str(i.printInt())
 
     for i in BX:
-        napis2 += str(i.printInt())
+        vbxbin += str(i.printInt())
     
     for i in CX:
-        napis3 += str(i.printInt())
+        vcxbin += str(i.printInt())
     
     for i in DX:
-        napis4 += str(i.printInt())
+        vdxbin += str(i.printInt())
 
-    print(napis1)
-    print(napis2)
-    print(napis3)
-    print(napis4)
+
+    print("AX : ",vaxbin, " = ",int("0b"+vaxbin,2))
+    print("BX : ",vbxbin, " = ",int("0b"+vbxbin,2))
+    print("CX : ",vcxbin, " = ",int("0b"+vcxbin,2))
+    print("DX : ",vdxbin, " = ",int("0b"+vdxbin,2))
 
 if __name__ == "__main__":
 
@@ -346,3 +323,4 @@ if __name__ == "__main__":
     INC("DX")
     
     printRegisters()
+    
