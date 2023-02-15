@@ -27,9 +27,7 @@ so the code should allow it
 from errors import *
 from datatypes import *
 
-#
-#	PREPARATION
-#
+#########################	PREPARATION	  #########################
 
 AX = [Node(0) for _ in range(16)]
 AH, AL = AX[:9], AX[9:]
@@ -68,9 +66,12 @@ def clearFlags():
 	FLAGS = [Node(0) for _ in range(16)]
 clearFlags()
 
-#
-#	OPERATIONS ON REGISTERS
-#
+
+#########################	FUNCTIONS	#########################
+
+
+###	OPERATIONS ON REGISTERS
+
 
 #	a function which sets given flags to setValue
 def setFlags(*arg, setValue : bool = True):
@@ -88,15 +89,6 @@ def setFlags(*arg, setValue : bool = True):
 			case "PF":  FLAGS[-3 ].data = int(setValue)
 			case "CF":  FLAGS[-1 ].data = int(setValue)
 
-#	if register is capable of holding effective address
-def effectiveAddressable(reg:str):
-	if reg not in regList:
-		raise RegisterNotImplemented
-	
-	effReg = ["SI","DI","BP","BX"]
-
-	return reg in effReg
-
 #	inputs the restult into register r, bit by bit
 def writeIntoRegister(r, resutl):
 	#	converstion of the number to list of binary (in str)
@@ -110,119 +102,17 @@ def writeIntoRegister(r, resutl):
 	for i in range(-1,-len(listaDoWpisania),-1):
 		listOfRegisters[r][i].data = int(listaDoWpisania[i])	
 
-#
-#	TRANSFORMATION & OPPERATIONS
-#
 
-#	tranform a given numver, to bit value, based on the dest.
-def numberToList(r, s, number:str):
-	#	transform 'word 0xf2' -> list('0000000011110010')
-	#	transform 'byte 0b11' -> list('00000011')
-	#	transform 'word 728'  -> list('0000001011011000')
-	#	transform '0xf2' -> list('0000000011110010')
-	#	transform '0b11' -> list('00000011')
-	#	transform '728'  -> list('0000001011011000')
-	listToWrite = []
-	base = 10
-	size = 0
-	if "byte" in s:
-		size = 8
-	elif "word" in s:
-		size = 16
-	else:
-		size = len(listOfRegisters[r])
+###	CHECK & ERROR FINDING
+
+#	if register is capable of holding effective address
+def effectiveAddressable(reg:str):
+	if reg not in regList:
+		raise RegisterNotImplemented
 	
-	if number.startswith("0b"):
-		if len(s[2:]) > 8:
-			raise NumberTooBig
-		base = 2
+	effReg = ["SI","DI","BP","BX"]
 
-	elif number.startswith("0x"):
-		if number.endswith("h"):
-			number = number[:-1]
-		if len(number[2:]) > 2:
-			raise NumberTooBig
-		base = 16
-		
-	elif number.endswith("h"):
-		number = number[:-1]
-		number = "0x" + number
-		if len(number[2:]) > 2:
-			raise NumberTooBig
-		base = 16
-		
-	else:
-		if int(number) > 255:
-			raise NumberTooBig
-
-	if size == 8:
-		listToWrite = list("{0:08b}".format(int(number,base)))
-	else:
-		listToWrite = list("{0:016b}".format(int(number,base)))
-
-	return listToWrite
-
-#	extract value from register 'AX', 'BX' -> "0b1010" & "0b0101"
-#	extract + change 'AX', '101110' -> "0b1010" & "0b101110"
-def prepToBinConv(n1, n2, argReady):
-	sn1 = "0b" + "".join([i.printStr() for i in listOfRegisters[n1]])
-	if not argReady:
-		sn2 = "0b" + "".join([i.printStr() for i in listOfRegisters[n2]])
-	else:
-		sn2 = "0b" + n2
-
-	return sn1, sn2
-
-#	add two numbers bit by bit and activate OF flag
-def bitAddition(num1:str, num2:str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
-
-	wynik = int(strnum1,2) + int(strnum2,2)
-	if wynik > 2**regSize:
-		wynik -= 2**regSize
-		setFlags("OF")
-
-	return wynik
-
-#	sub two numbers bit by bit and activate OF flag
-def bitSubstraction(num1:str, num2:str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
-
-	wynik = int(strnum1,2) - int(strnum2,2)
-	if wynik < 0:
-		wynik += 2**regSize
-		setFlags("OF")
-	
-	return wynik
-
-#	xor two numbers bit by bit and activate OF flag
-def bitXOR(num1:str, num2: str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-	overFlow = False
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
-	
-	wynik = int(strnum1,2) ^ int(strnum2,2)
-	if not wynik:
-		setFlags("ZF")
-
-	return wynik
-
-#	binary multiplication
-def binMUL(num1:str, num2: str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
-
-	wynik = int(strnum1,2) * int(strnum2,2)
-	
-	return 
-
-
-#
-#	EXECUTION BASED ON AMOUT OF ARGUMENTS
-#
+	return reg in effReg
 
 #	is given source, a register, [reg] , var , [var], 10, word 10, word var
 def registerAddressValue(s : str):
@@ -292,7 +182,119 @@ def possibleOpperation( r : str, s : str, a1 = None, a2 = None):
 		else:
 			if effectiveAddressable(r): return True
 			else: return False
+
+
+###	TRANSFORMATION & OPPERATIONS
+
+
+#	tranform a given numver, to bit value, based on the dest.
+def numberToList(r, s, number:str):
+	#	transform 'word 0xf2' -> list('0000000011110010')
+	#	transform 'byte 0b11' -> list('00000011')
+	#	transform 'word 728'  -> list('0000001011011000')
+	#	transform '0xf2' -> list('0000000011110010')
+	#	transform '0b11' -> list('00000011')
+	#	transform '728'  -> list('0000001011011000')
+	listToWrite = []
+	base = 10
+	size = 0
+	if "byte" in s:
+		size = 8
+	elif "word" in s:
+		size = 16
+	else:
+		size = len(listOfRegisters[r])
 	
+	if number.startswith("0b"):
+		if int(number,2) >= 2**size:
+			raise NumberTooBig
+		base = 2
+
+	elif number.startswith("0x"):
+		if number.endswith("h"):
+			number = number[:-1]
+		if int(number,16) >= 2**size:
+			raise NumberTooBig
+		base = 16
+		
+	elif number.endswith("h"):
+		number = number[:-1]
+		number = "0x" + number
+		if int(number,16) >= 2**size:
+			raise NumberTooBig
+		base = 16
+		
+	else:
+		if int(number) >= 2**size:
+			raise NumberTooBig
+
+	if size == 8:
+		listToWrite = list("{0:08b}".format(int(number,base)))
+	else:
+		listToWrite = list("{0:016b}".format(int(number,base)))
+
+	return listToWrite
+
+#	extract value from register 'AX', 'BX' -> "0b1010" & "0b0101"
+#	extract + change 'AX', '101110' -> "0b1010" & "0b101110"
+def prepToBinConv(n1, n2, argReady):
+	sn1 = "0b" + "".join([i.printStr() for i in listOfRegisters[n1]])
+	if not argReady:
+		sn2 = "0b" + "".join([i.printStr() for i in listOfRegisters[n2]])
+	else:
+		sn2 = "0b" + n2
+
+	return sn1, sn2
+
+#	add two numbers bit by bit and activate OF flag
+def bitAddition(num1:str, num2:str, argReady = False):
+	regSize = len(listOfRegisters[num1])
+	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
+
+	wynik = int(strnum1,2) + int(strnum2,2)
+	if wynik > 2**regSize:
+		wynik -= 2**regSize
+		setFlags("OF")
+
+	return wynik
+
+#	sub two numbers bit by bit and activate OF flag
+def bitSubstraction(num1:str, num2:str, argReady = False):
+	regSize = len(listOfRegisters[num1])
+	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
+
+	wynik = int(strnum1,2) - int(strnum2,2)
+	if wynik < 0:
+		wynik += 2**regSize
+		setFlags("OF")
+	
+	return wynik
+
+#	xor two numbers bit by bit and activate OF flag
+def bitXOR(num1:str, num2: str, argReady = False):
+	regSize = len(listOfRegisters[num1])
+	overFlow = False
+	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
+	
+	wynik = int(strnum1,2) ^ int(strnum2,2)
+	if not wynik:
+		setFlags("ZF")
+
+	return wynik
+
+#	binary multiplication
+def binMUL(num1:str, num2: str, argReady = False):
+	regSize = len(listOfRegisters[num1])
+
+	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
+
+	wynik = int(strnum1,2) * int(strnum2,2)
+	
+	return 
+
+
+###	EXECUTION BASED ON AMOUT OF ARGUMENTS
+
 
 #	executes functions which accept 2 arguments
 def EXE2ARG(function, r = "", s = ""):
@@ -302,11 +304,19 @@ def EXE2ARG(function, r = "", s = ""):
 	rMode = registerAddressValue(r)
 	sMode = registerAddressValue(s)
 
+	#	general check
 	if not (possibleOpperation(r,s,rMode,sMode)):
 		raise OperationNotPossible
 	
+	#	specified check (due to operation performed)
+	match(function.__name__):
+		case("MOV"): pass
+		case("ADD"): pass
+		case("SUB"): pass
+		case("MUL"): pass
 
-	
+
+
 	#	if source is a register itself
 	if s in regList:
 		if len(listOfRegisters[s]) > len(listOfRegisters[r]):
@@ -336,9 +346,7 @@ def EXE1ARG(function, s = ""): pass
 def EXENOARG(function): pass
 
 
-#
-#	INSTRUCTIONS WITH 2 ARGUMETNS
-#
+###	INSTRUCTIONS WITH 2 ARGUMETNS
 
 
 #	copy value from the source to the register
@@ -376,9 +384,7 @@ def XOR(r, s):
 	EXE2ARG(bitXOR, r, s)
 
 
-#
-#	INSTRUCTION WITH 1 ARGUMENT
-#
+###	INSTRUCTION WITH 1 ARGUMENT
 
 
 #	increment register by 1 (ADD register, byte 1)
@@ -390,9 +396,7 @@ def DEC(r):
 	SUB(r,"byte 1")
 
 
-#
-#	INSTRUCTION WITHOUT ARGUMENT
-#
+###	INSTRUCTION WITHOUT ARGUMENT
 
 
 

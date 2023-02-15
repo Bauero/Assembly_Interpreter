@@ -9,3 +9,5 @@ class Node:
     
     def printStr(self) -> str:
         return str(self.data)
+    
+

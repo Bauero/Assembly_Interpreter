@@ -1,5 +1,18 @@
+###     REGISTER ERRORS
+
 class RegisterNotImplemented (Exception):
     pass
+class RegisterTooSmallToMove (Exception):
+    pass
+class RegisterSizeTooSmall (Exception):
+    pass
+class OperationNotPossible (Exception):
+    pass
+class RegisterCantEffectiveAddress (Exception):
+    pass
+
+
+###     NUMBER ERROR
 
 class WrongNumberBase (Exception):
     pass
@@ -7,8 +20,14 @@ class WrongNumberBase (Exception):
 class NumberTooBig (Exception):
     pass
 
-class RegisterTooSmallToMove (Exception):
+###     OTHER ERRORS
+
+class OperandSizeNotSpecified (Exception):
     pass
 
-class RegisterSizeTooSmall (Exception):
+class EffectiveAddressError (Exception):
     pass
+
+class EffectiveAddresNotExist (Exception):
+    pass
+
