@@ -21,5 +21,5 @@ class Variable:
         self.address = self.__variables
 
         #   new variable has the number one grater than the previous one
-        self.__variables += 1
+        Variable.__variables += 1
 

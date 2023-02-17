@@ -116,7 +116,8 @@ def writeIntoRegister(r, resutl):
 #	return value from the register as a string of bits
 def readFromRegister(r):
 	result = ""
-	for i in r: result += i.printStr
+	for i in listOfRegisters[r]: 
+		result += i.printStr()
 	return result
 
 
@@ -280,6 +281,10 @@ def numberToList(s, number:str, boundSize = 16):
 
 	return listToWrite
 
+#	turn bit
+def bitsToInt(bitString : str):
+	return int("0b" + bitString,2)
+
 #	determine the maximu size of the operation
 def getMaxSize(r, rType):
 	match (rType):
@@ -298,7 +303,7 @@ def getValue(s, sType, maxSize):
 					return v.address
 			raise VariableAddressNotExisting
 		case 3: return VARIABLES[s].address
-		case 4: return VARIABLES[s].data
+		case 4: return VARIABLES[s[1:-1]].data
 		case 5: return numberToInt(s,maxSize)
 		case 6: return numberToInt(s,maxSize)
 		case 7: return VARIABLES[s.split(" ")[-1]].address
@@ -306,8 +311,16 @@ def getValue(s, sType, maxSize):
 #	saves value in the destination if possible
 def saveInDestination(d, dType, value):
 	match(dType):
-		case 1:
-			writeIntoRegister(d, value)
+		case 1: writeIntoRegister(d, value)
+		case 2:
+			reg = d.lstrip().rstrip()[1:-1]
+			varAddres = bitsToInt(readFromRegister(reg))
+			for v in VARIABLES:
+				if VARIABLES[v].address == varAddres:
+					VARIABLES[v].data = value
+		case 4:
+			VARIABLES[d].data = value
+		
 
 #	add two numbers bit by bit and activate OF flag
 def bitAddition(num1:int, num2:int, opSize, flags):
@@ -327,7 +340,6 @@ def bitAddition(num1:int, num2:int, opSize, flags):
 
 	#	set Overflow Flag
 
-
 	setFlags(flagsOn,flagsOff)	
 
 	return result
@@ -335,7 +347,7 @@ def bitAddition(num1:int, num2:int, opSize, flags):
 #?	sub two numbers bit by bit and activate OF flag
 def bitSubstraction(num1:str, num2:str, flags): pass
 
-#	xor two numbers bit by bit and activate OF flag
+#?	xor two numbers bit by bit and activate OF flag
 def bitXOR(num1:str, num2: str, flags): pass
 
 
@@ -477,18 +489,26 @@ def printRegisters():
 	print("SP : ",vspbin, " = ",int("0b"+vspbin,2))
 	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
 
+#?
+def printStack(): pass
+
+
+def printFlags():
+	result = ""
+	for i in FLAGS: result += str(i)
+
+	dec = bitsToInt(result)
+
+	print(f"FL :  {result}  =  {dec}")
+
 if __name__ == "__main__":
 
+	VARIABLES["fck"] = Variable(8,29,"fck")
+	VARIABLES["lol"] = Variable(16,8957,"lol")
+
 	#	testowe operaacje   
-	MOV("BX","byte 10")
-	MOV("AX","BX")
-	MOV("AX","word 18")
-	MOV("AX","word 0x98f")
-	ADD("AX","BX")
-	ADD("BL","byte 12")
-	MOV("CX","word 128")
-	DEC("CX")
-	XOR("CX","CX")
-	INC("DX")
+	ADD("AX","word 10")
+	ADD("BX","lol")
 	
 	printRegisters()
+	printFlags()
