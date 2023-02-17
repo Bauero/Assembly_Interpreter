@@ -17,6 +17,7 @@ As a possible extenstion, mayby execution of a file may be added later
 so the code should allow it
 
 """
+
 #	Todo
 #	√1. dodanie stostu
 #	2. dodanie obsługu odwołań po adresach
@@ -54,17 +55,18 @@ listOfRegisters = {"AX" : AX, "AH" : AH, "AL" : AL,
 regList = list(listOfRegisters.keys())
 
 STACK = [Node(0) for _ in range(16*256)]
+
 VARIABLES = {}
 
 history = []
 
-#	flag register
-FLAGS = []
 #	initialization of a clear register
+FLAGS = [0 for _ in range(16)]
+
+#	resetting flags
 def clearFlags():
 	global FLAGS
-	FLAGS = [Node(0) for _ in range(16)]
-clearFlags()
+	for i in range(16): FLAGS[i] = 0
 
 
 #########################	FUNCTIONS	#########################
@@ -72,22 +74,31 @@ clearFlags()
 
 ###	OPERATIONS ON REGISTERS
 
+#	set given flag to setValue
+def setFlag(flag,setValue):
+	match(flag):
+			case "NT":  FLAGS[-15] = setValue
+			case "IO":  FLAGS[-14] = setValue
+			case "PL":  FLAGS[-13] = setValue
+			case "OF":  FLAGS[-12] = setValue
+			case "DF":  FLAGS[-11] = setValue
+			case "IF":  FLAGS[-10] = setValue
+			case "TF":  FLAGS[-9 ] = setValue
+			case "SF":  FLAGS[-8 ] = setValue
+			case "ZF":  FLAGS[-5 ] = setValue
+			case "PF":  FLAGS[-3 ] = setValue
+			case "CF":  FLAGS[-1 ] = setValue
 
-#	a function which sets given flags to setValue
-def setFlags(*arg, setValue : bool = True):
-	for f in arg:
-		match(f):
-			case "NT":  FLAGS[-15].data = int(setValue)
-			case "IO":  FLAGS[-14].data = int(setValue)
-			case "PL":  FLAGS[-13].data = int(setValue)
-			case "OF":  FLAGS[-12].data = int(setValue)
-			case "DF":  FLAGS[-11].data = int(setValue)
-			case "IF":  FLAGS[-10].data = int(setValue)
-			case "TF":  FLAGS[-9 ].data = int(setValue)
-			case "SF":  FLAGS[-8 ].data = int(setValue)
-			case "ZF":  FLAGS[-5 ].data = int(setValue)
-			case "PF":  FLAGS[-3 ].data = int(setValue)
-			case "CF":  FLAGS[-1 ].data = int(setValue)
+#	a function which sets given flags on or off
+def setFlags(flagON : list = [], argOFF :list = []):
+	for f in flagON: setFlag(f,1)
+	for f in argOFF: setFlag(f,0)
+
+#?	- to make
+def getRequiredFlags(name):
+	match(name):
+		case "ADC":	return ["CF"]
+		case _: return []
 
 #	inputs the restult into register r, bit by bit
 def writeIntoRegister(r, resutl):
@@ -102,8 +113,15 @@ def writeIntoRegister(r, resutl):
 	for i in range(-1,-len(listaDoWpisania),-1):
 		listOfRegisters[r][i].data = int(listaDoWpisania[i])	
 
+#	return value from the register as a string of bits
+def readFromRegister(r):
+	result = ""
+	for i in r: result += i.printStr
+	return result
+
 
 ###	CHECK & ERROR FINDING
+
 
 #	if register is capable of holding effective address
 def effectiveAddressable(reg:str):
@@ -183,27 +201,33 @@ def possibleOpperation( r : str, s : str, a1 = None, a2 = None):
 			if effectiveAddressable(r): return True
 			else: return False
 
+#	if additional operation requirements are fulfilled
+def additionalOpReq(f, r, s, rType, sType):
+	match(f):
+		case("ADD"): 
+			if rType == sType and rType == 1:
+				if len(listOfRegisters[r]) < len(listOfRegisters[s]):
+					raise RegisterSizeTooSmall
+				if r == "SP" or s == "SP":
+					raise RegisterNotWritable
+		case("SUB"): 
+			if rType == sType and rType == 1:
+				if len(listOfRegisters[r]) < len(listOfRegisters[s]):
+					raise RegisterSizeTooSmall
+				if r == "SP" or s == "SP":
+					raise RegisterNotWritable
+		case("XOR"):
+			if rType == sType and rType == 1:
+				if r == "SP":
+					raise RegisterNotWritable
+
 
 ###	TRANSFORMATION & OPPERATIONS
 
-
-#	tranform a given numver, to bit value, based on the dest.
-def numberToList(r, s, number:str):
-	#	transform 'word 0xf2' -> list('0000000011110010')
-	#	transform 'byte 0b11' -> list('00000011')
-	#	transform 'word 728'  -> list('0000001011011000')
-	#	transform '0xf2' -> list('0000000011110010')
-	#	transform '0b11' -> list('00000011')
-	#	transform '728'  -> list('0000001011011000')
-	listToWrite = []
+#	convert a strin to an int with given size
+def numberToInt(s, size):
 	base = 10
-	size = 0
-	if "byte" in s:
-		size = 8
-	elif "word" in s:
-		size = 16
-	else:
-		size = len(listOfRegisters[r])
+	number = s.split(" ")[-1].lower()
 	
 	if number.startswith("0b"):
 		if int(number,2) >= 2**size:
@@ -228,61 +252,94 @@ def numberToList(r, s, number:str):
 		if int(number) >= 2**size:
 			raise NumberTooBig
 
-	if size == 8:
-		listToWrite = list("{0:08b}".format(int(number,base)))
+	return int(number,base)
+
+#	tranform a given numver, to bit value, based on the dest.
+def numberToList(s, number:str, boundSize = 16):
+	#	transform 'word 0xf2' -> list('0000000011110010')
+	#	transform 'byte 0b11' -> list('00000011')
+	#	transform 'word 728'  -> list('0000001011011000')
+	#	transform '0xf2' -> list('0000000011110010')
+	#	transform '0b11' -> list('00000011')
+	#	transform '728'  -> list('0000001011011000')
+	listToWrite = []
+	
+	if "byte" in s:
+		size = 8
+	elif "word" in s:
+		size = 16
 	else:
-		listToWrite = list("{0:016b}".format(int(number,base)))
+		size = boundSize
+
+	value = numberToInt(s, size)
+
+	if size == 8:
+		listToWrite = list("{0:08b}".format(value))
+	else:
+		listToWrite = list("{0:016b}".format(value))
 
 	return listToWrite
 
-#	extract value from register 'AX', 'BX' -> "0b1010" & "0b0101"
-#	extract + change 'AX', '101110' -> "0b1010" & "0b101110"
-def prepToBinConv(n1, n2, argReady):
-	sn1 = "0b" + "".join([i.printStr() for i in listOfRegisters[n1]])
-	if not argReady:
-		sn2 = "0b" + "".join([i.printStr() for i in listOfRegisters[n2]])
-	else:
-		sn2 = "0b" + n2
+#	determine the maximu size of the operation
+def getMaxSize(r, rType):
+	match (rType):
+		case 1: return len(listOfRegisters[r])
+		case 2: return len(listOfRegisters[r])
+		case 4: return VARIABLES[r].size
 
-	return sn1, sn2
+#	gets value based on the destination
+def getValue(s, sType, maxSize):
+	match (sType):
+		case 1:
+			return int("0b" + readFromRegister(s),2)
+		case 2: 
+			for v in VARIABLES:
+				if v.address == int("0b" + readFromRegister(s),2):
+					return v.address
+			raise VariableAddressNotExisting
+		case 3: return VARIABLES[s].address
+		case 4: return VARIABLES[s].data
+		case 5: return numberToInt(s,maxSize)
+		case 6: return numberToInt(s,maxSize)
+		case 7: return VARIABLES[s.split(" ")[-1]].address
+
+#	saves value in the destination if possible
+def saveInDestination(d, dType, value):
+	match(dType):
+		case 1:
+			writeIntoRegister(d, value)
 
 #	add two numbers bit by bit and activate OF flag
-def bitAddition(num1:str, num2:str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
+def bitAddition(num1:int, num2:int, opSize, flags):
+	cfvalue = 1 if "CF" in flags else 0
+	result = num1 + num2 + cfvalue
+	flagsOn , flagsOff = [], []
 
-	wynik = int(strnum1,2) + int(strnum2,2)
-	if wynik > 2**regSize:
-		wynik -= 2**regSize
-		setFlags("OF")
-
-	return wynik
-
-#	sub two numbers bit by bit and activate OF flag
-def bitSubstraction(num1:str, num2:str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
-
-	wynik = int(strnum1,2) - int(strnum2,2)
-	if wynik < 0:
-		wynik += 2**regSize
-		setFlags("OF")
+	#	set Carry Flag
+	if result >= 2**opSize:
+		result -= 2**opSize	;	flagsOn.append("CF")
+	else:
+		flagsOn.append("CF")
 	
-	return wynik
+	#	set Zero Flag
+	if result:	flagsOff.append("ZF")
+	else: flagsOn.append("ZF")
+
+	#	set Overflow Flag
+
+
+	setFlags(flagsOn,flagsOff)	
+
+	return result
+
+#?	sub two numbers bit by bit and activate OF flag
+def bitSubstraction(num1:str, num2:str, flags): pass
 
 #	xor two numbers bit by bit and activate OF flag
-def bitXOR(num1:str, num2: str, argReady = False):
-	regSize = len(listOfRegisters[num1])
-	overFlow = False
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
-	
-	wynik = int(strnum1,2) ^ int(strnum2,2)
-	if not wynik:
-		setFlags("ZF")
+def bitXOR(num1:str, num2: str, flags): pass
 
-	return wynik
 
-#	binary multiplication
+"""#	binary multiplication
 def binMUL(num1:str, num2: str, argReady = False):
 	regSize = len(listOfRegisters[num1])
 
@@ -290,7 +347,7 @@ def binMUL(num1:str, num2: str, argReady = False):
 
 	wynik = int(strnum1,2) * int(strnum2,2)
 	
-	return 
+	return """
 
 
 ###	EXECUTION BASED ON AMOUT OF ARGUMENTS
@@ -299,45 +356,33 @@ def binMUL(num1:str, num2: str, argReady = False):
 #	executes functions which accept 2 arguments
 def EXE2ARG(function, r = "", s = ""):
 
-	# weryfikacja czy mamy do czynienia z rejestrami
-	# czy adresami efektywnymi
+	#	varification the type of the arguments
 	rMode = registerAddressValue(r)
 	sMode = registerAddressValue(s)
 
-	#	general check
-	if not (possibleOpperation(r,s,rMode,sMode)):
+	#	general check - if theoreticaly operation is possible
+	if not possibleOpperation(r,s,rMode,sMode):
 		raise OperationNotPossible
 	
 	#	specified check (due to operation performed)
-	match(function.__name__):
-		case("MOV"): pass
-		case("ADD"): pass
-		case("SUB"): pass
-		case("MUL"): pass
-
-
-
-	#	if source is a register itself
-	if s in regList:
-		if len(listOfRegisters[s]) > len(listOfRegisters[r]):
-			raise RegisterSizeTooSmall
-		
-		#	reduction of the result to the register size
-		wynik = function(r,s)
-		
-		#?	overflow flag needed
-
-		writeIntoRegister(r, wynik)
+	name = function.__name__
+	additionalOpReq(name, r, s, rMode, sMode)
 	
-	else:
-		liczba = s.split(" ")[-1].lower()
-		binList = numberToList(r,s,liczba)
-		liczba2 = "".join(binList)
+	#	specifies maximum size of the operation (8/16)
+	maxSize = getMaxSize(r, rMode)
+	
+	#	get values no matter where they are stored
+	rValue = getValue(r, rMode, maxSize)
+	sValue = getValue(s, sMode, maxSize)
 
-		#?	overflow flag needed
-		wynik = function(r,liczba2,True)
+	#	does this operation requires taking into accout some flags
+	reqFlags = getRequiredFlags(name)
 
-		writeIntoRegister(r, wynik)
+	#	performa opperations
+	result = function(rValue, sValue, maxSize, reqFlags)
+
+	#	save into destination
+	saveInDestination(r, rMode, result)
 
 #? 	to write
 def EXE1ARG(function, s = ""): pass
@@ -365,8 +410,7 @@ def MOV(r, s):
 
 	else:
 		liczba = s.split(" ")[-1].lower()
-		
-		binList = numberToList(r,s,liczba)
+		binList = numberToList(s,liczba,len(listOfRegisters[r]))
 
 		for i in range(-1,-len(binList),-1):
 			listOfRegisters[r][i].data = int(binList[i])
@@ -383,6 +427,9 @@ def SUB(r, s):
 def XOR(r, s):
 	EXE2ARG(bitXOR, r, s)
 
+#	bit or
+def ORR(r, s): pass
+
 
 ###	INSTRUCTION WITH 1 ARGUMENT
 
@@ -397,81 +444,6 @@ def DEC(r):
 
 
 ###	INSTRUCTION WITHOUT ARGUMENT
-
-
-
-def ToDo():
-	#?	- to implement
-	def MUL(s): pass
-	
-	#?	- to implement
-	def DIV(s): pass
-
-	#?	- to implement
-	def RET(): pass
-
-	#?	- to implement
-	def CALL(d): pass
-
-	#?	- to implement
-	def LOOP(d): pass
-
-	#?	- to implement
-	def NEG(r): pass
-
-	#?	- to implement
-	def AND(r, s): pass
-
-	#?	- to implement
-	def INT(i): pass
-
-	#?	- to implement
-	def PUSH(v): pass
-
-	#?	- to implement
-	def POP(r, s): pass
-	
-	#?	- to implement
-	def JMP(d): pass
-
-	#?	- to implement
-	def JE(d): pass
-
-	#?	- to implement
-	def JNE(d): pass
-
-	#?	- to implement
-	def JA(d): pass
-
-	#?	- to implement
-	def JNA(d): pass
-
-	#?	- to implement
-	def JB(d): pass
-
-	#?	- to implement
-	def JNB(d): pass
-
-	#?	- to implement
-	def JL(d): pass
-
-	#?	- to implement
-	def JNL(d): pass
-
-	#?	- to implement
-	def JG(d): pass
-
-	#?	- to implement
-	def JNG(d): pass
-
-	#?	- to implement
-	def JZ(d): pass
-
-	#?	- to implement
-	def JC(d): pass
-
-	#?	- to implement
-	def JS(d): pass
 
 
 

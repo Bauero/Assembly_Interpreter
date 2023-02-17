@@ -1,6 +1,7 @@
-
-
 def ToDo():
+	#?	- to implement
+	def CMP(a1, a2): pass
+	
 	#?	- to implement
 	def MUL(s): pass
 	
