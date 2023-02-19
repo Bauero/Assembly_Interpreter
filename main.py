@@ -319,8 +319,7 @@ def saveInDestination(d, dType, value):
 				if VARIABLES[v].address == varAddres:
 					VARIABLES[v].data = value
 		case 4:
-			VARIABLES[d].data = value
-		
+			VARIABLES[d].data = value	
 
 #	add two numbers bit by bit and activate OF flag
 def bitAddition(num1:int, num2:int, opSize, flags):
@@ -376,7 +375,7 @@ def EXE2ARG(function, r = "", s = ""):
 	if not possibleOpperation(r,s,rMode,sMode):
 		raise OperationNotPossible
 	
-	#	specified check (due to operation performed)
+	#?	specified check (due to operation performed)
 	name = function.__name__
 	additionalOpReq(name, r, s, rMode, sMode)
 	
