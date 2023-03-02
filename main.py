@@ -54,7 +54,8 @@ listOfRegisters = {"AX" : AX, "AH" : AH, "AL" : AL,
 
 regList = list(listOfRegisters.keys())
 
-STACK = [Node(0) for _ in range(16*256)]
+#	4096 16-bit places 
+STACK = [Node(0) for _ in range(65536)]
 
 VARIABLES = {}
 
@@ -223,6 +224,7 @@ def additionalOpReq(f, r, s, rType, sType):
 					raise RegisterNotWritable
 
 
+
 ###	TRANSFORMATION & OPPERATIONS
 
 #	convert a strin to an int with given size
@@ -344,21 +346,37 @@ def bitAddition(num1:int, num2:int, opSize, flags):
 	return result
 
 #?	sub two numbers bit by bit and activate OF flag
-def bitSubstraction(num1:str, num2:str, flags): pass
+def bitSubstraction(num1:int, num2:int, opSize, flags):
+	
+	result = num1 - num2
+	flagsOn , flagsOff = [], []
+
+	#?	flagi do ustawienia
+	setFlags(flagsOn,flagsOff)	
+
+	return result
 
 #?	xor two numbers bit by bit and activate OF flag
-def bitXOR(num1:str, num2: str, flags): pass
+def bitXOR(num1:int, num2: int, opSize, flags):
 
+	result = num1 ^ num2
+	flagsOn , flagsOff = [], []
 
-"""#	binary multiplication
-def binMUL(num1:str, num2: str, argReady = False):
-	regSize = len(listOfRegisters[num1])
+	#?	flagi do ustawienia
+	setFlags(flagsOn,flagsOff)	
 
-	strnum1, strnum2 = prepToBinConv(num1, num2, argReady)
+	return result
 
-	wynik = int(strnum1,2) * int(strnum2,2)
-	
-	return """
+#	binary multiplication
+def binaryMultiplication(num1:int, num2: int, opSize, flags):
+
+	result = num1 * num2
+	flagsOn , flagsOff = [], []
+
+	#?	flagi do ustawienia
+	setFlags(flagsOn,flagsOff)	
+
+	return result
 
 
 ###	EXECUTION BASED ON AMOUT OF ARGUMENTS
@@ -396,7 +414,28 @@ def EXE2ARG(function, r = "", s = ""):
 	saveInDestination(r, rMode, result)
 
 #? 	to write
-def EXE1ARG(function, s = ""): pass
+def EXE1ARG(function, s = ""):
+
+	#	verification the type of the arguments
+	sMode = registerAddressValue(s)
+
+	#?	vefirication ???
+	name = function.__name__
+	additionalOpReq(name, None, s, None, sMode)
+
+	#	specifies maximum size of the operation (8/16)
+	maxSize = getMaxSize(s, sMode)
+
+	#	get values no matter where they are stored
+	sValue = getValue(s, sMode, maxSize)
+
+	#	does this operation requires taking into accout some flags
+	reqFlags = getRequiredFlags(name)
+
+	#	performa opperations
+	result = function(sValue, maxSize, reqFlags)
+
+	saveInDestination(s, sMode, result)
 
 #?	to write
 def EXENOARG(function): pass
@@ -491,7 +530,6 @@ def printRegisters():
 #?
 def printStack(): pass
 
-
 def printFlags():
 	result = ""
 	for i in FLAGS: result += str(i)
@@ -507,7 +545,9 @@ if __name__ == "__main__":
 
 	#	testowe operaacje   
 	ADD("AX","word 10")
-	ADD("BX","lol")
-	
+	ADD("BX","[lol]")
+	INC("AX")
+	INC("AX")
+
 	printRegisters()
 	printFlags()
