@@ -75,6 +75,7 @@ def clearFlags():
 
 ###	OPERATIONS ON REGISTERS
 
+
 #	set given flag to setValue
 def setFlag(flag,setValue):
 	match(flag):
@@ -111,7 +112,7 @@ def writeIntoRegister(r, resutl):
 		listaDoWpisania = list("{0:08b}".format(resutl))
 
 	#	update of the register (using int, not string)
-	for i in range(-1,-len(listaDoWpisania),-1):
+	for i in range(-1,-len(listaDoWpisania)-1,-1):
 		listOfRegisters[r][i].data = int(listaDoWpisania[i])	
 
 #	return value from the register as a string of bits
@@ -227,32 +228,40 @@ def additionalOpReq(f, r, s, rType, sType):
 
 ###	TRANSFORMATION & OPPERATIONS
 
-#	convert a strin to an int with given size
+
+#	save value into the stack
+def saveToStack(values, writeSeparate = False):
+	#	writeSeparate - each value will be writen in separate 16 bits 
+	# ex. "abc" -> 00000000 01000001  0000000 001000010  00000000 01000011
+	# normal -> 01000001 001000010  01000011 (every letter in 8 bit)
+
+
+#	convert a string to an int with given size
 def numberToInt(s, size):
 	base = 10
 	number = s.split(" ")[-1].lower()
 	
 	if number.startswith("0b"):
-		if int(number,2) >= 2**size:
+		if int(number,2) > 2**size:
 			raise NumberTooBig
 		base = 2
 
 	elif number.startswith("0x"):
 		if number.endswith("h"):
 			number = number[:-1]
-		if int(number,16) >= 2**size:
+		if int(number,16) > 2**size:
 			raise NumberTooBig
 		base = 16
 		
 	elif number.endswith("h"):
 		number = number[:-1]
 		number = "0x" + number
-		if int(number,16) >= 2**size:
+		if int(number,16) > 2**size:
 			raise NumberTooBig
 		base = 16
 		
 	else:
-		if int(number) >= 2**size:
+		if int(number) > 2**size:
 			raise NumberTooBig
 
 	return int(number,base)
@@ -492,6 +501,10 @@ def INC(r):
 def DEC(r):
 	SUB(r,"byte 1")
 
+def PUSH(r):
+	INC(SP)
+
+
 
 ###	INSTRUCTION WITHOUT ARGUMENT
 
@@ -545,9 +558,9 @@ if __name__ == "__main__":
 
 	#	testowe operaacje   
 	ADD("AX","word 10")
-	ADD("BX","[lol]")
-	INC("AX")
-	INC("AX")
+	ADD("BX","0b1111111111111111")
+	INC("BX")
+	INC("BX")
 
 	printRegisters()
 	printFlags()
