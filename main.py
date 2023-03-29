@@ -20,13 +20,14 @@ so the code should allow it
 
 #	Todo
 #	√1. dodanie stostu
-#	2. dodanie obsługu odwołań po adresach
+#	√2. dodanie obsługu odwołań po adresach
 
 #	Oznaczenia
 #	"#?"    - something need to be added later !!!
 
 from errors import *
 from datatypes import *
+from math import ceil
 
 #########################	PREPARATION	  #########################
 
@@ -123,18 +124,34 @@ def readFromRegister(r):
 		result += i.printStr()
 	return result
 
+def textToInt(text):
+	value = ""
+	for l in text:
+		value += "{0:08b}".format(ord(l))
+	return value
+
 #	save value of 'size' into stack
-def saveValueToStack(value, size : int = 8):
-	#	writeSeparate - each value will be writen in separate 16 bits 
-	# ex. "abc" -> 00000000 01000001  0000000 001000010  00000000 01000011
-	# normal -> 01000001 001000010  01000011 (every letter in 8 bit)
-	multipleOf8 = size // 8
-	for _ in range(multipleOf8):
-		for i in value:
-			spv = bitsToInt(readFromRegister("SP"))
-			STACK[spv].data = int(i)
-			spv += 1
-			writeIntoRegister("SP",spv)
+def saveValueToStack(value):		
+	multipleOf16 = ceil(len(value) / 16)
+	
+	for elem in range(multipleOf16):
+		spv = bitsToInt(readFromRegister("SP"))
+
+		if len(value) > elem: STACK[spv].data = int(elem)
+		else: STACK[spv].data = 0
+
+		spv += 1
+		writeIntoRegister("SP",spv)
+
+def readFromStack(index, size = 16):
+
+	ans = ""
+
+	for i in range(index, index + size + 1):
+		ans += str(STACK[i].data)
+
+	return ans
+
 
 
 ###	CHECK & ERROR FINDING
@@ -246,7 +263,7 @@ def additionalOpReq(f, r, s, rType, sType):
 
 
 #	convert a string to an int with given size
-def numberToInt(s, size):
+def stringToInt(s, size):
 	base = 10
 	number = s.split(" ")[-1].lower()
 	
@@ -292,7 +309,7 @@ def numberToList(s, number:str, boundSize = 16):
 	else:
 		size = boundSize
 
-	value = numberToInt(s, size)
+	value = stringToInt(s, size)
 
 	if size == 8:
 		listToWrite = list("{0:08b}".format(value))
@@ -324,8 +341,8 @@ def getValue(s, sType, maxSize):
 			raise VariableAddressNotExisting
 		case 3: return VARIABLES[s].address
 		case 4: return VARIABLES[s[1:-1]].data
-		case 5: return numberToInt(s,maxSize)
-		case 6: return numberToInt(s,maxSize)
+		case 5: return stringToInt(s,maxSize)
+		case 6: return stringToInt(s,maxSize)
 		case 7: return VARIABLES[s.split(" ")[-1]].address
 
 #	saves value in the destination if possible
@@ -551,10 +568,12 @@ def printRegisters():
 	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
 
 #?
-def printStack(start = 0, end = stackCount-1, step = 1):
-
+def printStack(start = 0, end = stackCount, step = 1):
 	for i in range(start, end, step):
-		print("{0:04h}".format(i))
+		value = readFromStack(i)
+		intValue = stringToInt(value, 16)
+		print("{0:04x}".format(i) + f" : {value} = {intValue}")
+
 
 def printFlags():
 	result = ""
@@ -570,10 +589,15 @@ if __name__ == "__main__":
 	VARIABLES["lol"] = Variable(16,8957,"lol")
 
 	#	testowe operaacje   
-	ADD("AX","736")
-	ADD("BX","0b1111111111111111")
-	INC("BX")
-	INC("BX")
+	#ADD("AX","49")
+	#MOV("AH","AL")
+	#ADD("BX","0b1111111111111111")
+	#INC("BX")
+	#INC("BX")
 
+	print("\nSTACK")
+	printStack(0,10)
+
+	print("\nREGISTERS")
 	printRegisters()
 	printFlags()
