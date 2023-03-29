@@ -56,6 +56,7 @@ regList = list(listOfRegisters.keys())
 
 #	4096 16-bit places 
 STACK = [Node(0) for _ in range(65536)]
+stackCount = len(STACK)//8
 
 VARIABLES = {}
 
@@ -236,6 +237,7 @@ def additionalOpReq(f, r, s, rType, sType):
 			if rType == sType and rType == 1:
 				if r == "SP":
 					raise RegisterNotWritable
+
 
 
 
@@ -549,7 +551,10 @@ def printRegisters():
 	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
 
 #?
-def printStack(): pass
+def printStack(start = 0, end = stackCount-1, step = 1):
+
+	for i in range(start, end, step):
+		print("{0:04h}".format(i))
 
 def printFlags():
 	result = ""
