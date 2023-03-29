@@ -122,6 +122,19 @@ def readFromRegister(r):
 		result += i.printStr()
 	return result
 
+#	save value of 'size' into stack
+def saveValueToStack(value, size : int = 8):
+	#	writeSeparate - each value will be writen in separate 16 bits 
+	# ex. "abc" -> 00000000 01000001  0000000 001000010  00000000 01000011
+	# normal -> 01000001 001000010  01000011 (every letter in 8 bit)
+	multipleOf8 = size // 8
+	for _ in range(multipleOf8):
+		for i in value:
+			spv = bitsToInt(readFromRegister("SP"))
+			STACK[spv].data = int(i)
+			spv += 1
+			writeIntoRegister("SP",spv)
+
 
 ###	CHECK & ERROR FINDING
 
@@ -228,12 +241,6 @@ def additionalOpReq(f, r, s, rType, sType):
 
 ###	TRANSFORMATION & OPPERATIONS
 
-
-#	save value into the stack
-def saveToStack(values, writeSeparate = False):
-	#	writeSeparate - each value will be writen in separate 16 bits 
-	# ex. "abc" -> 00000000 01000001  0000000 001000010  00000000 01000011
-	# normal -> 01000001 001000010  01000011 (every letter in 8 bit)
 
 
 #	convert a string to an int with given size
@@ -428,7 +435,7 @@ def EXE1ARG(function, s = ""):
 	#	verification the type of the arguments
 	sMode = registerAddressValue(s)
 
-	#?	vefirication ???
+	#?	verification ???
 	name = function.__name__
 	additionalOpReq(name, None, s, None, sMode)
 
@@ -531,6 +538,7 @@ def printRegisters():
 	for i in SP:    vspbin += str(i.printInt())
 	for i in BP:    vbpbin += str(i.printInt())
 
+
 	print("AX : ",vaxbin, " = ",int("0b"+vaxbin,2))
 	print("BX : ",vbxbin, " = ",int("0b"+vbxbin,2))
 	print("CX : ",vcxbin, " = ",int("0b"+vcxbin,2))
@@ -557,7 +565,7 @@ if __name__ == "__main__":
 	VARIABLES["lol"] = Variable(16,8957,"lol")
 
 	#	testowe operaacje   
-	ADD("AX","word 10")
+	ADD("AX","736")
 	ADD("BX","0b1111111111111111")
 	INC("BX")
 	INC("BX")

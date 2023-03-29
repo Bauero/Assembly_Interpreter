@@ -32,6 +32,9 @@ def ToDo():
 	#?	- to implement
 	def POP(r, s): pass
 	
+
+
+	
 	#?	- to implement
 	def JMP(d): pass
 
