@@ -32,13 +32,13 @@ from math import ceil
 #########################	PREPARATION	  #########################
 
 AX = [Node(0) for _ in range(16)]
-AH, AL = AX[:9], AX[9:]
+AH, AL = AX[:8], AX[8:]
 BX = [Node(0) for _ in range(16)]
-BH, BL = BX[:9], BX[9:]
+BH, BL = BX[:8], BX[8:]
 CX = [Node(0) for _ in range(16)]
-CH, CL = CX[:9], CX[9:]
+CH, CL = CX[:8], CX[8:]
 DX = [Node(0) for _ in range(16)]
-DH, DL = DX[:9], DX[9:]
+DH, DL = DX[:8], DX[8:]
 
 SI = [Node(0) for _ in range(16)]
 DI = [Node(0) for _ in range(16)]
@@ -589,11 +589,11 @@ if __name__ == "__main__":
 	VARIABLES["lol"] = Variable(16,8957,"lol")
 
 	#	testowe operaacje   
-	#ADD("AX","49")
-	#MOV("AH","AL")
-	#ADD("BX","0b1111111111111111")
-	#INC("BX")
-	#INC("BX")
+	ADD("AX","49")
+	MOV("AH","AL")
+	ADD("BX","0b1111111111111111")
+	INC("BX")
+	INC("BX")
 
 	print("\nSTACK")
 	printStack(0,10)
