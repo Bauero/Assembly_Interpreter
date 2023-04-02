@@ -133,7 +133,7 @@ def textToInt(text):
 #	save value of 'size' into stack
 #	size is ceil of value / 16 -> divide by 16
 #	and fill with '0' if necessary
-def saveValueToStack(value):		
+def saveValueToStack(value, updateSP = False):		
 	multipleOf8 = ceil(len(value) / 8)
 	spv = bitsToInt(readFromRegister("SP"))
 	
@@ -144,7 +144,8 @@ def saveValueToStack(value):
 
 		spv += 1
 
-	writeIntoRegister("SP",spv)
+	#	should this move stack pointer to next free spot
+	if updateSP: writeIntoRegister("SP",spv)
 
 def readFromStack(index, size = 16):
 	ans = ""
