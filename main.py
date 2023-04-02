@@ -46,12 +46,11 @@ SP = [Node(0) for _ in range(16)]
 BP = [Node(0) for _ in range(16)]
 
 listOfRegisters = {"AX" : AX, "AH" : AH, "AL" : AL,
-				  "BX" : BX, "BH" : BH, "BL" : BL,
-				  "CX" : CX, "CH" : CH, "CL" : CL,
-				  "DX" : DX, "DH" : DH, "DL" : DL,
-
-				  "SP" : SP, "BP" : BP, "DI" : DI, 
-				  "SI" : SI}
+				   "BX" : BX, "BH" : BH, "BL" : BL,
+				   "CX" : CX, "CH" : CH, "CL" : CL,
+				   "DX" : DX, "DH" : DH, "DL" : DL,
+				   "SP" : SP, "BP" : BP, "DI" : DI, 
+				   "SI" : SI}
 
 regList = list(listOfRegisters.keys())
 
@@ -93,6 +92,7 @@ def setFlag(flag,setValue):
 			case "PF":  FLAGS[-3 ] = setValue
 			case "CF":  FLAGS[-1 ] = setValue
 
+
 #	a function which sets given flags on or off
 def setFlags(flagON : list = [], argOFF :list = []):
 	for f in flagON: setFlag(f,1)
@@ -131,27 +131,28 @@ def textToInt(text):
 	return value
 
 #	save value of 'size' into stack
+#	size is ceil of value / 16 -> divide by 16
+#	and fill with '0' if necessary
 def saveValueToStack(value):		
-	multipleOf16 = ceil(len(value) / 16)
+	multipleOf8 = ceil(len(value) / 8)
+	spv = bitsToInt(readFromRegister("SP"))
 	
-	for elem in range(multipleOf16):
-		spv = bitsToInt(readFromRegister("SP"))
+	for elem in range(0,8*multipleOf8):
 
-		if len(value) > elem: STACK[spv].data = int(elem)
+		if elem < len(value): STACK[spv].data = int(value[-1-elem])
 		else: STACK[spv].data = 0
 
 		spv += 1
-		writeIntoRegister("SP",spv)
+
+	writeIntoRegister("SP",spv)
 
 def readFromStack(index, size = 16):
-
 	ans = ""
 
-	for i in range(index, index + size + 1):
+	for i in range(index, index + size):
 		ans += str(STACK[i].data)
 
 	return ans
-
 
 
 ###	CHECK & ERROR FINDING
@@ -293,7 +294,7 @@ def stringToInt(s, size):
 	return int(number,base)
 
 #	tranform a given numver, to bit value, based on the dest.
-def numberToList(s, number:str, boundSize = 16):
+def stringNumToList(s, number:str, boundSize = 16):
 	#	transform 'word 0xf2' -> list('0000000011110010')
 	#	transform 'byte 0b11' -> list('00000011')
 	#	transform 'word 728'  -> list('0000001011011000')
@@ -366,9 +367,10 @@ def bitAddition(num1:int, num2:int, opSize, flags):
 
 	#	set Carry Flag
 	if result >= 2**opSize:
-		result -= 2**opSize	;	flagsOn.append("CF")
-	else:
+		result -= 2**opSize
 		flagsOn.append("CF")
+	else:
+		flagsOff.append("CF")
 	
 	#	set Zero Flag
 	if result:	flagsOff.append("ZF")
@@ -495,7 +497,7 @@ def MOV(r, s):
 
 	else:
 		liczba = s.split(" ")[-1].lower()
-		binList = numberToList(s,liczba,len(listOfRegisters[r]))
+		binList = stringNumToList(s,liczba,len(listOfRegisters[r]))
 
 		for i in range(-1,-len(binList),-1):
 			listOfRegisters[r][i].data = int(binList[i])
@@ -567,21 +569,22 @@ def printRegisters():
 	print("SP : ",vspbin, " = ",int("0b"+vspbin,2))
 	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
 
-#?
+
 def printStack(start = 0, end = stackCount, step = 1):
 	for i in range(start, end, step):
-		value = readFromStack(i)
-		intValue = stringToInt(value, 16)
-		print("{0:04x}".format(i) + f" : {value} = {intValue}")
+		#	because stack is filled left to right we need to reverse it
+		value = "".join(list(reversed(readFromStack(16*i))))
+		intValue = stringToInt("0b" + value, 16)
+		print("{0:04x}".format(2*i).upper() + f" : {value} = {intValue}")
 
 
+#	prints flag register
 def printFlags():
 	result = ""
 	for i in FLAGS: result += str(i)
-
 	dec = bitsToInt(result)
-
 	print(f"FL :  {result}  =  {dec}")
+
 
 if __name__ == "__main__":
 
@@ -589,15 +592,20 @@ if __name__ == "__main__":
 	VARIABLES["lol"] = Variable(16,8957,"lol")
 
 	#	testowe operaacje   
-	ADD("AX","49")
-	MOV("AH","AL")
-	ADD("BX","0b1111111111111111")
-	INC("BX")
-	INC("BX")
+	#ADD("AX","word 45000")
+	#MOV("AH","AL")
+	#ADD("BX","0b1111111111111111")
+	#INC("BX")
+	#INC("BX")
+	saveValueToStack('011001')
+	saveValueToStack('100001011001')
+	
 
 	print("\nSTACK")
-	printStack(0,10)
+	printStack(0,8)
 
 	print("\nREGISTERS")
 	printRegisters()
+
+	print("\nFLAGS")
 	printFlags()
