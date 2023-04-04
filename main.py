@@ -27,55 +27,21 @@ history = []
 
 from errors import *
 from datatypes import Variable
-from multipurpose_registers import *
-from flag_register import FLAGS, clearFlags, setFlag, setFlags, getRequiredFlags, printFlags, printFlagsSpec
+from multipurpose_registers import AX, AH, AL, BX, BH, BL, CX, CH, CL, DX, DH, DL,\
+	SI, DI, SP, BP, listOfRegisters, regList, writeIntoRegister, readFromRegister,\
+	effectiveAddressable, printRegisters
+
+from flag_register import FLAGS, clearFlags, setFlag, setFlags, getRequiredFlags,\
+	printFlags, printFlagsSpec
+
 from stack import STACK, stackCount, saveValueToStack, readFromStack, printStack
 from extration_of_data import stringToInt, stringNumToList, bitsToInt, textToInt
 from bit_operations import bitAddition, bitSubstraction, bitXOR, binaryMultiplication
-from registers_operation_check import registerAddressValue, possibleOpperation, additionalOpReq
+from registers_operation_check import registerAddressValue, possibleOpperation, \
+	additionalOpReq, getMaxSize, getValue, saveInDestination
 
 
 #########################	FUNCTIONS	#########################
-
-###	TRANSFORMATION & OPPERATIONS
-
-
-#	determine the maximu size of the operation
-def getMaxSize(r, rType):
-	match (rType):
-		case 1: return len(listOfRegisters[r])
-		case 2: return len(listOfRegisters[r])
-		case 4: return VARIABLES[r].size
-
-#	gets value based on the destination
-def getValue(s, sType, maxSize):
-	match (sType):
-		case 1:
-			return int("0b" + readFromRegister(s),2)
-		case 2: 
-			for v in VARIABLES:
-				if v.address == int("0b" + readFromRegister(s),2):
-					return v.address
-			raise VariableAddressNotExisting
-		case 3: return VARIABLES[s].address
-		case 4: return VARIABLES[s[1:-1]].data
-		case 5: return stringToInt(s,maxSize)
-		case 6: return stringToInt(s,maxSize)
-		case 7: return VARIABLES[s.split(" ")[-1]].address
-
-#	saves value in the destination if possible
-def saveInDestination(d, dType, value):
-	match(dType):
-		case 1: writeIntoRegister(d, value)
-		case 2:
-			reg = d.lstrip().rstrip()[1:-1]
-			varAddres = bitsToInt(readFromRegister(reg))
-			for v in VARIABLES:
-				if VARIABLES[v].address == varAddres:
-					VARIABLES[v].data = value
-		case 4:
-			VARIABLES[d].data = value	
-
 
 ###	EXECUTION BASED ON AMOUT OF ARGUMENTS
 
