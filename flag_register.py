@@ -1,3 +1,4 @@
+from extration_of_data import bitsToInt
 
 #	initialization of a clear register
 FLAGS = [0 for _ in range(16)]
@@ -6,8 +7,6 @@ FLAGS = [0 for _ in range(16)]
 def clearFlags():
 	global FLAGS
 	for i in range(16): FLAGS[i] = 0
-
-
 
 #	set given flag to setValue
 def setFlag(flag,setValue):
@@ -24,13 +23,15 @@ def setFlag(flag,setValue):
 			case "PF":  FLAGS[-3 ] = setValue
 			case "CF":  FLAGS[-1 ] = setValue
 
-
 #	a function which sets given flags on or off
 def setFlags(flagON : list = [], argOFF :list = []):
 	for f in flagON: setFlag(f,1)
 	for f in argOFF: setFlag(f,0)
 
-
+def getRequiredFlags(name):
+	match(name):
+		case "ADC":	return ["CF"]
+		case _: return []
 
 #	prints flag register
 def printFlags():
@@ -38,7 +39,6 @@ def printFlags():
 	for i in FLAGS: result += str(i)
 	dec = bitsToInt(result)
 	print(f"FL :  {result}  =  {dec}")
-
 
 #	print flag register specifically
 def printFlagsSpec():
