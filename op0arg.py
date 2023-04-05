@@ -1,0 +1,1 @@
+def EXENOARG(function): pass
