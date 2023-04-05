@@ -27,6 +27,7 @@ def EXE1ARG(function, s = ""):
 
 	saveInDestination(s, sMode, result)
 
+
 ###	INSTRUCTION WITH 1 ARGUMENT
 
 

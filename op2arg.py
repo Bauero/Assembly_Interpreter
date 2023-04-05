@@ -1,6 +1,5 @@
 from errors import OperationNotPossible
-from bit_operations import bitAddition, binaryMultiplication, bitSubstraction, bitXOR
-from multipurpose_registers import writeIntoRegister, readFromRegister
+from bit_operations import bitAddition, bitSubstraction, bitXOR
 from registers_operation_check import registerAddressValue, possibleOpperation,\
     additionalOpReq, getValue, saveInDestination, getMaxSize
 from flag_register import getRequiredFlags

@@ -1,7 +1,7 @@
 from errors import EffectiveAddressError, RegisterCantEffectiveAddress,\
     EffectiveAddresNotExist, RegisterSizeTooSmall, RegisterNotWritable, \
 	VariableAddressNotExisting, RegisterNotImplemented, RegisterTooSmallToMove
-from main import VARIABLES
+from var_his import VARIABLES
 from multipurpose_registers import effectiveAddressable, regList, listOfRegisters,\
     writeIntoRegister, readFromRegister
 from extration_of_data import stringToInt, bitsToInt, stringNumToList
