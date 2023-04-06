@@ -1,7 +1,7 @@
 from registers_operation_check import registerAddressValue,\
     additionalOpReq, getValue, saveInDestination, getMaxSize
 from flag_register import getRequiredFlags
-from op2arg import SUB
+from op2arg import SUB, ADD
 from stack import saveValueToStack
 
 
@@ -33,7 +33,8 @@ def EXE1ARG(function, s = ""):
 
 
 #	increment register by 1 (ADD register, byte 1)
-def INC(r): pass
+def INC(r):
+	ADD("SP","byte 1")
 
 #	decrement register by 1 (SUB register, byte 1)
 def DEC(r):

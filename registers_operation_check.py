@@ -104,13 +104,12 @@ def additionalOpReq(f, r, s, rType, sType):
 				elif "word" not in s or "byte" not in s:
 					raise OperandSizeNotSpecified
 
-
 #	determine the maximu size of the operation
 def getMaxSize(r, rType):
 	match (rType):
 		case 1: return len(listOfRegisters[r])
 		case 2: return len(listOfRegisters[r])
-		case 4: return VARIABLES[r].size
+		case 4: return VARIABLES[r].getSize()
 
 #	gets value based on the destination
 def getValue(s, sType, maxSize):

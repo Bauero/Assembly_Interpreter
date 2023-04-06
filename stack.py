@@ -10,11 +10,16 @@ stackCount = len(STACK)//8
 #	save value of 'size' into stack
 #	size is ceil of value / 16 -> divide by 16
 #	and fill with '0' if necessary
-def saveValueToStack(value, updateSP = False):		
-	multipleOf8 = ceil(len(value) / 8)
+def saveValueToStack(value, size = None, flags = None, updateSP = False):		
+	if type(value) == int:
+		value = "".join(bin(value)[2:])
+	
+	if size == None: size = 16
+	multipleOfSize = ceil(len(value) / size)
+
 	spv = bitsToInt(readFromRegister("SP"))
 	
-	for elem in range(0,8*multipleOf8):
+	for elem in range(0,size*multipleOfSize):
 
 		if elem < len(value): STACK[spv].data = int(value[-1-elem])
 		else: STACK[spv].data = 0

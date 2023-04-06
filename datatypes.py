@@ -23,3 +23,6 @@ class Variable:
         #   new variable has the number one grater than the previous one
         Variable.__variables += 1
 
+    def getSize(self):
+        if self.size == "dw": return 16
+        elif self.size == "byte": return 8
