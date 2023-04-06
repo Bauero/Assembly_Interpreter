@@ -24,6 +24,7 @@ listOfRegisters = {"AX" : AX, "AH" : AH, "AL" : AL,
 
 regList = list(listOfRegisters.keys())
 
+
 #	inputs the restult into register r, bit by bit
 def writeIntoRegister(r, resutl):
 	#	converstion of the number to list of binary (in str)
@@ -52,6 +53,13 @@ def effectiveAddressable(reg:str):
 	effReg = ["SI","DI","BP","BX"]
 
 	return reg in effReg
+
+def cleanRegister(r):
+	writeIntoRegister(r,0)
+
+def cleanAllRegisters():
+	for regiser in regList:
+		cleanRegister(regiser)
 
 #	print the value of the registers bitly
 def printRegisters():
@@ -83,3 +91,6 @@ def printRegisters():
 	print("DI : ",vdibin, " = ",int("0b"+vdibin,2))
 	print("SP : ",vspbin, " = ",int("0b"+vspbin,2))
 	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
+
+
+cleanAllRegisters()
