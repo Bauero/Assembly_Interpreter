@@ -50,6 +50,8 @@ if __name__ == "__main__":
 	MOV("SP","0")
 	PUSH("AX")
 	INC("SP")
+	INC("SP")
+	PUSH("BX")
 	
 
 	print("\nSTACK")
