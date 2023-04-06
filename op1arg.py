@@ -2,6 +2,7 @@ from registers_operation_check import registerAddressValue,\
     additionalOpReq, getValue, saveInDestination, getMaxSize
 from flag_register import getRequiredFlags
 from op2arg import SUB
+from stack import saveValueToStack
 
 
 def EXE1ARG(function, s = ""):
@@ -38,4 +39,5 @@ def INC(r): pass
 def DEC(r):
 	SUB(r,"byte 1")
 
-def PUSH(r): pass
+def PUSH(r):
+	EXE1ARG(saveValueToStack,r)

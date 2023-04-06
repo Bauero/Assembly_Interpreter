@@ -1,6 +1,4 @@
-from errors import EffectiveAddressError, RegisterCantEffectiveAddress,\
-    EffectiveAddresNotExist, RegisterSizeTooSmall, RegisterNotWritable, \
-	VariableAddressNotExisting, RegisterNotImplemented, RegisterTooSmallToMove
+from errors import *
 from var_his import VARIABLES
 from multipurpose_registers import effectiveAddressable, regList, listOfRegisters,\
     writeIntoRegister, readFromRegister
@@ -80,22 +78,32 @@ def possibleOpperation( r : str, s : str, a1 = None, a2 = None):
 #	if additional operation requirements are fulfilled
 def additionalOpReq(f, r, s, rType, sType):
 	match(f):
-		case("ADD"): 
+		case "ADD": 
 			if rType == sType and rType == 1:
 				if len(listOfRegisters[r]) < len(listOfRegisters[s]):
 					raise RegisterSizeTooSmall
 				if r == "SP" or s == "SP":
 					raise RegisterNotWritable
-		case("SUB"): 
+		case "SUB": 
 			if rType == sType and rType == 1:
 				if len(listOfRegisters[r]) < len(listOfRegisters[s]):
 					raise RegisterSizeTooSmall
 				if r == "SP" or s == "SP":
 					raise RegisterNotWritable
-		case("XOR"):
+		case "XOR":
 			if rType == sType and rType == 1:
 				if r == "SP":
 					raise RegisterNotWritable
+		case "PUSH":
+			if sType in (3,4):
+				size, *value = s.split(" ")
+				if value == []:
+					raise NumberSizeRequired
+				elif "dt" in size or "dq" in size or "dd" in size:
+					raise CantPushValueTooBig
+				elif "word" not in s or "byte" not in s:
+					raise OperandSizeNotSpecified
+
 
 #	determine the maximu size of the operation
 def getMaxSize(r, rType):

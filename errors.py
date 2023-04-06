@@ -18,6 +18,10 @@ class WrongNumberBase (Exception):  pass
 
 class NumberTooBig (Exception): pass
 
+class NumberSizeRequired (Exception): pass
+
+class CantPushValueTooBig (Exception): pass
+
 ###     OTHER ERRORS
 
 class OperandSizeNotSpecified (Exception): pass
