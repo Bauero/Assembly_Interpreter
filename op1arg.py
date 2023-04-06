@@ -26,7 +26,8 @@ def EXE1ARG(function, s = ""):
 	#	performa opperations
 	result = function(sValue, maxSize, reqFlags)
 
-	saveInDestination(s, sMode, result)
+	#?	so far i'm not sure if this is needed - leave for later
+	#saveInDestination(s, sMode, result)
 
 
 ###	INSTRUCTION WITH 1 ARGUMENT

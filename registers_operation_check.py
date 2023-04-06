@@ -94,7 +94,7 @@ def additionalOpReq(f, r, s, rType, sType):
 			if rType == sType and rType == 1:
 				if r == "SP":
 					raise RegisterNotWritable
-		case "PUSH":
+		case "saveValueToStack":
 			if sType in (3,4):
 				size, *value = s.split(" ")
 				if value == []:

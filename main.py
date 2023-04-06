@@ -25,6 +25,7 @@ so the code should allow it
 
 
 from engine import *
+from multipurpose_registers import writeIntoRegister
 
 
 
@@ -44,8 +45,9 @@ if __name__ == "__main__":
 	ADD("BX","0b1111111111111111")
 	INC("BX")
 	INC("BX")
-	saveValueToStack('011001',8)
-	saveValueToStack('100001011001')
+	#saveValueToStack('011001',8)
+	#saveValueToStack('100001011001')
+	MOV("SP","0")
 	PUSH("AX")
 	INC("SP")
 	
