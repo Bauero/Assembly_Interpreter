@@ -25,12 +25,7 @@ so the code should allow it
 
 
 from engine import *
-from var_his import *
-from registers_operation_check import MOV
-from datatypes import Variable
-from multipurpose_registers import printRegisters
-from flag_register import printFlagsSpec
-from stack import saveValueToStack, printStack
+
 
 
 #########################	  LAUNCH WINDOW APP		  #########################
