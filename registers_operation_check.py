@@ -1,3 +1,12 @@
+"""
+This file is responsible for performing opperations on registers
+like read and write from/into register and move value from one register
+to the other
+
+additonaly thera are methodes for checking requirements for opperations
+and a general metod save into destination
+"""
+
 from errors import EffectiveAddressError, RegisterCantEffectiveAddress,\
     EffectiveAddresNotExist, RegisterSizeTooSmall, RegisterNotWritable, \
 	VariableAddressNotExisting, RegisterNotImplemented, RegisterTooSmallToMove
