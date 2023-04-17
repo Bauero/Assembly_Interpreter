@@ -48,6 +48,7 @@ def PUSH(v):
 	EXE1ARG(saveValueToStack,v)
 
 def POP(d):
+
 	#	verification the type of the arguments
 	dMode = registerAddressValue(d)
 
@@ -63,3 +64,4 @@ def POP(d):
 	result = bitsToInt(readFromStack(8*index, maxSize))
 
 	saveInDestination(d, dMode, result)
+
