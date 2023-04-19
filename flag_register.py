@@ -42,10 +42,14 @@ def clearFlags():
 
 clearFlags()
 
-#	prints flag register
-def printFlags():
+def readFlags() -> str:
 	result = ""
 	for i in FLAGS: result += str(i)
+	return result
+
+#	prints flag register
+def printFlags():
+	result = readFlags()
 	dec = bitsToInt(result)
 	print(f"FL :  {result}  =  {dec}")
 
