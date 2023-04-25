@@ -31,7 +31,6 @@ def POPA():
             writeIntoRegister("SP",point)
 
 
-        
 
 #   Flags
 def PUSHF():

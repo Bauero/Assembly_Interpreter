@@ -25,7 +25,6 @@ so the code should allow it
 
 
 from engine import *
-from multipurpose_registers import cleanAllRegisters
 
 
 #########################	  LAUNCH WINDOW APP		  #########################
