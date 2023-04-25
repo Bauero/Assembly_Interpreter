@@ -25,7 +25,7 @@ so the code should allow it
 
 
 from engine import *
-
+from multipurpose_registers import cleanAllRegisters
 
 
 #########################	  LAUNCH WINDOW APP		  #########################
@@ -46,15 +46,7 @@ if __name__ == "__main__":
 	INC("BX")
 	#saveValueToStack('011001',8)
 	#saveValueToStack('100001011001')
-	PUSH("DX")
-	ADD("SP","2")
-	INC("BX")
-	INC("BX")
-	PUSH("BX")
-	POP("AX")
-
 	
-
 	print("\nSTACK")
 	printStack(0,8)
 
@@ -62,5 +54,23 @@ if __name__ == "__main__":
 	printRegisters()
 
 	print("\nFLAGS")
-	#printFlags()
 	printFlagsSpec()
+	
+	PUSHF()
+
+	print("\nSTACK")
+	printStack(0,8)
+
+	print("\nREGISTERS")
+	printRegisters()
+
+	POPF()
+
+	print("\nSTACK")
+	printStack(0,8)
+
+	print("\nREGISTERS")
+	printRegisters() 
+
+	#print("\nFLAGS")
+	#printFlagsSpec()

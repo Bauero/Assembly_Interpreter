@@ -19,7 +19,7 @@ def saveValueToStack(value, size = None, flags = None, updateSP = False):
 
 	multipleOfSize = ceil(len(value) / size)
 
-	spv = 8*bitsToInt(readFromRegister("SP"))
+	spv = bitsToInt(readFromRegister("SP"))
 	
 	for elem in range(0,size*multipleOfSize):
 
