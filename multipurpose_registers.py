@@ -92,5 +92,4 @@ def printRegisters():
 	print("SP : ",vspbin, " = ",int("0b"+vspbin,2))
 	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
 
-
 cleanAllRegisters()

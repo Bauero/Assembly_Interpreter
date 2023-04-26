@@ -64,7 +64,7 @@ def stringToNum(text, size):
 
 	return "".join(stringNumToList(size,text))
 
-#	turn bit
+#	
 def bitsToInt(bitString : str):
 	return int("0b" + bitString,2)
 
