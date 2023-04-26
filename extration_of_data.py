@@ -1,7 +1,7 @@
 from errors import NumberTooBig
 
 #	convert a string to an int with given size
-def stringToInt(s, size):
+def stringToInt(s, size) -> int:
 	base = 10
 	number = s.split(" ")[-1].lower()
 	
@@ -30,6 +30,7 @@ def stringToInt(s, size):
 
 	return int(number,base)
 
+
 #	tranform a given numver, to bit value, based on the dest.
 def stringNumToList(s, number:str, boundSize = 16):
 	#	transform 'word 0xf2' -> list('0000000011110010')
@@ -47,7 +48,7 @@ def stringNumToList(s, number:str, boundSize = 16):
 	else:
 		size = boundSize
 
-	value = stringToInt(s, size)
+	value = stringToInt(number, size)
 
 	if size == 8:
 		listToWrite = list("{0:08b}".format(value))
@@ -56,7 +57,14 @@ def stringNumToList(s, number:str, boundSize = 16):
 
 	return listToWrite
 
-#	turn bit
+def stringToNum(text, size):
+
+	if size == 16: size = "word"
+	else: size = "byte"
+
+	return "".join(stringNumToList(size,text))
+
+#	
 def bitsToInt(bitString : str):
 	return int("0b" + bitString,2)
 

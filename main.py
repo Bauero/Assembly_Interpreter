@@ -27,7 +27,6 @@ so the code should allow it
 from engine import *
 
 
-
 #########################	  LAUNCH WINDOW APP		  #########################
 
 
@@ -39,15 +38,14 @@ if __name__ == "__main__":
 	VARIABLES["lol"] = Variable(16,8957,"lol")
 
 	#	testowe operaacje   
-	ADD("AX","word 45000")
-	MOV("AH","AL")
+	ADD("DX","word 45000")
+	MOV("DH","DL")
 	ADD("BX","0b1111111111111111")
 	INC("BX")
 	INC("BX")
-	saveValueToStack('011001')
-	saveValueToStack('100001011001')
+	#saveValueToStack('011001',8)
+	#saveValueToStack('100001011001')
 	
-
 	print("\nSTACK")
 	printStack(0,8)
 
@@ -55,5 +53,23 @@ if __name__ == "__main__":
 	printRegisters()
 
 	print("\nFLAGS")
-	#printFlags()
 	printFlagsSpec()
+	
+	PUSHF()
+
+	print("\nSTACK")
+	printStack(0,8)
+
+	print("\nREGISTERS")
+	printRegisters()
+
+	POPF()
+
+	print("\nSTACK")
+	printStack(0,8)
+
+	print("\nREGISTERS")
+	printRegisters() 
+
+	#print("\nFLAGS")
+	#printFlagsSpec()

@@ -20,6 +20,13 @@ def setFlag(flag,setValue):
 			case "CF":  FLAGS[-1 ] = setValue
 			case _: 	FLAGS[flag] = setValue
 
+def setFlagRaw(valueInBits):
+	if valueInBits.startswith("Ob"):
+		valueInBits = valueInBits.remove("Ob")
+	
+	for bit in range(len(valueInBits)):
+		FLAGS[bit] = int(bool(bit))
+
 #	a function which sets given flags on or off
 def setFlags(flagON : list = [], argOFF :list = []):
 	for f in flagON: setFlag(f,1)
