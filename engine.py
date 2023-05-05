@@ -7,3 +7,12 @@ from datatypes import Variable
 from multipurpose_registers import printRegisters
 from flag_register import printFlagsSpec
 from stack import saveValueToStack, printStack
+
+#import inspect
+
+def functionExecutor(function, *args):
+    pass
+
+def functionArgCheck(function):
+
+    pass
