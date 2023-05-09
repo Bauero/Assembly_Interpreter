@@ -8,11 +8,16 @@ from multipurpose_registers import printRegisters
 from flag_register import printFlagsSpec
 from stack import saveValueToStack, printStack
 
-#import inspect
+# linkgage functions with it's names
+funkcje = {k:v for k,v in globals().items() if k.isupper()}
 
-def functionExecutor(function, *args):
+# analyzes the request
+# if the function exists
+# what are the arguments needed
+# if the function can be executed
+def functionExecutor(request):
     pass
 
+# gets the signature of a function
 def functionArgCheck(function):
-
     pass
