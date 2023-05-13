@@ -31,14 +31,15 @@ for f in defFunctions:
     else:
         funcArguments[f] = "dict"
 
+print(funcArguments)
 
 # analyzes the request
 # if the function exists
 # what are the arguments needed
 # if the function can be executed
-def functionExecutor(request):
+def functionExecutor(request : str):
     pass
 
 # gets the signature of a function
-def functionArgCheck(function):
+def functionArgCheck(function : str):
     pass

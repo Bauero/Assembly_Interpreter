@@ -32,7 +32,7 @@ def stringToInt(s, size) -> int:
 
 
 #	tranform a given numver, to bit value, based on the dest.
-def stringNumToList(s, number:str, boundSize = 16):
+def stringNumToList(s : str, number:str, boundSize : int = 16):
 	#	transform 'word 0xf2' -> list('0000000011110010')
 	#	transform 'byte 0b11' -> list('00000011')
 	#	transform 'word 728'  -> list('0000001011011000')
@@ -57,7 +57,7 @@ def stringNumToList(s, number:str, boundSize = 16):
 
 	return listToWrite
 
-def stringToNum(text, size):
+def stringToNum(text : str, size : str):
 
 	if size == 16: size = "word"
 	else: size = "byte"
@@ -68,7 +68,7 @@ def stringToNum(text, size):
 def bitsToInt(bitString : str):
 	return int("0b" + bitString,2)
 
-def textToInt(text):
+def textToInt(text : str):
 	value = ""
 	for l in text:
 		value += "{0:08b}".format(ord(l))

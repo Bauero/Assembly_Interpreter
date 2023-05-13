@@ -7,7 +7,7 @@ from flag_register import readFlags, setFlagRaw
 def EXENOARG(function): pass
 
 #   Multipurpose registers
-def PUSHA():
+def PUSHA() -> None:
     order = ["SP","AX","CX","DX","BX","SP","BP","SI","DI"]
     #order = ["AX","BX","CX","DX"]
     for i in range(len(order)):
@@ -17,9 +17,9 @@ def PUSHA():
             saveValueToStack(value, 16, updateSP=True)
         else:
             saveValueToStack(value, 16)
-    
 
-def POPA():
+
+def POPA() -> None:
     order = ["DI","SI","BP","SP","BX","DX","CX","AX","SP"]
     for i in range(len(order)):
         register = order[i]
@@ -33,14 +33,14 @@ def POPA():
 
 
 #   Flags
-def PUSHF():
+def PUSHF() -> None:
     value = bitsToInt(readFlags())
     point = bitsToInt(readFromRegister("SP"))
     point += 16
     writeIntoRegister("SP",point)
     saveValueToStack(value, 16)
 
-def POPF():
+def POPF() -> None:
     point = bitsToInt(readFromRegister("SP"))
     value = str(readFromStack(point, 16))
     setFlagRaw(value)

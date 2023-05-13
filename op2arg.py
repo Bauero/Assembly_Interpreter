@@ -5,7 +5,7 @@ from registers_operation_check import registerAddressValue, possibleOpperation,\
 from flag_register import getRequiredFlags
 
 #	executes functions which accept 2 arguments
-def EXE2ARG(function, r = "", s = ""):
+def EXE2ARG(function, r : str = "", s : str = "") -> None:
 
 	#	varification the type of the arguments
 	rMode = registerAddressValue(r)
@@ -36,16 +36,16 @@ def EXE2ARG(function, r = "", s = ""):
 	saveInDestination(r, rMode, result)
 
 #	add value from the source to the register
-def ADD(r, s):
+def ADD(r : str , s : str) -> None:
 	EXE2ARG(bitAddition, r, s)
 
 #	substract value from source from the register    
-def SUB(r, s):
+def SUB(r : str, s : str) -> None:
 	EXE2ARG(bitSubstraction, r, s)
 
 #	xor values written in the registers
-def XOR(r, s):
+def XOR(r : str, s : str) -> None:
 	EXE2ARG(bitXOR, r, s)
 
 #	bit or
-def ORR(r, s): pass
+def ORR(r : str, s : str) -> None: pass

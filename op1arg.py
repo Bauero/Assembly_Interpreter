@@ -7,7 +7,7 @@ from multipurpose_registers import readFromRegister
 from extration_of_data import bitsToInt
 
 
-def EXE1ARG(function, s = ""):
+def EXE1ARG(function, s : str = ""):
 
 	#	verification the type of the arguments
 	sMode = registerAddressValue(s)
@@ -36,18 +36,19 @@ def EXE1ARG(function, s = ""):
 
 
 #	increment register by 1 (ADD register, byte 1)
-def INC(r):
+def INC(r : str) -> None:
 	ADD(r,"byte 1")
 
 #	decrement register by 1 (SUB register, byte 1)
-def DEC(r):
+def DEC(r : str) -> None:
 	SUB(r,"byte 1")
 
-def PUSH(v):
-	#	save value to stack
+#	save value to stack
+def PUSH(v : str) -> None:
 	EXE1ARG(saveValueToStack,v)
 
-def POP(d):
+#	pop value from stack to the destination d
+def POP(d : str) -> None:
 
 	#	verification the type of the arguments
 	dMode = registerAddressValue(d)
