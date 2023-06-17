@@ -10,36 +10,49 @@ from stack import saveValueToStack, printStack
 from inspect import signature
 
 # linkgage functions with it's names
-defFunctions = {k:v for k,v in globals().items() if k.isupper()}
+funtionNameLink = {k:v for k,v in globals().items() if k.isupper()}
+"""Is responsible for creating an addresable list of function since
+users usualy call funciton by names represented by string and not by
+a name of the function in program itself (which can be the same, but not for 
+the program). This would allow to check the executed string for a function
+and then execute the command based on the match"""
+
+funcSignature = {}
+"""Keeps the function signagure in a human-readible form"""
 funcArguments = {}
+"""Keeps the information about signature - necessary for the program"""
 
 # defining the function signature and default argument types needed
-for f in defFunctions:
-    if type(defFunctions[f]) != dict:
-        sgt = str(signature(defFunctions[f]))[1:-1].split(", ")
-        for element in range(len(sgt)):
-            if "=" in sgt[element]:
-                end = sgt[element].index('')
-                sgt[element] = sgt[element][:end+1]
-
-        funcArguments[f] = dict()
-        for g in sgt:
-            if g == '':
-                continue
-            sig = str(signature(defFunctions[f]).parameters[g].annotation.__name__)
-            funcArguments[f][g] = sig
+for f in funtionNameLink:
+    if type(funtionNameLink[f]) != dict:
+        # division for arguments
+        description = str(signature(funtionNameLink[f]))
+        funcSignature[f] = description
+        wynik = description.split(" -> ")
+        zwrot = wynik[-1] if "->" in description else None
+        argm = wynik[0].replace("(","").replace(")","").split(", ")
+        argtyp = [
+            e.split(": ") if ":" in e else [e,"any"] for e in argm if e != ""
+            ]
+        info = {}
+        if argtyp == []:
+            info["arg"] = None
+        else:
+            info["arg"] = {}
+            for e in argtyp:
+                if " = " in e[1]:
+                    para = e[1].split(" = ")
+                    info["arg"][e[0]] = {para[0] : para[1] if para[1] != "''" else ""}
+                else:
+                    info["arg"][e[0]] = e[1]
+        info["ret"] = zwrot
+        funcArguments[f] = info
     else:
         funcArguments[f] = "dict"
 
-print(funcArguments)
-
-# analyzes the request
-# if the function exists
-# what are the arguments needed
-# if the function can be executed
 def functionExecutor(request : str):
-    pass
-
-# gets the signature of a function
-def functionArgCheck(function : str):
+    """
+    Is called on every line of code - it's job is to oreder what to do with
+    ordef from the program or user
+    """
     pass
