@@ -8,7 +8,9 @@ import re
 
 def lineCleanup(line : str) -> str | None:
     """
-    chceck if string not empty and not comment -> lets it through
+    Given a line of text, this function check if line is not empty
+    and if so, does it contain anything else than a commment
+    If true, function returns the remaingn part, else Noneś
     """
 
     # Empty line
@@ -78,3 +80,30 @@ def lineDecomposition(line : str) -> list:
                 parts.pop(p)
 
         return parts
+
+def paramComparer(template : str, values : list):
+    """
+    This function is responsible to detect, if the given parameters
+    are in fact correctly put to the value - however, the function itself
+    doesn't automatically check, if the parametres are correct (if the value
+    is withing range, or if given parameter exist)
+
+    INC 10 -> WRONG
+    ADD AX,2 -> GOOD
+    etc.
+    """
+    ...
+
+def functionAssigner(template : str, values : list) -> dict:
+    """
+    If the given parammeters correspont to the signature of function
+    ("visualny" not gramatically), function would return a dictionary
+    which would allow to execute function with paramteres
+    EX: ADD AX, 10
+    function = ADD
+    arg1 = AX
+    arg2 = 10
+    """
+    ...
+
+
