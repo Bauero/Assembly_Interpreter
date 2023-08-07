@@ -5,6 +5,7 @@ by the program
 """
 
 import re
+from errors import EmptyLine
 
 def lineCleanup(line : str) -> str | None:
     """
@@ -81,7 +82,7 @@ def lineDecomposition(line : str) -> list:
 
         return parts
 
-def paramComparer(template : str, values : list):
+def paramComparer(template : dict, values : list):
     """
     This function is responsible to detect, if the given parameters
     are in fact correctly put to the value - however, the function itself
@@ -92,9 +93,25 @@ def paramComparer(template : str, values : list):
     ADD AX,2 -> GOOD
     etc.
     """
-    ...
+    if len(values) == 1:
+        command = values[0].upper()
+    elif len(values) == 2:
+        command, arg1 = values
+    elif len(values) == 3:
+        command, arg1, arg2 = values
+    elif len(values) > 3:
+        command, arg1, arg2, *args = values
+    else:
+        raise EmptyLine
+    
+    """
+    The probem here, is that we can have ' ala dw "ala" ' , meanign assing
+    to variable - what to do then?
+    """
 
-def functionAssigner(template : str, values : list) -> dict:
+
+
+def functionAssigner(template : dict, values : list) -> dict:
     """
     If the given parammeters correspont to the signature of function
     ("visualny" not gramatically), function would return a dictionary
@@ -106,4 +123,16 @@ def functionAssigner(template : str, values : list) -> dict:
     """
     ...
 
+def lineProcessing(line : str, tempalate : dict):
+    """
+    This function is the main line processing function
+    it's purpose is to be an interface between engine, and
+    function, which does preporcess the line and checks
+    it's content and do work depending on what's inside
+    """
 
+    try:
+        ...
+    except EmptyLine:
+        ...
+    ...
