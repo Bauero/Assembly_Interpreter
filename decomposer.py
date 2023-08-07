@@ -4,23 +4,35 @@ from human readible line into peaces which whould be able to execute
 by the program
 """
 
-import re
-from errors import EmptyLine
+from errors import EmptyLine, ArgumentNotExpected, NotEnoughArguments, \
+    TooManyArgumentsToUnpack
 
-def lineCleanup(line : str) -> str | None:
+def lineCleanup(line : str, isText : bool = False) -> str | None:
     """
     Given a line of text, this function check if line is not empty
     and if so, does it contain anything else than a commment
-    If true, function returns the remaingn part, else Noneś
-    """
+    If true, function returns the remaingn part, else None
+    
+    line - line of document to cleanup
+    isText - this flag might indicate that we are dealing with muliline
+        text which happens to contain just en empty line
 
+    ex.
+    var word    "Intro
+
+                outro$"
+
+    In this example line shouldn't be remove at the beginning
+
+    """
+    
     # Empty line
     if len(line) == 0: return None
     
     nline = line.strip()
 
     # Only white characters
-    if len(nline) == 0: return None
+    if len(nline) == 0 and not isText: return None
 
     # Only comment with white characters
     elif nline.startswith(";"): return None
@@ -90,7 +102,8 @@ def paramComparer(template : dict, values : list):
     is withing range, or if given parameter exist)
 
     INC 10 -> WRONG
-    ADD AX,2 -> GOOD
+    ADD AX,10 -> GOOD
+    ADD AX,-18.5 -> GOOD !!!
     etc.
     """
     if len(values) == 1:
@@ -114,14 +127,32 @@ def paramComparer(template : dict, values : list):
 def functionAssigner(template : dict, values : list) -> dict:
     """
     If the given parammeters correspont to the signature of function
-    ("visualny" not gramatically), function would return a dictionary
+    ("visually" not gramatically), function would return a dictionary
     which would allow to execute function with paramteres
     EX: ADD AX, 10
     function = ADD
     arg1 = AX
     arg2 = 10
     """
-    ...
+
+    defaultArgumentsNumber = len(template.keys())
+    givenArgumetnsNumber = len(values)
+
+    if defaultArgumentsNumber == 0 and givenArgumetnsNumber > 0:
+        raise ArgumentNotExpected
+
+    elif defaultArgumentsNumber > givenArgumetnsNumber:
+        raise NotEnoughArguments
+    
+    elif defaultArgumentsNumber < givenArgumetnsNumber:
+        raise TooManyArgumentsToUnpack
+    
+    alignment = {}
+
+    for k,i in zip(list(template.keys()),range(defaultArgumentsNumber)):
+        alignment[k] = values[i]
+    
+    return alignment
 
 def lineProcessing(line : str, tempalate : dict):
     """

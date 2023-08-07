@@ -1,33 +1,58 @@
 ###     REGISTER ERRORS
 
-class RegisterNotImplemented (Exception): pass
+class RegisterNotImplemented (Exception): ...
 
-class RegisterTooSmallToMove (Exception): pass
+class RegisterTooSmallToMove (Exception): ...
 
-class RegisterSizeTooSmall (Exception): pass
+class RegisterSizeTooSmall (Exception): ...
 
-class OperationNotPossible (Exception): pass
+class OperationNotPossible (Exception): ...
 
-class RegisterCantEffectiveAddress (Exception): pass
+class RegisterCantEffectiveAddress (Exception): ...
 
-class RegisterNotWritable (Exception): pass
+class RegisterNotWritable (Exception): ...
 
 ###     NUMBER ERROR
 
-class WrongNumberBase (Exception):  pass
+class WrongNumberBase (Exception):  ...
 
-class NumberTooBig (Exception): pass
+class NumberTooBig (Exception): ...
 
-class NumberSizeRequired (Exception): pass
+class NumberSizeRequired (Exception): ...
 
-class CantPushValueTooBig (Exception): pass
+class CantPushValueTooBig (Exception): ...
+
+###     ARGUMENT ERROR
+
+class EmptyLine (Exception): ...
+
+class ArgumentNotExpected (Exception): 
+    """
+    Execution of funcion - ex. POPA - with any argument
+    -> POPA 10
+    -> POPA AX
+    -> POPA CX, 12
+    """
+    ...
+
+class NotEnoughArguments (Exception):
+    """
+    Occurs when trying to execute a function with not enough parameters
+    """
+    ...
+
+class TooManyArgumentsToUnpack (Exception): 
+    """
+    Occurs when trying to execute a function with too many parameters
+    """
+    ...
 
 ###     OTHER ERRORS
 
-class OperandSizeNotSpecified (Exception): pass
+class OperandSizeNotSpecified (Exception): ...
 
-class EffectiveAddressError (Exception): pass
+class EffectiveAddressError (Exception): ...
 
-class EffectiveAddresNotExist (Exception): pass
+class EffectiveAddresNotExist (Exception): ...
 
-class VariableAddressNotExisting (Exception): pass
+class VariableAddressNotExisting (Exception): ...
