@@ -27,15 +27,6 @@ def ToDo():
 	def INT(i): pass
 
 	#?	- to implement
-	def PUSH(v): pass
-
-	#?	- to implement
-	def POP(r, s): pass
-	
-
-
-	
-	#?	- to implement
 	def JMP(d): pass
 
 	#?	- to implement
