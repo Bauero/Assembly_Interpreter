@@ -57,7 +57,7 @@ def stringNumToList(s : str, number:str, boundSize : int = 16):
 
 	return listToWrite
 
-def stringToNum(text : str, size : str):
+def stringToNum(text : str, size : str | int):
 
 	if size == 16: size = "word"
 	else: size = "byte"

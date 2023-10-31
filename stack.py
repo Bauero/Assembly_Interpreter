@@ -14,7 +14,7 @@ def saveValueToStack(value, size = None, flags = None, updateSP = False):
 	if size == None: size = 16
 	
 	if type(value) == int:
-		value = stringToNum(str(value),str(size))
+		value = stringToNum(str(value),size)
 	else: value = str(value)
 
 	multipleOfSize = ceil(len(value) / size)
