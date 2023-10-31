@@ -102,9 +102,10 @@ def paramComparer(template : dict, values : list):
     is withing range, or if given parameter exist)
 
     INC 10 -> WRONG
+
     ADD AX,10 -> GOOD
-    ADD AX,-18.5 -> GOOD !!!
-    etc.
+
+    ADD AX,-18.5 -> GOOD !!! (there are two params needed in ADD, 2 were passed)
     """
     if len(values) == 1:
         command = values[0].upper()
@@ -129,10 +130,12 @@ def functionAssigner(template : dict, values : list) -> dict:
     If the given parammeters correspont to the signature of function
     ("visually" not gramatically), function would return a dictionary
     which would allow to execute function with paramteres
-    EX: ADD AX, 10
-    function = ADD
-    arg1 = AX
-    arg2 = 10
+
+    EX: 
+    
+    ADD AX, 10
+    
+    function = ADD | arg1 = AX  |  arg2 = 10
     """
 
     defaultArgumentsNumber = len(template.keys())

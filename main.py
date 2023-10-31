@@ -15,7 +15,8 @@ if __name__ == "__main__":
 	VARIABLES["lol"] = Variable(16,8957,"lol")
 
 	#	testowe operaacje   
-	ADD("DX","word 45000")
+	# ADD("DX","word 45000")
+	functionExecutor('ADD',{'r': 'DX', 's': 'word 45000'})
 	MOV("DH","DL")
 	ADD("BX","0b1111111111111111")
 	INC("BX")
@@ -32,7 +33,9 @@ if __name__ == "__main__":
 	print("\nFLAGS")
 	printFlagsSpec()
 	
-	PUSHF()
+	# PUSHF()
+
+	functionExecutor('PUSHF',{})
 
 	print("\nSTACK")
 	printStack(0,8)
@@ -40,13 +43,13 @@ if __name__ == "__main__":
 	print("\nREGISTERS")
 	printRegisters()
 
-	POPF()
+	# POPF()
 
-	print("\nSTACK")
-	printStack(0,8)
+	# print("\nSTACK")
+	# printStack(0,8)
 
-	print("\nREGISTERS")
-	printRegisters() 
+	# print("\nREGISTERS")
+	# printRegisters() 
 
 	#print("\nFLAGS")
 	#printFlagsSpec()

@@ -1,5 +1,8 @@
 """
 This moduele holds all defined errors with it's definitions
+
+Each error should contain it's own definition, with descriptio abot what hapened
+which triggered en error
 """
 
 ###     REGISTER ERRORS
@@ -59,6 +62,67 @@ class RegisterNotWritable (Exception):
     ment to be written to
 
     In 16-bit assembly it is `sp` register (stack pointer register)
+    """
+    pass
+
+###     FUNCTION ERROR
+
+class EmptyLine (Exception):
+    """
+    This error occurs when there is an empty line
+
+    Although, technicly, en error, this one is rather to be
+    later use by program, to internally deal with empty lines in file
+
+    IMPORTANT:
+    As an empty line we categorize each line, which does not contain
+    actual code - this include both lines with comments only and 'physically'
+    empty lines in file
+
+    EX - each line would raise error:
+
+    1. '                    '
+
+    2. ' ;ajsjaslkaj        '
+
+    3. ''
+    """
+    pass
+
+class ArgumentNotExpected (Exception):
+    """
+    This error occurs if function tried to be executed while not needing
+    any parametres
+
+    EX:
+    PUSHA   DX <- this is not needed here, so this error would be raised
+    """
+    pass
+
+class NotEnoughArguments (Exception):
+    """
+    This error is raised, if function tries to be executed, while not having
+    enough parametres passed
+
+    EX:
+    
+    'ADD     AX,'
+
+    'ADD     '
+
+    'ADD'
+    """
+    pass
+
+class TooManyArgumentsToUnpack (Exception):
+    """
+    This error is passed if funciton is run having passed too many params
+
+    EX:
+
+    'ADD     AX, BX, CX'
+
+    'INC    AX, BX'
     """
     pass
 

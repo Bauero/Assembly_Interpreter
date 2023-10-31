@@ -14,7 +14,7 @@ funtionNameLink = {k:v for k,v in globals().items() if k.isupper()}
 """Is responsible for creating an addresable list of function since
 users usualy call funciton by names represented by string and not by
 a name of the function in program itself (which can be the same, but not for 
-the program). This would allow to check the executed string for a function
+the program). This would allow to match between string and a function
 and then execute the command based on the match"""
 
 funcSignature = {}
@@ -50,9 +50,30 @@ for f in funtionNameLink:
     else:
         funcArguments[f] = "dict"
 
-def functionExecutor(request : str):
+def functionExecutor(function : str, args : dict ):
     """
-    Is called on every line of code - it's job is to oreder what to do with
-    ordef from the program or user
+    Is called on every line of code - it's job is to execute order from above
+    on the memory of our program
+
+    This function links apropriate function with input
+    
+                            functionExecutor 
+    
+    Arguments       ----------------------->    Apriopriate function in the program
+    
+    EX:
+
+    function: 'ADD' | arg1: 'AX' | arg2: 'BX' -----> ADD(r = 'AX', s = 'BX')
     """
-    pass
+    argList = funcArguments[function]['arg']
+
+    if argList == None:
+        funtionNameLink[function]()
+    else:
+        argListKeys = list(argList.keys())
+        if len(argListKeys) == 1:
+            funtionNameLink[function](args[argListKeys[0]])
+        elif len(argListKeys) == 2:
+            funtionNameLink[function](args[argListKeys[0]],args[argListKeys[1]])
+        else:
+            raise NotImplementedError
