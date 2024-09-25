@@ -11,8 +11,8 @@ from engine import *
 
 if __name__ == "__main__":
 
-	VARIABLES["fck"] = Variable(8,29,"fck")
-	VARIABLES["lol"] = Variable(16,8957,"lol")
+	VARIABLES["sumab"] = Variable(8, 29, "sumab")
+	VARIABLES["result"] = Variable(16, 8957, "result")
 
 	#	testowe operaacje   
 	# ADD("DX","word 45000")
@@ -31,6 +31,8 @@ if __name__ == "__main__":
 	printRegisters()
 
 	print("\nFLAGS")
+	a = readFlags()
+	print(a[0:8] + " " + a[8:16])
 	printFlagsSpec()
 	
 	# PUSHF()
