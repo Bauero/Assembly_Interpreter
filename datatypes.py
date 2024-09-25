@@ -1,4 +1,8 @@
 # A single node of a singly linked list
+
+import numpy
+from array import array
+
 class Node:
     
     def __init__(self, data = 0): 
@@ -10,6 +14,24 @@ class Node:
     def printStr(self) -> str:
         return str(self.data)
     
+class Register:
+
+    def __init__(self, size = 16, value = 0):
+        match size:
+            case 8:     self.bits = numpy.zeros(1, numpy.int8)
+            case 16:    self.bits = numpy.zeros(1, numpy.int16)
+            case 32:    self.bits = numpy.zeros(1, numpy.int32)
+            case _:     self.bits = numpy.zeros(1, numpy.int_)
+
+        self.shape = (1, size)
+
+    def str(self):      return str(self.bits)
+
+    def repr(self):     return f"0b{self.str()}"
+
+    
+
+
 class Variable:
 
     __variables = 0
