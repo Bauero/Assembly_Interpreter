@@ -4,17 +4,17 @@ it to work properly
 
 Flag register is register which stores 16 different bits - most of which holds
 information about globbal setting of the processor or the program (like parity
-flga, sign flag etc.)
+flag, sign flag etc.)
 """
-
 
 from extration_of_data import bitsToInt
 
-#	initialization of a clear register
-FLAGS = [0 for _ in range(16)]
 
-#	set given flag to setValue
-def setFlag(flag,setValue):
+#####################     OPERATION ON FLAG REGISTER     #####################
+
+
+def setFlag(flag, setValue):
+	"""Allow to set flag by refefencing it's name"""
 	match(flag):
 			case "MD":	FLAGS[-16] = setValue
 			case "NT":  FLAGS[-15] = setValue
@@ -31,6 +31,7 @@ def setFlag(flag,setValue):
 			case _: 	FLAGS[flag] = setValue
 
 def setFlagRaw(valueInBits):
+	"""Allow to set flags converting value stored in binary form"""
 	if valueInBits.startswith("Ob"):
 		valueInBits = valueInBits.remove("Ob")
 	
@@ -38,42 +39,40 @@ def setFlagRaw(valueInBits):
 		FLAGS[bit] = int(bool(bit))
 
 def setFlags(flagON : list = [], argOFF :list = []):
+	"""Allow to set multiple flags at onece to "1" and "0" """
 	for f in flagON: setFlag(f,1)
 	for f in argOFF: setFlag(f,0)
 
 def getRequiredFlags(name):
+	"""Allow to check which flags are affected when performing what operation"""
 	match(name):
 		case "ADC":	return ["CF"]
 		case _: return []
 
-#	resetting flags
-def clearFlags():
+def setFlagsToDefault():
+	"""Resets flags to default state from initialization"""
 	global FLAGS
-	for N in range(16): FLAGS[N] = 0
+	setFlagRaw("0000000000000000")
 	setFlag("NT",1)
 	setFlag("IO",1)
 	setFlag("PL",1)
 	setFlag("IF",1)
 	setFlag(-2,1)
 
-clearFlags()
+
+###################		CONSOLE, SHOW FLAG REGISTER CONTENT		###################		
+
 
 def readFlags() -> str:
 	result = ""
 	for i in FLAGS: result += str(i)
 	return result
 
-
-###################		CONSOLE, SHOW FLAG REGISTER CONTENT		###################		
-
-
-#	prints flag register
 def printFlags():
 	result = readFlags()
 	dec = bitsToInt(result)
 	print(f"FL :  {result}  =  {dec}")
 
-#	print flag register specifically
 def printFlagsSpec():
 	print("Power	Sign 	Fl. Name	  Set	Meaning\n")
 	print(f"15	MD	Mode Flag	  {FLAGS[0]}	1 NATIVE MODE |" + 
@@ -104,7 +103,7 @@ def printFlagsSpec():
 	print(f"0	CF	Carry Flag	  {FLAGS[15]}	1 = CY(Carry) | 0 = NC(No Carry)")
 
 
-###################		CONSOLE, DESCRIBE FLAG REGISTER FLAGS		###################	
+################     CONSOLE, DESCRIBE FLAG REGISTER FLAGS     ################
 
 
 def def_overflow_flag():
@@ -221,3 +220,9 @@ def def_carry_flag():
 	al = 254 (11111110) - remaining parth that could still fit
 	"""
 	print(str(def_carry_flag.__doc__).replace('\t',''))
+
+
+#############     SET DEFAULT VALUE TO FLAG REGISTER UPON INIT     ############
+
+FLAGS = [0 for _ in range(16)]
+setFlagsToDefault()
