@@ -11,7 +11,7 @@ stackCount = len(STACK)//8
 #	size is ceil of value / 16 -> divide by 16
 #	and fill with '0' if necessary
 def saveValueToStack(value, size = None, flags = None, updateSP = False):		
-	if size == None: size = 16
+	if size == None: size = 32
 	
 	if type(value) == int:
 		value = stringToNum(str(value),size)
@@ -45,8 +45,8 @@ def printStack(start = 0, end = stackCount, step = 1):
 		start, end = end, start
 	for i in range(start, end, step):
 		#	because stack is filled left to right we need to reverse it
-		value = readFromStack(16*i,16)
-		intValue = stringToInt("0b" + value, 16)
+		value = readFromStack(32*i,32)
+		intValue = stringToInt("0b" + value, 32)
 
 		print("{0:04x}".format(2*i).upper() + f" : {value} = {intValue}")
 

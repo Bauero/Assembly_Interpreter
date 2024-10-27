@@ -8,26 +8,26 @@ def EXENOARG(function): pass
 
 #   Multipurpose registers
 def PUSHA() -> None:
-    order = ["SP","AX","CX","DX","BX","SP","BP","SI","DI"]
+    order = ["ESP","EAX","ECX","EDX","EBX","ESP","EBP","ESI","EDI"]
     #order = ["AX","BX","CX","DX"]
     for i in range(len(order)):
         register = order[i]
         value = (bitsToInt(readFromRegister(register)))
         if i < len(order) - 1:
-            saveValueToStack(value, 16, updateSP=True)
+            saveValueToStack(value, 32, updateSP=True)
         else:
-            saveValueToStack(value, 16)
+            saveValueToStack(value, 32)
 
 
 def POPA() -> None:
-    order = ["DI","SI","BP","SP","BX","DX","CX","AX","SP"]
+    order = ["EDI","ESI","EBP","ESP","EBX","EDX","ECX","EAX","ESP"]
     for i in range(len(order)):
         register = order[i]
         point = bitsToInt(readFromRegister("SP"))
-        value = bitsToInt(readFromStack(point, 16))
+        value = bitsToInt(readFromStack(point, 32))
         writeIntoRegister(register, value)
         if i < len(order) - 1:
-            point -= 16
+            point -= 32
             writeIntoRegister("SP",point)
 
 
@@ -35,14 +35,14 @@ def POPA() -> None:
 #   Flags
 def PUSHF() -> None:
     value = bitsToInt(readFlags())
-    point = bitsToInt(readFromRegister("SP"))
-    point += 16
-    writeIntoRegister("SP",point)
-    saveValueToStack(value, 16)
+    point = bitsToInt(readFromRegister("ESP"))
+    point += 32
+    writeIntoRegister("ESP",point)
+    saveValueToStack(value, 32)
 
 def POPF() -> None:
-    point = bitsToInt(readFromRegister("SP"))
-    value = str(readFromStack(point, 16))
+    point = bitsToInt(readFromRegister("ESP"))
+    value = str(readFromStack(point, 32))
     setFlagRaw(value)
-    point -= 16
-    writeIntoRegister("SP",point)
+    point -= 32
+    writeIntoRegister("ESP",point)

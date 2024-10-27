@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
 	#	testowe operaacje   
 	# ADD("DX","word 45000")
-	functionExecutor('ADD',{'r': 'DX', 's': 'word 45000'})
+	functionExecutor('ADD',{'r': 'EDX', 's': 'word 12897387'})
 	MOV("DH","DL")
 	ADD("BX","0b1111111111111111")
 	INC("BX")

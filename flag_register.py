@@ -52,7 +52,7 @@ def getRequiredFlags(name):
 def setFlagsToDefault():
 	"""Resets flags to default state from initialization"""
 	global FLAGS
-	setFlagRaw("0000000000000000")
+	setFlagRaw("00000000000000000000000000000000")
 	setFlag("NT",1)
 	setFlag("IO",1)
 	setFlag("PL",1)
@@ -224,5 +224,5 @@ def def_carry_flag():
 
 #############     SET DEFAULT VALUE TO FLAG REGISTER UPON INIT     ############
 
-FLAGS = [0 for _ in range(16)]
+FLAGS = [0 for _ in range(32)]
 setFlagsToDefault()

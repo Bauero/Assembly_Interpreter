@@ -1,24 +1,24 @@
 from datatypes import Node
 from errors import RegisterNotImplemented
 
-AX = [Node(0) for _ in range(16)]
-AH, AL = AX[:8], AX[8:]
-BX = [Node(0) for _ in range(16)]
-BH, BL = BX[:8], BX[8:]
-CX = [Node(0) for _ in range(16)]
-CH, CL = CX[:8], CX[8:]
-DX = [Node(0) for _ in range(16)]
-DH, DL = DX[:8], DX[8:]
+EAX = [Node(0) for _ in range(32)]
+AX, AH, AL = EAX[16:], EAX[16:24], EAX[24:]
+EBX = [Node(0) for _ in range(32)]
+BX, BH, BL = EBX[16:], EBX[16:24], EBX[24:]
+ECX = [Node(0) for _ in range(32)]
+CX, CH, CL = ECX[16:], ECX[16:24], ECX[24:]
+EDX = [Node(0) for _ in range(32)]
+DX, DH, DL = EDX[16:], EDX[16:24], EDX[24:]
 
-SI = [Node(0) for _ in range(16)]
-DI = [Node(0) for _ in range(16)]
-SP = [Node(0) for _ in range(16)]
-BP = [Node(0) for _ in range(16)]
+SI = [Node(0) for _ in range(32)]
+DI = [Node(0) for _ in range(32)]
+SP = [Node(0) for _ in range(32)]
+BP = [Node(0) for _ in range(32)]
 
-listOfRegisters = {"AX" : AX, "AH" : AH, "AL" : AL,
-				   "BX" : BX, "BH" : BH, "BL" : BL,
-				   "CX" : CX, "CH" : CH, "CL" : CL,
-				   "DX" : DX, "DH" : DH, "DL" : DL,
+listOfRegisters = {"EAX" : EAX, "AX" : AX, "AH" : AH, "AL" : AL,
+				   "EBX" : EBX, "BX" : BX, "BH" : BH, "BL" : BL,
+				   "ECX" : ECX, "CX" : CX, "CH" : CH, "CL" : CL,
+				   "EDX" : EDX, "DX" : DX, "DH" : DH, "DL" : DL,
 				   "SP" : SP, "BP" : BP, "DI" : DI, 
 				   "SI" : SI}
 
@@ -55,6 +55,7 @@ def effectiveAddressable(reg:str):
 	return reg in effReg
 
 def cleanRegister(r):
+	# this is equal to xor(ax,ax) - or any other register
 	writeIntoRegister(r,0)
 
 def cleanAllRegisters():
@@ -73,23 +74,23 @@ def printRegisters():
 	vbpbin = ''
 	vspbin = ''
 	
-	for i in AX:    vaxbin += str(i.printInt())
-	for i in BX:    vbxbin += str(i.printInt())
-	for i in CX:    vcxbin += str(i.printInt())
-	for i in DX:    vdxbin += str(i.printInt())
-	for i in SI:    vsibin += str(i.printInt())
-	for i in DI:    vdibin += str(i.printInt())
-	for i in SP:    vspbin += str(i.printInt())
-	for i in BP:    vbpbin += str(i.printInt())
+	for i in EAX:    vaxbin += str(i.printInt())
+	for i in EBX:    vbxbin += str(i.printInt())
+	for i in ECX:    vcxbin += str(i.printInt())
+	for i in EDX:    vdxbin += str(i.printInt())
+	for i in SI:     vsibin += str(i.printInt())
+	for i in DI:     vdibin += str(i.printInt())
+	for i in SP:     vspbin += str(i.printInt())
+	for i in BP:     vbpbin += str(i.printInt())
 
 
-	print("AX : ",vaxbin, " = ",int("0b"+vaxbin,2))
-	print("BX : ",vbxbin, " = ",int("0b"+vbxbin,2))
-	print("CX : ",vcxbin, " = ",int("0b"+vcxbin,2))
-	print("DX : ",vdxbin, " = ",int("0b"+vdxbin,2))
-	print("SI : ",vsibin, " = ",int("0b"+vsibin,2))
-	print("DI : ",vdibin, " = ",int("0b"+vdibin,2))
-	print("SP : ",vspbin, " = ",int("0b"+vspbin,2))
-	print("BP : ",vbpbin, " = ",int("0b"+vbpbin,2))
+	print(f"EAX : {vaxbin} = {int('0b'+vaxbin,2)}")
+	print(f"EAX : {vbxbin} = {int('0b'+vbxbin,2)}")
+	print(f"EAX : {vcxbin} = {int('0b'+vcxbin,2)}")
+	print(f"EAX : {vdxbin} = {int('0b'+vdxbin,2)}")
+	print(f"EAX : {vsibin} = {int('0b'+vsibin,2)}")
+	print(f"EAX : {vdibin} = {int('0b'+vdibin,2)}")
+	print(f"EAX : {vspbin} = {int('0b'+vspbin,2)}")
+	print(f"EAX : {vbpbin} = {int('0b'+vbpbin,2)}")
 
 cleanAllRegisters()
