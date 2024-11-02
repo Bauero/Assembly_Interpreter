@@ -4,3 +4,4 @@ __pycache__/
 Icon
 venv/
 test.py
+examples/
