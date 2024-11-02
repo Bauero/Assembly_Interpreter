@@ -157,6 +157,56 @@ class CantPushValueTooBig (Exception):
     """
     pass
 
+
+###     FILE PROCESSING ERRORS
+
+class ImproperJumpMarker (Exception):
+    """
+    This error is raised when program detects statemenet which seems to be a 
+    marker for jump. Therefore instead of construction like:
+
+    - "JumpHere:" or "_Loop:" or "Loop1:"
+
+    is encounters:
+
+    - "+:" or "   :" or "2x:"
+    """
+    def __init__(self, message = ""): self.message = message
+    def __str__(self):  return self.message
+    
+class FileDoesntExist (Exception):
+    """
+    This error is raised if user tries to pass path to file which doesn't exist
+    """
+
+    def __init__(self, message = ""): self.message = message
+    def __str__(self): return f"file {self.message} doesn't exist"
+
+
+class FileSizeMightBeTooBig (Exception):
+    """
+    This error is raise if file which is beign open is too big (above 1MB). It is
+    to prevent opening files which would force interpreter to use extended resource.
+
+    It can be ommited if needed.
+    """
+    def __init__(self, message = ""): self.message = message
+    def __str__(self): return f"file {self.message} too big"
+
+
+class FileTypeNotAllowed (Exception):
+    """
+    This error is raised if during processing a file with not allowed extension
+    is pased for processing
+    """
+
+    def __init__(self, extension = "", allowed = ['.s','.asm']):
+        self.message = extension
+        self.allowed = allowed
+    def __str__(self):
+        return f"extension {self.message} not allowed - allowed extnsions: {self.allowed}"
+    
+
 ###     OTHER ERRORS
 
 class OperandSizeNotSpecified (Exception):
