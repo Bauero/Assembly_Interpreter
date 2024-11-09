@@ -123,8 +123,6 @@ def paramComparer(template : dict, values : list):
     to variable - what to do then?
     """
 
-
-
 def functionAssigner(template : dict, values : list) -> dict:
     """
     If the given parammeters correspont to the signature of function
