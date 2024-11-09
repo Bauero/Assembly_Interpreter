@@ -350,34 +350,3 @@ def _storeVariablesInData(assembly_code, data_rows):
             }
 
     return assembly_code
-
-
-################################################################################
-#   
-################################################################################
-
-
-if __name__ == '__main__':
-    assembly_code = loadMainFile("examples/add_two_numbers.s")
-    assert type(assembly_code) == dict
-    
-    for line in assembly_code['lines']:
-        if line['content'].startswith("."):
-            print('\n', 20*'#', f'{line["content"]} segment'.center(15), 20*'#', '\n')
-            continue
-        print(line['lines'], line['section'], line['marker'],line['content'])
-
-    for variable in assembly_code['variables']:
-        start, length, storage_size = assembly_code['variables'][variable].values()
-        print(variable, end="\t")
-        print("'", end='')
-        for i in range(len( v := assembly_code['data'].get_data_as_str(start, length, storage_size))//storage_size):
-            print(f"{v[i*storage_size : i*storage_size + storage_size]}", end=" ")
-        print("'", end='')
-        print("\n")
-
-    assembly_code['data'].
-
-    print('sum', end = '')
-    for i in range(len( h := assembly_code['data'].get_data_as_str(start, length + 3, 8))//8):
-        print(f"{h[8*i : 8*i + 8]} ", end="")
