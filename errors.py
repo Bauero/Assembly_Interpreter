@@ -5,13 +5,17 @@ Each error should contain it's own definition, with descriptio abot what hapened
 which triggered en error
 """
 
+
+################################################################################
 ###     REGISTER ERRORS
+################################################################################
 
 class RegisterNotImplemented (Exception): 
     """
     This error occurs when you try to call an operation on non existing register
     """
     pass
+
 
 class RegisterTooSmallToMove (Exception): 
     """
@@ -34,6 +38,7 @@ class RegisterSizeTooSmall (Exception):
     """
     pass
 
+
 class OperationNotPossible (Exception):
     """
     This error occurs when you try to perform an operation which is not
@@ -43,6 +48,7 @@ class OperationNotPossible (Exception):
     - mov [variable1],[variable2] # operation from memory to memoery directly
     """
     pass
+
 
 class RegisterCantEffectiveAddress (Exception):
     """
@@ -56,6 +62,7 @@ class RegisterCantEffectiveAddress (Exception):
     """
     pass
 
+
 class RegisterNotWritable (Exception):
     """
     This error occurs when you try to write something to register which is not
@@ -65,7 +72,11 @@ class RegisterNotWritable (Exception):
     """
     pass
 
+
+################################################################################
 ###     FUNCTION ERROR
+################################################################################
+
 
 class EmptyLine (Exception):
     """
@@ -89,6 +100,7 @@ class EmptyLine (Exception):
     """
     pass
 
+
 class ArgumentNotExpected (Exception):
     """
     This error occurs if function tried to be executed while not needing
@@ -98,6 +110,7 @@ class ArgumentNotExpected (Exception):
     PUSHA   DX <- this is not needed here, so this error would be raised
     """
     pass
+
 
 class NotEnoughArguments (Exception):
     """
@@ -114,6 +127,7 @@ class NotEnoughArguments (Exception):
     """
     pass
 
+
 class TooManyArgumentsToUnpack (Exception):
     """
     This error is passed if funciton is run having passed too many params
@@ -126,13 +140,18 @@ class TooManyArgumentsToUnpack (Exception):
     """
     pass
 
+
+################################################################################
 ###     NUMBER ERROR
+################################################################################
+
 
 class WrongNumberBase (Exception):
     """
     To be implemented later
     """
     pass
+
 
 class NumberTooBig (Exception):
     """
@@ -143,12 +162,14 @@ class NumberTooBig (Exception):
     """
     pass
 
+
 class NumberSizeRequired (Exception):
     """
     This error indicated that you have to explicitly provide size
     of the number - dw, dt, word etc.
     """
     pass
+
 
 class CantPushValueTooBig (Exception):
     """
@@ -158,7 +179,20 @@ class CantPushValueTooBig (Exception):
     pass
 
 
+class ValueIsNotANumber (Exception):
+    """
+    This error is raised if a number which should be converted to a given base
+    raises error during conversion
+    """
+    
+    def __init__(self, message = ""): self.message = message
+    def __str__(self): return self.message
+
+
+################################################################################
 ###     FILE PROCESSING ERRORS
+################################################################################
+
 
 class ImproperJumpMarker (Exception):
     """
@@ -173,7 +207,8 @@ class ImproperJumpMarker (Exception):
     """
     def __init__(self, message = ""): self.message = message
     def __str__(self):  return self.message
-    
+
+
 class FileDoesntExist (Exception):
     """
     This error is raised if user tries to pass path to file which doesn't exist
@@ -207,14 +242,79 @@ class FileTypeNotAllowed (Exception):
         return f"extension {self.message} not allowed - allowed extnsions: {self.allowed}"
     
 
+
+################################################################################
+###     DATA
+################################################################################
+
+
+class ImproperDataDefiniton (Exception):
+    """
+    This error is raised if during preprocessing of file a problem with reading data occurs.
+
+    Data should be defined as:
+
+    'Name Size Value' or 'Size Value' or 'Name Size v1, v2 ...' or Size v1, v2 ...'
+
+    Allowed Sizes are: 'BYTE', 'DB', 'WORD', 'DW', 'DWORD', 'DD', 'QWORD', 'DQ'
+
+    spaces between (optional) name, size and value (or values) are ignored. Values must be
+    separated by coma ','.
+
+    EX.
+
+    - Good definion
+    
+    powit BYTE    "Witajcie w moich skromnych prograch :)", 0
+
+    - Bad definion
+
+    powit    "Witajcie w moich skromnych prograch :)", 0
+
+    powit = "Witajcie w moich skromnych prograch :)", 0
+
+    powit  8  "Witajcie w moich skromnych prograch :)", 0
+    """
+
+
+class SegmentationFault (Exception):
+    """
+    This error is raised if a call for data outside .data segmetn is made. 
+
+    EX.
+
+    *assume that this is the only data in .data*
+
+    sum BYTE    "ALA" -> 3 bytes -> sum + 2 bytes
+
+    Therefore:
+
+    [sum+3] -> yields this error
+    """
+    ...
+
+
+class ModificationOutsideDataSection (Exception):
+    """
+    This error is raise if user tires to modify data outside boundaries of data
+    section
+    """
+    ...
+
+
+################################################################################
 ###     OTHER ERRORS
+################################################################################
+
 
 class OperandSizeNotSpecified (Exception):
+
     """
     This error indicated that you have to explicitly provide size
     of the operation - dw, dt, word etc.
     """
     pass
+
 
 class EffectiveAddressError (Exception):
     """
@@ -222,6 +322,7 @@ class EffectiveAddressError (Exception):
     couldn't understant how paranthesis should be read
     """
     pass
+
 
 class EffectiveAddresNotExist (Exception):
     """
@@ -231,9 +332,14 @@ class EffectiveAddresNotExist (Exception):
     """
     pass
 
+
 class VariableAddressNotExisting (Exception):
     """
     This error indicated that you used name of variable which is not
     defined - propably a writing mistake
     """
     pass
+
+
+
+ 
