@@ -1,57 +1,24 @@
 #########################	IMPORT NEEDED MODULES	  #########################
 
-
-from engine import *
-
+import sys
+from gui_2 import GUI_process
+import multiprocessing as mp
 
 #########################	  LAUNCH WINDOW APP		  #########################
 
+def processArgv():	...
 
+def main():
+    app_queue = mp.Queue()
+    outside_queue = mp.Queue()
 
+    app_proc = mp.Process(target=GUI_process, args=(app_queue, outside_queue))
+
+    app_proc.start()
+    app_proc.join()
 
 if __name__ == "__main__":
-
-	VARIABLES["sumab"] = Variable(8, 29, "sumab")
-	VARIABLES["result"] = Variable(16, 8957, "result")
-
-	#	testowe operaacje   
-	# ADD("DX","word 45000")
-	functionExecutor('ADD',{'r': 'DX', 's': 'word 45000'})
-	MOV("DH","DL")
-	ADD("BX","0b1111111111111111")
-	INC("BX")
-	INC("BX")
-	#saveValueToStack('011001',8)
-	#saveValueToStack('100001011001')
-	
-	print("\nSTACK")
-	printStack(0,8)
-
-	print("\nREGISTERS")
-	printRegisters()
-
-	print("\nFLAGS")
-	a = readFlags()
-	print(a[0:8] + " " + a[8:16])
-	printFlagsSpec()
-	
-	# PUSHF()
-
-	functionExecutor('PUSHF',{})
-
-	print("\nSTACK")
-	printStack(0,8)
-
-	print("\nREGISTERS")
-	printRegisters()
-
-	# POPF()
-
-	# print("\nSTACK")
-	# printStack(0,8)
-
-	# print("\nREGISTERS")
-	# printRegisters() 
-
-	#print("\nFLAGS")
-	#printFlagsSpec()
+	if sys.argv:
+		processArgv()
+	main()
+    
