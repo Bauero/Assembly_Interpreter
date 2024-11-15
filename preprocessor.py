@@ -5,34 +5,25 @@ use inside program.
 import os
 from re import match, search, sub
 from datatypes import Data
-from errors import FileDoesntExist, ImproperJumpMarker, FileSizeMightBeTooBig, \
-                   FileTypeNotAllowed, ImproperDataDefiniton
-
+from errors import ImproperJumpMarker, ImproperDataDefiniton
 
 ################################################################################
 #   Global variables
 ################################################################################
 
-
-allowed_file_types = ['.s','.asm']
 allowed_sections = ['code', 'stack', 'data']
-
 
 ################################################################################
 #   Public functions
 ################################################################################
 
 
-def loadMainFile(path_to_file : str, 
-                 ignore_size_limit : bool = False,
-                 ignore_file_type : bool = False) -> dict | Exception:
+def loadMainFile(raw_file : list) -> dict | Exception:
     """
     This function tries to read and load file speciphied in the path - this is main funciton
     responsible for reading code - executing it with success, shoudl allow to run code from
     file.
     """
-
-    raw_file = _loadFile(path_to_file, ignore_size_limit, ignore_file_type)
 
     assert type(raw_file) == list
 
@@ -53,35 +44,6 @@ def loadMainFile(path_to_file : str,
 ################################################################################
 #   Private functions
 ################################################################################
-
-
-def _loadFile(path_to_file : str, 
-                 ignore_size_limit : bool = False,
-                 ignore_file_type : bool = False) -> list | Exception:
-    """
-    This function loads file (if one exist) and returns loaded file as subscribtable
-    object for further processing.
-
-    :param:
-    - `ignore_size_limit` : bool - allow to process file above 1MB
-    - `ignore_file_type` : bool - allow to process file with extenstion other than .s or .asm
-    """
-
-    if not os.path.exists(path_to_file):
-        raise FileDoesntExist(path_to_file)
-    elif not ignore_size_limit and os.path.getsize(path_to_file) > 1000000: # > 1MB
-        raise FileSizeMightBeTooBig(path_to_file)
-    elif not ignore_file_type and \
-        (ext := os.path.splitext(path_to_file)[-1]) not in allowed_file_types:
-        raise FileTypeNotAllowed(ext)
-
-    raw_file = []
-
-    with open(path_to_file) as file:
-        for line in file:
-            raw_file.append(line)
-
-    return raw_file
 
 
 def _initialLoadAndCleanup(file : list):

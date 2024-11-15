@@ -1,7 +1,7 @@
 #########################	IMPORT NEEDED MODULES	  #########################
 
 import sys
-from gui_2 import GUI_process
+from GUI import GUI_process
 import multiprocessing as mp
 
 #########################	  LAUNCH WINDOW APP		  #########################
@@ -9,10 +9,13 @@ import multiprocessing as mp
 def processArgv():	...
 
 def main():
-    app_queue = mp.Queue()
-    outside_queue = mp.Queue()
-
-    app_proc = mp.Process(target=GUI_process, args=(app_queue, outside_queue))
+    app_queue       = mp.Queue()
+    engine_queue    = mp.Queue()
+    data_queue      = mp.Queue()
+    main_queue      = mp.Queue()
+	
+    app_proc = mp.Process(target=GUI_process, args=(app_queue, engine_queue, main_queue))
+	
 
     app_proc.start()
     app_proc.join()

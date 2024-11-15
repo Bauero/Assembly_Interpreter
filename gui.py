@@ -28,16 +28,10 @@ alg_top = Qt.AlignmentFlag.AlignTop
 alg_jst = Qt.AlignmentFlag.AlignJustify
 
 
-def GUI_process(internal_queue, main_queue):
+def GUI_process(internal_queue, code_queue, main_queue):
     app = QApplication(sys.argv)
     window = MainWindow(internal_queue, main_queue)
     window.show()
-
-    #Set up a timer to switch pages every second
-    # timer = QTimer()
-    # timer.timeout.connect(window.switchPage)
-    # timer.start(2000)  # 1000 ms = 1 second
-
     sys.exit(app.exec())
 
 
@@ -53,7 +47,7 @@ class MainWindow(QWidget):
         self.external_queue = external_queue
         self._createUserInterface()
         self.counter = 1
-        self.pagesStack.setCurrentIndex(1)
+        # self.pagesStack.setCurrentIndex(1)
 
     def _createUserInterface(self):
         """This funciton creates whole UI interface"""
@@ -113,86 +107,80 @@ class MainWindow(QWidget):
     def _createMainProgramPage(self):
         """Designs the program page - live interpreter"""
 
-        #   Main container of the page
+        # Main container of the page
         self.programScreen = QWidget()
-        programLayout = QHBoxLayout()
+        programLayout = QVBoxLayout()
         self.programScreen.setLayout(programLayout)
 
-        #   Left column of the page
+        # Central container with registers and code
+        self.centerSection = QWidget()
+        centralLayout = QHBoxLayout()
+        self.centerSection.setLayout(centralLayout)
+
+        # Left column of the page
         self.leftSection = QWidget()
-        leftSection = QFormLayout()
-        leftSection.setAlignment(alg_top)
+        leftSectionLayout = QFormLayout()
+        leftSectionLayout.setAlignment(alg_top)
 
-        #   Right column of the page
+        # Right column of the page
         self.rightSection = QWidget()
-        rightSection = QFormLayout()
-        
-        #   Header of page
-        self.leftSectionTop = QWidget()
-        leftSectionTop = QHBoxLayout()
-        leftSectionTop.setAlignment(alg_right)
+        rightSectionLayout = QFormLayout()
 
-        #############################
-        # Add widgets to the layout #
-        #############################
+        # Add widgets to the left section
+        leftSectionLayout.addWidget(MultipurposeRegister("EAX", "#3099FF", 'Arithmetic & general purpose'))
+        leftSectionLayout.addWidget(MultipurposeRegister("EBX", "#3099FF", 'Used for memory & general purpose'))
+        leftSectionLayout.addWidget(MultipurposeRegister("ECX", "#3099FF", 'Counter & general purpose register'))
+        leftSectionLayout.addWidget(MultipurposeRegister("EDX", "#3099FF"))
+        leftSectionLayout.addWidget(FunctionalRegisters("ESI", 'orange'))
+        leftSectionLayout.addWidget(FunctionalRegisters("EDI", 'orange'))
+        leftSectionLayout.addWidget(FunctionalRegisters("ESP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'))
+        leftSectionLayout.addWidget(FunctionalRegisters("EBP", 'orange', 'Points to the base of stack'))
+        leftSectionLayout.addWidget(FunctionalRegisters("IP", "#CC3F0C"))
+        leftSectionLayout.addWidget(FlagRegister())
 
-        #   Add top row
-        # leftSectionTop.addWidget(QLabel('H'))
-        # leftSectionTop.addWidget(QLabel('L'))
+        self.leftSection.setLayout(leftSectionLayout)
+        centralLayout.addWidget(self.leftSection)
 
-        #   Add registers
-        leftSection.addWidget(MultipurposeRegister("EAX", "#3099FF", 'Arithmetic & general purpose'))
-        leftSection.addWidget(MultipurposeRegister("EBX", "#3099FF", 'Used for memory & general purpose'))
-        leftSection.addWidget(MultipurposeRegister("ECX", "#3099FF", 'Counter & general purpose register'))
-        leftSection.addWidget(MultipurposeRegister("EDX", "#3099FF"))
-        leftSection.addWidget(FunctionalRegisters("ESI", 'orange'))
-        leftSection.addWidget(FunctionalRegisters("EDI", 'orange'))
-        leftSection.addWidget(FunctionalRegisters("ESP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'))
-        leftSection.addWidget(FunctionalRegisters("EBP", 'orange', 'Points to the base of stack'))
-        leftSection.addWidget(FunctionalRegisters("IP", "#CC3F0C"))
-        leftSection.addWidget(FlagRegister())
-
-        #   Add somehting in the right seciton
+        # Add widgets to the right section
         code_field = QTextEdit('')
         code_field.setMinimumWidth(400)
-        rightSection.addWidget(code_field)
-        self.rightSection.setLayout(rightSection)
-        
+        rightSectionLayout.addWidget(code_field)
+        self.rightSection.setLayout(rightSectionLayout)
+        centralLayout.addWidget(self.rightSection)
 
-        #################
-        # Save layouts  #
-        #################
+        # Add the central section to the main layout
+        programLayout.addWidget(self.centerSection)
 
-        self.leftSectionTop.setLayout(leftSectionTop)
-        leftSection.addWidget(self.leftSectionTop)
-        self.leftSection.setLayout(leftSection)
+        # Add the terminal at the bottom of the main layout
+        self.terminal = Terminal()
+        programLayout.addWidget(self.terminal)  # Add terminal directly to programLayout
 
-
-
-        programLayout.addWidget(self.leftSection)
-        programLayout.addWidget(self.rightSection)
-        leftSection.addWidget(self.leftSectionTop)
+        # Add the program screen to the page stack
         self.pagesStack.addWidget(self.programScreen)
         
     ############################################################################
     #   Functions which will be called as an action of buttons
     ############################################################################
 
-    def switchPage(self):
-        new_page_index = self.counter
-        self.pagesStack.setCurrentIndex(new_page_index % 2)
-        print(self.counter)
-        self.counter += 1
+    # def switchPage(self):
+    #     new_page_index = self.counter
+    #     self.pagesStack.setCurrentIndex(new_page_index % 2)
+    #     print(self.counter)
+    #     self.counter += 1
 
     # @pyqtSlot()
     def open_dialog(self):
+
+
+
         fname = QFileDialog.getOpenFileName(
             self,
             "Open File",
             "${HOME}",
             "All Files (*);; Python Files (*.py);; PNG Files (*.png)",
         )
-        print(fname)
+        
+
 
     # @pyqtSlot()
     def open_interactive_mode(self):
@@ -293,6 +281,7 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setText(value[24:])
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
+
 class FunctionalRegisters(QWidget):
     def __init__(self, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
@@ -351,6 +340,7 @@ class FunctionalRegisters(QWidget):
 
         self.register_content.setText(value)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
+
 
 class FlagRegister(QWidget):
 
@@ -449,9 +439,28 @@ class FlagRegister(QWidget):
         self.parity_flag.           setChecked(value[29] == "1")
         self.carry_flag.            setChecked(value[31] == "1")
 
+
 class Terminal(QWidget):
     def __init__(self):
         super().__init__()
+
+        main_frame = QFormLayout()
+        
+        label = QLabel('Terminal')
+        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+        label.setFont(font)
+        # main_frame.addWidget(label)
+
+        self.terminal = QLineEdit()
+        font = QFont() ; font.setBold(True) ; font.setPointSize(12)
+        self.terminal.setFont(font)
+        self.terminal.setMinimumHeight(160)
+        # main_frame.addWidget(terminal)
+
+        main_frame.addRow(label)
+        main_frame.addRow(self.terminal)
+
+        self.setLayout(main_frame)
         
 
 #   This code is based on code provided by user Luis E. on StackOverflow forum
@@ -475,6 +484,7 @@ class CustomQCheckBox(QCheckBox):
 
     def isModifiable(self):
         return self.is_modifiable
+
 
 if __name__ == '__main__':
     import multiprocessing as mp
