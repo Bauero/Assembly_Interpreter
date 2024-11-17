@@ -42,9 +42,9 @@ class CodeHandler():
         self.currentlyExecutedFile = path_to_file
         self.openFiles.append(path_to_file)
         self.files[path_to_file] = preprocessed_file
+
+    def executeCommand(self, command): ...
         
-
-
 
 ################################################################################
 #   Functions variables

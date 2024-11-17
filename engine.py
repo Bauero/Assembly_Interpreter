@@ -7,8 +7,6 @@
 # from flag_register import printFlagsSpec
 # from stack import saveValueToStack, printStack
 from inspect import signature
-import time
-from queue import Empty
 
 
 class Engine():

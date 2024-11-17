@@ -1,7 +1,7 @@
 """
 This file contains main funciton responsible for handling a gui app
 """
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QWidget,
@@ -13,7 +13,8 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QHBoxLayout,
-    QTextEdit
+    QTextEdit,
+    QComboBox
 )
 from custom_gui_elements import *
 from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed
@@ -121,10 +122,48 @@ class MainWindow(QWidget):
         self.leftSection.setLayout(leftSectionLayout)
         centralLayout.addWidget(self.leftSection)
 
+        # Create control buttons in right seciton
+        self.nextLineButton = QPushButton('Następna linia')
+        self.previousLineButton = QPushButton('Poprzednia linia')
+        self.showVariables = QPushButton('Pokaż zmienne')
+
+        self.startExecutionButton = QPushButton('Start')
+        self.pauseExecutionButton = QPushButton('Pauza')
+        self.saveStateButton = QPushButton('Zapisz stan')
+        
+        self.startAutoExecButton = QPushButton('Automatyczna egzeukcja kodu')
+        comboBoxLabel = QLabel('Częstotliwosć wykonywania komend')
+        self.executionFrequencyList = QComboBox()
+        self.executionFrequencyList.addItem('0.1s')
+        self.executionFrequencyList.addItem('0.5s')
+        self.executionFrequencyList.addItem('1s')
+        self.executionFrequencyList.addItem('2s')
+        self.executionFrequencyList.addItem('5s')
+        self.executionFrequencyList.setCurrentIndex(2)
+
+        # Combine buttons into rows for right column
+        row_1 = QHBoxLayout()
+        row_1.addWidget(self.nextLineButton)
+        row_1.addWidget(self.previousLineButton)
+        row_1.addWidget(self.showVariables)
+
+        row_2 = QHBoxLayout()
+        row_2.addWidget(self.startExecutionButton)
+        row_2.addWidget(self.pauseExecutionButton)
+        row_2.addWidget(self.saveStateButton)
+
+        row_3 = QHBoxLayout()
+        row_3.addWidget(self.startAutoExecButton)
+        row_3.addWidget(comboBoxLabel)
+        row_3.addWidget(self.executionFrequencyList)
+
         # Add widgets to the right section
         code_field = QTextEdit('')
         code_field.setMinimumWidth(400)
-        rightSectionLayout.addWidget(code_field)
+        rightSectionLayout.addRow(code_field)
+        rightSectionLayout.addRow(row_1)
+        rightSectionLayout.addRow(row_2)
+        rightSectionLayout.addRow(row_3)
         self.rightSection.setLayout(rightSectionLayout)
         centralLayout.addWidget(self.rightSection)
 
@@ -142,13 +181,7 @@ class MainWindow(QWidget):
     #   Functions which will be called as an action of buttons
     ############################################################################
 
-    # def switchPage(self):
-    #     new_page_index = self.counter
-    #     self.pagesStack.setCurrentIndex(new_page_index % 2)
-    #     print(self.counter)
-    #     self.counter += 1
-
-    # @pyqtSlot()
+    @pyqtSlot()
     def select_file_to_open_dialog(self):
         """Propt user to select file & handles excptions"""
 
@@ -164,6 +197,8 @@ class MainWindow(QWidget):
                     "${HOME}",
                     "All Files (*);; Python Files (*.py);; PNG Files (*.png)",
                 )[0]
+
+                if not file_path: return
 
             try:
                 self.code_handler.loadFile(file_path, ignore_size_limit, ignore_file_type)
@@ -227,6 +262,32 @@ class MainWindow(QWidget):
 
         self.pagesStack.setCurrentIndex(1)
         
-    # @pyqtSlot()
+    @pyqtSlot()
     def open_interactive_mode(self):
-        print('Uruchamiam tryb interaktywny')
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setWindowTitle("Opcja niedostępna")
+        msg.setText("Ta funkcjonalność jeszcze nie została dodana")
+        msg.setStandardButtons(ok_button)
+        ans = msg.exec()
+
+    def executeCommand(self, command):
+        try:
+            output = self.code_handler.executeCommand(command)
+        except Exception as e:
+            ...
+
+
+if __name__ == "__main__":
+    import sys
+    from PyQt6.QtWidgets import QApplication
+    from engine import Engine
+    from code_handler import CodeHandler
+
+    app = QApplication([])
+    engine = Engine()
+    code_handeler = CodeHandler(engine)
+    window = MainWindow(code_handeler)
+    window.show()
+    window.pagesStack.setCurrentIndex(1)
+    sys.exit(app.exec())
