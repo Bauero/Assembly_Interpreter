@@ -29,13 +29,14 @@ class MainWindow(QWidget):
         super().__init__()
         self.code_handler = code_handler
         self._createUserInterface()
+        print(self.x(), self.y(), self.width(), self.height())
 
     def _createUserInterface(self):
         """This funciton creates whole UI interface"""
 
         #   General settings
         self.setWindowTitle('Interpreter Asemblera')
-        self.setGeometry(100, 200, 600, 400)
+        self.setGeometry(460, 160, 1000, 400)
 
         #   Main widow structure
         main_window = QVBoxLayout()
@@ -67,9 +68,9 @@ class MainWindow(QWidget):
         
         #   Defining properties of elemetns
         load_file_button = QPushButton('Wczytaj plik')
-        load_file_button.clicked.connect(self.select_file_to_open_dialog)
+        load_file_button.clicked.connect(self._select_file_to_open_dialog)
         open_session_button = QPushButton('Tryb interakwyny')
-        open_session_button.clicked.connect(self.open_interactive_mode)
+        open_session_button.clicked.connect(self._open_interactive_mode)
         title = QLabel('Menu główne')
         title.setFont(font)
 
@@ -107,6 +108,11 @@ class MainWindow(QWidget):
         self.rightSection = QWidget()
         rightSectionLayout = QFormLayout()
 
+        # Optional varaible section
+        self.variableSetion = QTextEdit()
+        self.variableSetion.setHidden(True)
+        self.variableSetion.setFixedWidth(300)
+
         # Add widgets to the left section
         leftSectionLayout.addWidget(MultipurposeRegister("EAX", "#3099FF", 'Arithmetic & general purpose'))
         leftSectionLayout.addWidget(MultipurposeRegister("EBX", "#3099FF", 'Used for memory & general purpose'))
@@ -124,15 +130,28 @@ class MainWindow(QWidget):
 
         # Create control buttons in right seciton
         self.nextLineButton = QPushButton('Następna linia')
+        self.nextLineButton.setEnabled(False)
+        self.nextLineButton.clicked.connect(lambda: self._executeCommand('next_line'))
         self.previousLineButton = QPushButton('Poprzednia linia')
+        self.previousLineButton.setEnabled(False)
+        self.previousLineButton.clicked.connect(lambda: self._executeCommand('previous_line'))
         self.showVariables = QPushButton('Pokaż zmienne')
+        self.showVariables.clicked.connect(self._toggleVariableSectionVisible)
 
         self.startExecutionButton = QPushButton('Start')
+        self.startExecutionButton.clicked.connect(lambda: self._executeCommand('start'))
         self.pauseExecutionButton = QPushButton('Pauza')
+        self.pauseExecutionButton.setEnabled(False)
+        self.pauseExecutionButton.clicked.connect(lambda: self._executeCommand('pause'))
         self.saveStateButton = QPushButton('Zapisz stan')
+        self.saveStateButton.setEnabled(False)
+        self.saveStateButton.clicked.connect(lambda: self._executeCommand('save_state'))
         
         self.startAutoExecButton = QPushButton('Automatyczna egzeukcja kodu')
+        self.startAutoExecButton.setEnabled(False)
+        self.startAutoExecButton.clicked.connect(lambda: self._executeCommand('automatic_exeuciton'))
         comboBoxLabel = QLabel('Częstotliwosć wykonywania komend')
+        comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
         self.executionFrequencyList.addItem('0.1s')
         self.executionFrequencyList.addItem('0.5s')
@@ -166,6 +185,7 @@ class MainWindow(QWidget):
         rightSectionLayout.addRow(row_3)
         self.rightSection.setLayout(rightSectionLayout)
         centralLayout.addWidget(self.rightSection)
+        centralLayout.addWidget(self.variableSetion)
 
         # Add the central section to the main layout
         programLayout.addWidget(self.centerSection)
@@ -182,7 +202,7 @@ class MainWindow(QWidget):
     ############################################################################
 
     @pyqtSlot()
-    def select_file_to_open_dialog(self):
+    def _select_file_to_open_dialog(self):
         """Propt user to select file & handles excptions"""
 
         ignore_size_limit   : bool = False
@@ -263,7 +283,7 @@ class MainWindow(QWidget):
         self.pagesStack.setCurrentIndex(1)
         
     @pyqtSlot()
-    def open_interactive_mode(self):
+    def _open_interactive_mode(self):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Icon.Critical)
         msg.setWindowTitle("Opcja niedostępna")
@@ -271,12 +291,32 @@ class MainWindow(QWidget):
         msg.setStandardButtons(ok_button)
         ans = msg.exec()
 
-    def executeCommand(self, command):
+    @pyqtSlot()
+    def _executeCommand(self, command):
         try:
             output = self.code_handler.executeCommand(command)
         except Exception as e:
             ...
 
+    def _toggleVariableSectionVisible(self):
+        self.variableSetion.setHidden(not self.variableSetion.isHidden())
+        # if self.variableSetion.isHidden():
+        #     old_width = self.width()
+        #     self.variableSetion.setHidden(False)
+        #     self.resize(old_width - 200, self.height())
+        # else:
+        #     self.variableSetion.setHidden(True)
+        # if self.variableSetion.isHidden():
+        #     # Shrink the width
+        #     self.setGeometry(460, 160, 1000, 400)
+        #     self.layout().update()  # Ensure the layout accounts for the new widget state
+        #     new_width = self.width() - self.variableSetion.width()
+        # else:
+        #     # Expand the width to accommodate the section
+        #     new_width = self.width() + self.variableSetion.width()
+
+        # # Set the new size dynamically
+        # 
 
 if __name__ == "__main__":
     import sys
