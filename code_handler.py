@@ -5,6 +5,7 @@ or jumps. It is also responible for managing history or operations done by progr
 """
 
 import os
+from preprocessor import loadMainFile
 from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed
 
 
@@ -19,7 +20,30 @@ allowed_file_types = ['.s','.asm']
 ################################################################################
 
 
-class CodeHandler(): ...
+class CodeHandler():
+    """
+    This class is responsible for handlind opened files - it passes lines for execution, 
+    handles opened file and loades instruction for engine
+    """
+
+    def __init__(self, engine):
+        self.openFiles = []
+        self.fileExecLine = {}
+        self.files = {}
+        self.currentlyExecutedFile = ""
+        self.engine = engine
+
+
+    def loadFile(self, path_to_file, ignore_size_limit, ignore_file_type):
+        raw_file = _loadFile(path_to_file, ignore_size_limit, ignore_file_type)
+        assert type(raw_file) == list
+        preprocessed_file = loadMainFile(raw_file)
+
+        self.currentlyExecutedFile = path_to_file
+        self.openFiles.append(path_to_file)
+        self.files[path_to_file] = preprocessed_file
+        
+
 
 
 ################################################################################
@@ -28,8 +52,8 @@ class CodeHandler(): ...
 
 
 def _loadFile(path_to_file : str, 
-                 ignore_size_limit : bool = False,
-                 ignore_file_type : bool = False) -> list | Exception:
+              ignore_size_limit : bool = False,
+              ignore_file_type : bool = False) -> list | Exception:
     """
     This function loads file (if one exist) and returns loaded file as subscribtable
     object for further processing.
