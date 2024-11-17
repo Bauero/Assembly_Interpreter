@@ -1,27 +1,25 @@
 #########################	IMPORT NEEDED MODULES	  #########################
 
 import sys
-from GUI import GUI_process
-import multiprocessing as mp
+from PyQt6.QtWidgets import QApplication
+from gui import MainWindow
+from engine import Engine
+from code_handler import CodeHandler
 
 #########################	  LAUNCH WINDOW APP		  #########################
 
 def processArgv():	...
 
 def main():
-    app_queue       = mp.Queue()
-    engine_queue    = mp.Queue()
-    data_queue      = mp.Queue()
-    main_queue      = mp.Queue()
-	
-    app_proc = mp.Process(target=GUI_process, args=(app_queue, engine_queue, main_queue))
-	
-
-    app_proc.start()
-    app_proc.join()
+    app = QApplication([])
+    engine = Engine()
+    code_handeler = CodeHandler(engine)
+    window = MainWindow(code_handeler)
+    window.show()
+    sys.exit(app.exec())
 
 if __name__ == "__main__":
-	if sys.argv:
-		processArgv()
-	main()
+    if sys.argv:
+        processArgv()
+    main()
     

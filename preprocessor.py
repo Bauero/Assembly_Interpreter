@@ -33,10 +33,9 @@ def loadMainFile(raw_file : list) -> dict | Exception:
     assembly_code = _replaceDUPValues(assembly_code)
 
     assert assembly_code != None
-    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
-
-    assembly_code = _wrapMultiLineData(assembly_code, data_rows)
-    assembly_code = _storeVariablesInData(assembly_code, data_rows)
+    
+    assembly_code = _wrapMultiLineData(assembly_code)
+    assembly_code = _storeVariablesInData(assembly_code)
 
     return assembly_code
     
@@ -195,7 +194,7 @@ def _replaceDUPValues(assembly_code):
     return assembly_code
 
 
-def _wrapMultiLineData(assembly_code, data_rows):
+def _wrapMultiLineData(assembly_code):
     """
     This function would 'unwrap' multiline data definitions
 
@@ -216,6 +215,7 @@ def _wrapMultiLineData(assembly_code, data_rows):
     inside_multiline = False
     all_lines = []
     current_multiline = []
+    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
 
     #   Analyze which lines are multiline, and which lines belongs to one variable
     for row in data_rows:
@@ -254,10 +254,12 @@ def _wrapMultiLineData(assembly_code, data_rows):
     return assembly_code
 
 
-def _storeVariablesInData(assembly_code, data_rows):
+def _storeVariablesInData(assembly_code):
     """
     This function converts values from data section, to variables in Data
     """
+
+    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
 
     for i in data_rows:
         line = assembly_code['lines'][i]['content']
