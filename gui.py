@@ -29,7 +29,6 @@ class MainWindow(QWidget):
         super().__init__()
         self.code_handler = code_handler
         self._createUserInterface()
-        print(self.x(), self.y(), self.width(), self.height())
 
     def _createUserInterface(self):
         """This funciton creates whole UI interface"""

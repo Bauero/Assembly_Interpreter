@@ -11,7 +11,7 @@ from errors import ImproperJumpMarker, ImproperDataDefiniton
 #   Global variables
 ################################################################################
 
-allowed_sections = ['code', 'stack', 'data']
+allowed_sections = ['code', 'stack', 'data', 'text']
 
 ################################################################################
 #   Public functions
@@ -116,6 +116,7 @@ def _divideCodeToSection(assembly_code):
             case '.code':           current_section = ".code"
             case '.stack':          current_section = ".stack"
             case '.data':           current_section = ".data"
+            case '.text':           current_section = ".data"
             case '_':               current_section = 'undefined'
         
         assembly_code['lines'][id]["section"] = current_section
@@ -141,7 +142,7 @@ def _replaceEquateValues(assembly_code):
         }
 
     #   if no values were found for replacement end funciton here
-    if not symbol_value:    return
+    if not symbol_value:    return  assembly_code
     
     filter_pattern = lambda x: fr'(?<!["\'])(\b{x}\b)(?!["\'])'
 
