@@ -1,6 +1,6 @@
 """
-This file contains functions which purpose is to read, and preprocess file to allow for it's further
-use inside program.
+This file contains functions which purpose is to read, and preprocess file to 
+allow for it's further use inside program.
 """
 import os
 from re import match, search, sub

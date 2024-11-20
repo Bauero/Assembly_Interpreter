@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QHBoxLayout,
     QLineEdit,
+    QTextEdit,
     QCheckBox,
     QMessageBox
 )
@@ -282,7 +283,7 @@ class Terminal(QWidget):
         label.setFont(font)
         # main_frame.addWidget(label)
 
-        self.terminal = QLineEdit()
+        self.terminal = QTextEdit()
         font = QFont() ; font.setBold(True) ; font.setPointSize(12)
         self.terminal.setFont(font)
         self.terminal.setMinimumHeight(160)
