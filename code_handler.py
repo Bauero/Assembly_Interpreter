@@ -29,21 +29,25 @@ class CodeHandler():
     def __init__(self, engine):
         self.openFiles = []
         self.fileExecLine = {}
+        self.rawfiles = {}
         self.files = {}
         self.currentlyExecutedFile = ""
         self.engine = engine
 
-
     def loadFile(self, path_to_file, ignore_size_limit, ignore_file_type):
         raw_file = _loadFile(path_to_file, ignore_size_limit, ignore_file_type)
         assert type(raw_file) == list
+        self.rawfiles[path_to_file] = raw_file
         preprocessed_file = loadMainFile(raw_file)
-
         self.currentlyExecutedFile = path_to_file
         self.openFiles.append(path_to_file)
         self.files[path_to_file] = preprocessed_file
 
     def executeCommand(self, command): ...
+
+    def gcefat(self):
+        """Get Currently Executed File As Text"""
+        return  "".join(self.rawfiles[self.currentlyExecutedFile])
         
 
 ################################################################################

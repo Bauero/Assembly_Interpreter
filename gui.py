@@ -147,8 +147,10 @@ class MainWindow(QWidget):
         self.saveStateButton.clicked.connect(lambda: self._executeCommand('save_state'))
         
         self.startAutoExecButton = QPushButton('Automatyczna egzeukcja kodu')
-        self.startAutoExecButton.setEnabled(False)
-        self.startAutoExecButton.clicked.connect(lambda: self._executeCommand('automatic_exeuciton'))
+        self.startAutoExecButton.setEnabled(True)
+        self.startAutoExecButton.setCheckable(True)
+        # self.startAutoExecButton.setStyleSheet("color: #3E7CFF;")
+        self.startAutoExecButton.clicked.connect(self._toggle_automatic_execution)
         comboBoxLabel = QLabel('Częstotliwosć wykonywania komend')
         comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
@@ -176,9 +178,9 @@ class MainWindow(QWidget):
         row_3.addWidget(self.executionFrequencyList)
 
         # Add widgets to the right section
-        code_field = QTextEdit('')
-        code_field.setMinimumWidth(400)
-        rightSectionLayout.addRow(code_field)
+        self.code_field = CodeEditor()
+        self.code_field.setMinimumWidth(400)
+        rightSectionLayout.addRow(self.code_field)
         rightSectionLayout.addRow(row_1)
         rightSectionLayout.addRow(row_2)
         rightSectionLayout.addRow(row_3)
@@ -221,6 +223,7 @@ class MainWindow(QWidget):
 
             try:
                 self.code_handler.loadFile(file_path, ignore_size_limit, ignore_file_type)
+
             except FileDoesntExist:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Icon.Critical)
@@ -278,8 +281,11 @@ class MainWindow(QWidget):
                 return
             
             break
-
+        
+        self.code_field.setText( self.code_handler.gcefat() )
         self.pagesStack.setCurrentIndex(1)
+        self.code_field.setEditable(False)
+        self.code_field.setHighlight([4,5])
         
     @pyqtSlot()
     def _open_interactive_mode(self):
@@ -291,9 +297,13 @@ class MainWindow(QWidget):
         ans = msg.exec()
 
     @pyqtSlot()
+    def _toggle_automatic_execution(self):
+        self.automatic_execution = self.startAutoExecButton.isChecked()
+
+    @pyqtSlot()
     def _executeCommand(self, command):
         try:
-            output = self.code_handler.executeCommand(command)
+            ...
         except Exception as e:
             ...
 

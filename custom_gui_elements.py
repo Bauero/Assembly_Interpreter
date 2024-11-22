@@ -1,5 +1,10 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
+"""
+This file containst gustom GUI structures which are then later used in main gui
+file
+"""
+
+from PyQt6.QtCore import Qt, QRect
+from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -9,7 +14,8 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QTextEdit,
     QCheckBox,
-    QMessageBox
+    QMessageBox,
+    QPlainTextEdit
 )
 
 alg_cent = Qt.AlignmentFlag.AlignCenter
@@ -18,6 +24,10 @@ alg_top = Qt.AlignmentFlag.AlignTop
 alg_jst = Qt.AlignmentFlag.AlignJustify
 ok_button = QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
+
+################################################################################
+#   Clasess with custom gui structures
+################################################################################
 
 class MultipurposeRegister(QWidget):
     """This class creates a widget for displaying multipurpose register, splited into
@@ -113,7 +123,6 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setText(value[24:])
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
-
 class FunctionalRegisters(QWidget):
     def __init__(self, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
@@ -172,7 +181,6 @@ class FunctionalRegisters(QWidget):
 
         self.register_content.setText(value)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
-
 
 class FlagRegister(QWidget):
 
@@ -271,7 +279,6 @@ class FlagRegister(QWidget):
         self.parity_flag.           setChecked(value[29] == "1")
         self.carry_flag.            setChecked(value[31] == "1")
 
-
 class Terminal(QWidget):
     def __init__(self):
         super().__init__()
@@ -294,7 +301,6 @@ class Terminal(QWidget):
 
         self.setLayout(main_frame)
         
-
 class CustomQCheckBox(QCheckBox):
     """
     This code is based on code provided by user Luis E. on StackOverflow forum
@@ -319,3 +325,160 @@ class CustomQCheckBox(QCheckBox):
     def isModifiable(self):
         return self.is_modifiable
 
+
+class LineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.myeditor = editor
+
+    def sizeHint(self):
+        return self.myeditor.lineNumberAreaWidth(), 0
+
+    def paintEvent(self, event):
+        self.myeditor.lineNumberAreaPaintEvent(event)
+
+
+class CodeEditor(QPlainTextEdit):
+    def __init__(self):
+        super().__init__()
+        self.lineNumberArea = LineNumberArea(self)
+
+        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+        # self.cursorPositionChanged.connect(self.highlightCurrentLine)
+
+        self.updateLineNumberAreaWidth(0)
+        self.textCursor().movePosition(QTextCursor.MoveOperation.Start)  # Przesuń kursor na początek
+        # self.highlightCurrentLine()
+
+        self.highlighted_lines = []
+
+    def lineNumberAreaWidth(self):
+        digits = 1
+        count = max(1, self.blockCount())
+        while count >= 10:
+            count //= 10
+            digits += 1
+        space = 10 + self.fontMetrics().horizontalAdvance('9') * digits
+        return space
+
+    def updateLineNumberAreaWidth(self, _):
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+
+    def updateLineNumberArea(self, rect, dy):
+        if dy != 0:
+            self.lineNumberArea.scroll(0, dy)
+        else:
+            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
+
+        if rect.contains(self.viewport().rect()):
+            self.updateLineNumberAreaWidth(0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+
+        cr = self.contentsRect()
+        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()))
+
+    def lineNumberAreaPaintEvent(self, event):
+        painter = QPainter(self.lineNumberArea)
+        # painter.fillRect(event.rect(), Qt.GlobalColor.gray)
+
+        block = self.firstVisibleBlock()
+        blockNumber = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+
+        height = self.fontMetrics().height()
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                number = " " + str(blockNumber + 1) + "  "
+                # painter.setPen(Qt.GlobalColor.black)
+                painter.drawText(0, int(top), self.lineNumberArea.width(), height, Qt.AlignmentFlag.AlignRight, number)
+
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            blockNumber += 1
+
+    # def highlightCurrentLine(self):
+    #     # Tworzymy obiekt do przechowywania podświetlonych elementów
+    #     extraSelections = []
+
+    #     if not self.isReadOnly():
+    #         # Tworzymy obiekt selekcji
+    #         selection = QTextEdit.ExtraSelection()
+
+    #         # Ustawienia koloru tła
+    #         lineColor = QColor(Qt.GlobalColor.blue)  # Jasno żółty
+    #         selection.format.setBackground(lineColor)
+
+    #         # Ustawienia koloru tekstu
+    #         textColor = QColor(Qt.GlobalColor.white)  # Czerwony kolor tekstu
+    #         selection.format.setForeground(textColor)
+
+    #         # Ustawienie właściwości, aby podświetlać pełną szerokość linii
+    #         selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
+
+    #         # Ustawienie bieżącego bloku (linii)
+    #         selection.cursor = self.textCursor()
+    #         selection.cursor.clearSelection()
+
+    #         # Dodanie selekcji do listy
+    #         extraSelections.append(selection)
+
+    #     # Przypisujemy listę podświetlonych elementów do edytora
+    #     self.setExtraSelections(extraSelections)
+
+    def setHighlight(self, line_numbers, 
+                     background_color =  Qt.GlobalColor.blue, 
+                     text_color =        Qt.GlobalColor.white):
+        """
+        Podświetla wybrane linie.
+        
+        Args:
+            line_numbers (list[int]): Lista numerów linii do podświetlenia (1-based).
+            background_color (QColor): Kolor tła dla podświetlenia.
+            text_color (QColor): Kolor tekstu w podświetlonych liniach.
+        """
+        # Tworzymy listę podświetlonych obiektów
+        extraSelections = []
+
+        # Przechodzimy po liniach do podświetlenia
+        for line_number in line_numbers:
+            # Upewniamy się, że numer linii jest poprawny
+            if line_number <= 0:
+                continue
+
+            # Ustawiamy kursor na początku odpowiedniej linii
+            cursor = QTextCursor(self.document().findBlockByLineNumber(line_number - 1))
+            if not cursor.isNull():
+                selection = QTextEdit.ExtraSelection()
+
+                # Konfiguracja tła
+                selection.format.setBackground(QColor(background_color))
+
+                # Konfiguracja tekstu
+                selection.format.setForeground(QColor(text_color))
+
+                # Pełne podświetlenie linii
+                selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
+
+                # Ustawienie kursora dla tej linii
+                selection.cursor = cursor
+                selection.cursor.clearSelection()  # Podświetlamy całą linię bez selekcji
+
+                # Dodajemy do listy podświetleń
+                extraSelections.append(selection)
+
+        # Przechowujemy informacje o podświetlonych liniach
+        self.highlighted_lines = line_numbers
+
+        # Aktualizacja podświetleń w edytorze
+        self.setExtraSelections(extraSelections)
+
+    def setText(self, text):
+        self.setPlainText(text)
+
+    def setEditable(self, editable):
+        self.setReadOnly(not editable)
