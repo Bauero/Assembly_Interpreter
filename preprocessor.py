@@ -81,7 +81,7 @@ def _initialLoadAndCleanup(file : list):
                 
         #   Detect imporper line with ":"
         if match("(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
-            raise ImproperJumpMarker(f"\nIncorrect line with \":\" -> [{line}]'")
+            raise ImproperJumpMarker(number, f"\nIncorrect line with \":\" -> [{line}]'")
 
         #   Save results
         if marker_in_line:

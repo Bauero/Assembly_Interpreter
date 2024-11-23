@@ -17,7 +17,8 @@ from PyQt6.QtWidgets import (
     QComboBox
 )
 from custom_gui_elements import *
-from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed
+from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, \
+                   ImproperJumpMarker, ImproperDataDefiniton
 
 class MainWindow(QWidget):
     """
@@ -243,7 +244,6 @@ class MainWindow(QWidget):
                 msg.addButton("Continue with this file", QMessageBox.ButtonRole.NoRole) # returns 3
                 msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
                 ans = msg.exec()
-                print(ans, type(ans))
                 match ans:
                     case 2:
                         ignore_size_limit = True
@@ -262,7 +262,6 @@ class MainWindow(QWidget):
                 msg.addButton("Continue with this file", QMessageBox.ButtonRole.NoRole) # returns 3
                 msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
                 ans = msg.exec()
-                print(ans, type(ans))
                 match ans:
                     case 2:
                         ignore_file_type = True
@@ -272,6 +271,28 @@ class MainWindow(QWidget):
                     case 4:
                         return
                 continue
+            except ImproperDataDefiniton as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Critical)
+                msg.setWindowTitle("Preprocessing error")
+                msg.setText(f"Wrong data definition:\nLine {e.line()}\nMessage: \"{e.message()}\"")
+                msg.addButton("Load file in interactive mode", QMessageBox.ButtonRole.YesRole)  # returns 2
+                msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
+                ans = msg.exec()
+                if ans == 2:
+                    self._open_interactive_mode()
+                return
+            except ImproperJumpMarker as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Icon.Critical)
+                msg.setWindowTitle("Preprocessing error")
+                msg.setText(f"Improper line marker definition:\nLine {e.line()}\nMessage: \"{e.message()}\"")
+                msg.addButton("Load file in interactive mode", QMessageBox.ButtonRole.YesRole)  # returns 2
+                msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
+                ans = msg.exec()
+                if ans == 2:
+                    self._open_interactive_mode()
+                return
             except Exception as e:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Icon.Critical)

@@ -197,16 +197,27 @@ class ValueIsNotANumber (Exception):
 class ImproperJumpMarker (Exception):
     """
     This error is raised when program detects statemenet which seems to be a 
-    marker for jump. Therefore instead of construction like:
+    marker for jump. Allowed loop names examples:
 
     - "JumpHere:" or "_Loop:" or "Loop1:"
 
-    is encounters:
+    Examples of forbidden jump destination names:
 
     - "+:" or "   :" or "2x:"
     """
-    def __init__(self, message = ""): self.message = message
-    def __str__(self):  return self.message
+    def __init__(self, number : int | None = None, message : str = ""):
+        self._message = message
+        self._line_number = number
+
+    def __str__(self):
+        return str(self._line_number) + self._message
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def line(self):     return self._line_number
+
+    def message(self):  return self._message
 
 
 class FileDoesntExist (Exception):
@@ -277,11 +288,18 @@ class ImproperDataDefiniton (Exception):
     """
     def __init__(self, line_num : int | None = None, line_content : str = ''):
         super().__init__()
-        self.line_number = line_num
-        self.line_content = line_content
+        self._line_number = line_num
+        self._line_content = line_content
     
     def __str__(self):
-        return str(self.line_number) + self.line_content
+        return str(self._line_number) + self._line_content
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def line(self):     return self._line_number
+
+    def message(self):  return self._line_content
 
 
 class SegmentationFault (Exception):
