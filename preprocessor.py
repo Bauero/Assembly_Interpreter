@@ -107,19 +107,27 @@ def _divideCodeToSection(assembly_code):
 
     default_section = "undefined"
     current_section = default_section
+    alaius = True # all lines are in undefined section
 
     for id, line in enumerate(assembly_code['lines']):
         content = line['content']
-        line_beginning = content.split(" ")[0].lower()
+        if content.lower().startswith("section"):
+            content = content[7:] # 7 is the length of 'section'
+        line_beginning = content.strip().split(" ")[0].lower()
 
         match line_beginning:
-            case '.code':           current_section = ".code"
-            case '.stack':          current_section = ".stack"
-            case '.data':           current_section = ".data"
-            case '.text':           current_section = ".data"
+            case '.code':           current_section = ".code";      alaius = False
+            case '.stack':          current_section = ".stack";     alaius = False
+            case '.data':           current_section = ".data";      alaius = False
+            case '.text':           current_section = ".code";      alaius = False
             case '_':               current_section = 'undefined'
         
         assembly_code['lines'][id]["section"] = current_section
+
+    # If all lines are undefined, therefore file contains only code section
+    if alaius:
+        for id, line in enumerate(assembly_code['lines']):
+            assembly_code['lines'][id]["section"] = '.code'
 
     return assembly_code
 
@@ -280,15 +288,16 @@ def _storeVariablesInData(assembly_code):
 
         #   Check if line contains name for data, separate optional name and storage size
         # (ex. BYTE) by checking where to slice line
-        if line_split[0].upper() in allowed_data_types:
-            dtt = line_split[0]
-            end_of_dtt_in_line = line.find(dtt) + len(dtt)
-        elif line_split[1].upper() in allowed_data_types:
-            var_name = line_split[0]
-            dtt = line_split[1]
-            end_of_dtt_in_line = line.find(dtt) + len(dtt)
-        else:
-            raise ImproperDataDefiniton
+        try:
+            if line_split[0].upper() in allowed_data_types:
+                dtt = line_split[0]
+                end_of_dtt_in_line = line.find(dtt) + len(dtt)
+            elif line_split[1].upper() in allowed_data_types:
+                var_name = line_split[0]
+                dtt = line_split[1]
+                end_of_dtt_in_line = line.find(dtt) + len(dtt)
+        except Exception:
+            raise ImproperDataDefiniton(i + 1, line)
         
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()

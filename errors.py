@@ -275,6 +275,13 @@ class ImproperDataDefiniton (Exception):
 
     powit  8  "Witajcie w moich skromnych prograch :)", 0
     """
+    def __init__(self, line_num : int | None = None, line_content : str = ''):
+        super().__init__()
+        self.line_number = line_num
+        self.line_content = line_content
+    
+    def __str__(self):
+        return str(self.line_number) + self.line_content
 
 
 class SegmentationFault (Exception):
