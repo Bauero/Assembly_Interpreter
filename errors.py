@@ -141,6 +141,21 @@ class TooManyArgumentsToUnpack (Exception):
     pass
 
 
+class ExecutionOfOperationInLineError (Exception):
+    """
+    This error is raised if some kind of error occured while processing a funciton.
+
+    It's designed to be raised instead of each indivudal error, but contain the source
+    error as paramether.
+    """
+
+    def __init__(self, exception : Exception):
+        self.raised_exc = exception
+
+    def __str__(self):
+        return self.raised_exc
+
+
 ################################################################################
 ###     NUMBER ERROR
 ################################################################################
@@ -148,9 +163,17 @@ class TooManyArgumentsToUnpack (Exception):
 
 class WrongNumberBase (Exception):
     """
-    To be implemented later
+    This error means that system tried to read number as one in either binary, decimal or
+    hexadecimal system, but the number didn't qualify as valid.
     """
-    pass
+    def __init__(self, message : str = ""):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+    
+    def __repr__(self):
+        return self.__str__()
 
 
 class NumberTooBig (Exception):
@@ -187,6 +210,38 @@ class ValueIsNotANumber (Exception):
     
     def __init__(self, message = ""): self.message = message
     def __str__(self): return self.message
+
+
+class IncorectValueInListOfBits (Exception):
+    """
+    This error is raised if program is asked to ensure that list containst values which
+    suppose to be bits (like ['1', '1', '0']) but detects that one of the element is not
+    '0' or '1'
+    """
+    
+    def __init__(self, message = ""): self.message = message
+    def __str__(self): return self.message
+
+
+class NoExplicitSizeError (Exception):
+    """
+    This exceptin is raised if there is call to get data from address which is stored
+    in register or as provided address in memory, but no size is speciphied - 
+    therefore program doesn't know how much data to get from data:
+
+    EX 1:
+    MOV bx, var1
+    MOV ax, [bx]    # bx, contains address of var 1 - but how many bits are stored in var1,
+                    # this is undefined from the program perspective
+
+    EX 2:
+    MOV ax, [20h]
+    """
+    def __init__(self, message : str = ""):
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 ################################################################################
