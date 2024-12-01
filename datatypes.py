@@ -106,6 +106,11 @@ class Data:
                 elif re.search(r"\b(0|[1-9][0-9]*)\b", element):
                     base = 10
                     is_number = True
+
+                elif re.search(r"\b[01]+[bB]\b", element):
+                    is_number = False
+                    # cut the 'b' at the end, and the number is ready for save
+                    element = element[:-1]
             
             if is_number:
                 converted_element = bin(int(element, base))[2:].zfill(size)
