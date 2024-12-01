@@ -267,8 +267,6 @@ class FlagRegister(QWidget):
 
         self.register_content.setText(value)
 
-        print(value[31])
-
         self.overflow_flag.         setChecked(value[20] == "1")
         self.direction_flag.        setChecked(value[21] == "1")
         self.interrupt_flag.        setChecked(value[22] == "1")
