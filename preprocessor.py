@@ -72,7 +72,7 @@ def _initialLoadAndCleanup(file : list):
             continue
 
         #   Detect indentifiers (points where code could jump to)
-        if match("^[a-zA-Z_][a-zA-Z0-9_]*:", line):
+        if match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
             values = line.split(':')
             assert len(values) > 0, 'Empty ":" in line - did you forget the identifier?'
             
@@ -81,7 +81,7 @@ def _initialLoadAndCleanup(file : list):
                 marker_in_line, line = values
                 
         #   Detect imporper line with ":"
-        if match("(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
+        if match(r"(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
             raise ImproperJumpMarker(number, f"\nIncorrect line with \":\" -> [{line}]'")
 
         #   Save results
