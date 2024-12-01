@@ -42,8 +42,16 @@ class CodeHandler():
         self.currentlyExecutedFile = path_to_file
         self.openFiles.append(path_to_file)
         self.files[path_to_file] = preprocessed_file
+        
+        assert type(preprocessed_file) == dict
+        self.engine.informAboutLabels(preprocessed_file['labels'])
+        self.engine.informAboutVariables(
+            preprocessed_file['variables'],
+            preprocessed_file['data']
+        )
 
-    def executeCommand(self, command): ...
+    def executeCommand(self, command):
+        self.engine.executeCommand(command)
 
     def gcefat(self):
         """Get Currently Executed File As Text"""
