@@ -5,6 +5,7 @@ allow for it's further use inside program.
 import os
 from re import match, search, sub
 from datatypes import Data
+from helper_functions import return_size_from_name
 from errors import ImproperJumpMarker, ImproperDataDefiniton
 
 ################################################################################
@@ -302,15 +303,7 @@ def _storeVariablesInData(assembly_code):
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()
 
-        match dtt.lower():
-            case "byte":    storage_size = 8
-            case 'db':      storage_size = 8
-            case "word":    storage_size = 16
-            case 'dw':      storage_size = 16
-            case "dword":   storage_size = 32
-            case 'dd':      storage_size = 32
-            case "qword":   storage_size = 64
-            case 'dq':      storage_size = 64
+        storage_size = return_size_from_name(dtt)
 
         #   Write data, and receive it's size in data section
         start_add, size = assembly_code['data'].add_data(storage_size, var_content)
