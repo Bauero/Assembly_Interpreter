@@ -2,8 +2,8 @@ from registers_operation_check import registerAddressValue,\
     additionalOpReq, getValue, saveInDestination, getMaxSize
 from flag_register import getRequiredFlags
 from op2arg import SUB, ADD
-from stack import saveValueToStack, readFromStack
-from multipurpose_registers import readFromRegister
+from stack_oryginal import saveValueToStack, readFromStack
+from hardware_registers import readFromRegister
 from extration_of_data import bitsToInt
 
 
