@@ -72,7 +72,7 @@ class Engine():
         tmp = []
         stc = ''
         for i in range(0, len(elements_in_line)):
-            if elements_in_line[i].upper() in allowed_data_types:
+            if str(elements_in_line[i]).upper() in allowed_data_types:
                stc = elements_in_line[i]
             else:
                 if stc:
@@ -228,7 +228,7 @@ class Engine():
         in the program have """
 
         if not len(params) in self.funtionNameLink[keyword].params_range:
-            return False
+            raise ArgumentNotExpected
         
         """ 
         Allowed combinations, and it's numbers
