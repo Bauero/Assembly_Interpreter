@@ -104,9 +104,7 @@ class FlagRegister():
 
 	@classmethod
 	def def_overflow_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		This flag is set when ther result of SIGNED operaiton is beyon the range
 
 		EX - operation of 2 signed 8 bit intigers
@@ -117,13 +115,11 @@ class FlagRegister():
 
 		Hence overflow flag is set
 		"""
-		print(str(cls.def_overflow_flag.__doc__).replace('\t',''))
+		return str(cls.def_overflow_flag.__doc__).replace('\t','')
 
 	@classmethod
 	def def_direction_flag(cls):
 		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-
 		This flag indicates in which direction strings are red
 
 		TF = 1
@@ -134,44 +130,36 @@ class FlagRegister():
 
 		small bits -> high bits
 		"""
-		print(str(cls.def_direction_flag.__doc__).replace('\t',''))
+		return str(cls.def_direction_flag.__doc__).replace('\t','')
 
 	@classmethod
 	def def_interrupt_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		If this flag is set it would allow to execute interruption caused
 		by external devices (mainly to allow for smooth operation of peripherals)
 		"""
-		print(str(cls.def_interrupt_flag.__doc__).replace('\t',''))
+		return str(cls.def_interrupt_flag.__doc__).replace('\t','')
 
 	@classmethod
 	def def_trap_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		This flag indicates that processor would push to stack values of all
 		registers (PUSHF & PUSHA)
 		"""
-		print(str(cls.def_trap_flag.__doc__).replace('\t',''))
+		return str(cls.def_trap_flag.__doc__).replace('\t','')
 
 	@classmethod
 	def def_sign_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		This flag is set depending on if we treat our number as signed of unsigned
 		integer. It matters if we perform operation outside boundaries of normal number,
 		because this results in operation on signed numbers instead of unsigned
 		"""
-		print(str(cls.def_sign_flag.__doc__).replace('\t',''))
+		return str(cls.def_sign_flag.__doc__).replace('\t','')
 
 	@classmethod
 	def def_auxiliary_carry_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		This flag is set when performing addition operation on an 8-bit number, when
 		there is an auxiliary bit from adding bits in the lower nibble
 
@@ -189,13 +177,10 @@ class FlagRegister():
 
 		1 0100 - "1" on the beginning is set auxiliary flag
 		"""
-		print(str(cls.def_auxiliary_carry_flag.__doc__).replace('\t',''))
-
+		return str(cls.def_auxiliary_carry_flag.__doc__).replace('\t','')
 	@classmethod
 	def def_parity_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		The sign flag defines if the number of bits in last calculated number is
 		even or not
 
@@ -203,13 +188,11 @@ class FlagRegister():
 
 		al = 47 -> 0010 1111 -> SF = 0 - num. of '1' in 47 is not even
 		"""
-		print(str(cls.def_parity_flag.__doc__).replace('\t',''))
+		return str(cls.def_parity_flag.__doc__).replace('\t','')
 
 	@classmethod
 	def def_carry_flag(cls):
-		"""
-		--- This function holds definiton of flag in flag register | if called, prints it ---
-		
+		"""		
 		This flag stores result of arythmetical operations if the result (additional bit)
 		couldn't fit in the register on which we perform an opperation
 
@@ -223,4 +206,13 @@ class FlagRegister():
 
 		al = 254 (11111110) - remaining parth that could still fit
 		"""
-		print(str(cls.def_carry_flag.__doc__).replace('\t',''))
+		return str(cls.def_carry_flag.__doc__).replace('\t','')
+	
+	@classmethod
+	def def_zero_flag(cls):
+		"""
+		This flag strores informaiton if the result of last arithmetical operation was
+		equal to zero.
+		
+		"""
+		return str(cls.def_zero_flag.__doc__).replace('\t','')

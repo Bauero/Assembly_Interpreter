@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit
 )
+from flag_register import FlagRegister as FR
 
 alg_cent = Qt.AlignmentFlag.AlignCenter
 alg_right = Qt.AlignmentFlag.AlignRight
@@ -136,9 +137,7 @@ class FunctionalRegisters(QWidget):
         register_label.setFont(font)
         row_layout.addWidget(register_label)
         register_label.setToolTip(
-            f'<span style="color: white;">\
-            {"Special register" if not custom_name else custom_name}\
-            </span>')
+            f'{"Special register" if not custom_name else custom_name}')
 
         self.register_content = QLineEdit()
         self.register_content.setFixedWidth(280)
@@ -216,27 +215,14 @@ class FlagRegister(QWidget):
         self.parity_flag            = CustomQCheckBox('PF')
         self.carry_flag             = CustomQCheckBox('CF')
 
-        self.overflow_flag.setModifiable(False)
-        self.direction_flag.setModifiable(False)
-        self.interrupt_flag.setModifiable(False)
-        self.trap_flag.setModifiable(False)
-        self.sign_flag.setModifiable(False)
-        self.zero_flag.setModifiable(False)
-        self.auxiliary_carry_flag.setModifiable(False)
-        self.parity_flag.setModifiable(False)
-        self.carry_flag.setModifiable(False)
+        for attr_name in dir(self):
+            if attr_name.endswith('_flag'):
+                attr_value = getattr(self, attr_name)
+                definition = getattr(FR(), f"def_{attr_name}")
+                attr_value.setToolTip(f'{definition()}')
+                attr_value.setModifiable(False)
+                self.flag_indicators.addWidget(attr_value)
 
-        self.flag_indicators.addWidget(self.overflow_flag)
-        self.flag_indicators.addWidget(self.direction_flag)
-        self.flag_indicators.addWidget(self.interrupt_flag)
-        self.flag_indicators.addWidget(self.trap_flag)
-        self.flag_indicators.addWidget(self.sign_flag)
-        self.flag_indicators.addWidget(self.zero_flag)
-        self.flag_indicators.addWidget(self.auxiliary_carry_flag)
-        self.flag_indicators.addWidget(self.parity_flag)
-        self.flag_indicators.addWidget(self.carry_flag)
-
-        
         body.addRow(firts_row)
         body.addRow(self.flag_indicators)
         firts_row.setStretch(0, 1)  # Stretch the layout for register label
@@ -323,7 +309,6 @@ class CustomQCheckBox(QCheckBox):
     def isModifiable(self):
         return self.is_modifiable
 
-
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
@@ -334,7 +319,6 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.myeditor.lineNumberAreaPaintEvent(event)
-
 
 class CodeEditor(QPlainTextEdit):
     def __init__(self):
