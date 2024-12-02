@@ -314,32 +314,6 @@ class Engine():
 
         return values
 
-    def _get_argument(self, argument : str):
-        """This function is responsible for extraction of data, so that keywords
-        can outsorce exctraction of values stored withn passed arguments"""
-
-
-        """
-        Mój problem polega na tym, że mamy dwie metody na rozpisanie tego jak zostają
-        zmienione rejesty i hardware w momencie kiedy jest uruchamiana funkcja - pytanie
-        pojawia się, kiedy chcemy dokonać oceny tego czy dana operacja jest dozwolona, lub jak zapisać argumenty:
-        
-        - gdzie powinna następować decyzja o tym, czy dany zestaw parametrów jest dopuszczalny
-        - gdzie powinien następować odczyt
-        - jak nadpisywać / odczytywać rejestry, zmienne i stos i dane
-
-        Przypadek 1 - dzieje się to po stronie silnik
-        
-        Zalety:
-        + uproszczony kod - odczyty i zapisy realizujemy po stronie silnika, unikając redundancji
-        w przygotowaniu
-        + jesteśmy w stenie uprościć kod funkcji
-
-        Wady:
-        - musimy być gotowi na różne wymagania funkcji - z tego powodu będziemy musieli mieć
-        wiedzę, nt. wymagań i sygnatury funkcji "na wstępie"
-        """
-
     #   Methods executed only at ititialization
 
     def _prepareFunctions(self):
