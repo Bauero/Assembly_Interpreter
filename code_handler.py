@@ -4,21 +4,8 @@ to engine. It can communicate with engine to provide functionali like calling fu
 or jumps. It is also responible for managing history or operations done by program
 """
 
-import os
 from preprocessor import loadMainFile
-from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed
-
-
-################################################################################
-#   Global variables
-################################################################################
-
-allowed_file_types = ['.s','.asm']
-
-################################################################################
-#   Classes
-################################################################################
-
+from helper_functions import loadFileFromPath
 
 class CodeHandler():
     """
@@ -33,21 +20,49 @@ class CodeHandler():
         self.files = {}
         self.currentlyExecutedFile = ""
         self.engine = engine
+        self.working_in_interactive_mode = False
 
-    def loadFile(self, path_to_file, ignore_size_limit, ignore_file_type):
-        raw_file = _loadFile(path_to_file, ignore_size_limit, ignore_file_type)
+    def readPrepareFile(self, path_to_file, ignore_size_limit, ignore_file_type):
+        """This function, reads file and prepare it's content for processing"""
+
+        raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
+        
+        #   Prepare data
         assert type(raw_file) == list
         self.rawfiles[path_to_file] = raw_file
-        preprocessed_file = loadMainFile(raw_file)
+        start, preprocessed_instrucitons = loadMainFile(raw_file)
+        self.pass_variable_to_engine(preprocessed_instrucitons)
+
+        #   Save variables inside Code Handler
+        self.start = start
         self.currentlyExecutedFile = path_to_file
         self.openFiles.append(path_to_file)
-        self.files[path_to_file] = preprocessed_file
+        self.files[path_to_file] = preprocessed_instrucitons
+
+        if start != (-1, [-1]):
+            return start[1]
+
+    def readInteractive(self, data : str):
+        text_in_linex = data.split("\n")
         
-        assert type(preprocessed_file) == dict
-        self.engine.informAboutLabels(preprocessed_file['labels'])
+        #   Prepare data
+        start, preprocessed_instrucitons = loadMainFile(text_in_linex)
+        self.pass_variable_to_engine(preprocessed_instrucitons)
+
+        #   Save variables inside Code Handler
+        self.start = start
+        self.files["interactive"] = preprocessed_instrucitons
+        self.currentlyExecutedFile = "interactive"
+
+        if start != (-1, [-1]):
+            return start[1]
+        
+    def pass_variable_to_engine(self, preprocessed_instrucitons):
+        assert type(preprocessed_instrucitons) == dict
+        self.engine.informAboutLabels(preprocessed_instrucitons['labels'])
         self.engine.informAboutVariables(
-            preprocessed_file['variables'],
-            preprocessed_file['data']
+            preprocessed_instrucitons['variables'],
+            preprocessed_instrucitons['data']
         )
 
     def executeCommand(self, command):
@@ -56,37 +71,6 @@ class CodeHandler():
     def gcefat(self):
         """Get Currently Executed File As Text"""
         return  "".join(self.rawfiles[self.currentlyExecutedFile])
-        
-
-################################################################################
-#   Functions variables
-################################################################################
-
-
-def _loadFile(path_to_file : str, 
-              ignore_size_limit : bool = False,
-              ignore_file_type : bool = False) -> list | Exception:
-    """
-    This function loads file (if one exist) and returns loaded file as subscribtable
-    object for further processing.
-
-    :param:
-    - `ignore_size_limit` : bool - allow to process file above 1MB
-    - `ignore_file_type` : bool - allow to process file with extenstion other than .s or .asm
-    """
-
-    if not os.path.exists(path_to_file):
-        raise FileDoesntExist(path_to_file)
-    elif not ignore_size_limit and os.path.getsize(path_to_file) > 1000000: # > 1MB
-        raise FileSizeMightBeTooBig(path_to_file)
-    elif not ignore_file_type and \
-        (ext := os.path.splitext(path_to_file)[-1]) not in allowed_file_types:
-        raise FileTypeNotAllowed(ext)
-
-    raw_file = []
-
-    with open(path_to_file) as file:
-        for line in file:
-            raw_file.append(line)
-
-    return raw_file
+    
+    def set_interactive_mode(self, value : bool):
+        self.working_in_interactive_mode = value
