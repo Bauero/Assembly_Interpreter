@@ -19,7 +19,7 @@ allowed_sections = ['code', 'stack', 'data', 'text']
 ################################################################################
 
 
-def loadMainFile(raw_file : list) -> dict | Exception:
+def loadMainFile(raw_file : list) -> tuple:
     """
     This function tries to read and load file speciphied in the path - this is main funciton
     responsible for reading code - executing it with success, shoudl allow to run code from
@@ -37,8 +37,9 @@ def loadMainFile(raw_file : list) -> dict | Exception:
     
     assembly_code = _wrapMultiLineData(assembly_code)
     assembly_code = _storeVariablesInData(assembly_code)
+    start = _decideWhereExecutioinStarts(assembly_code)
 
-    return assembly_code
+    return start, assembly_code
     
 
 ################################################################################
@@ -53,7 +54,7 @@ def _initialLoadAndCleanup(file : list):
 
     assembly_code = {
         'lines' : [],
-        'labels' : [],
+        'labels' : {},
         'variables' : {},
         'data' : Data()
     }
@@ -86,7 +87,7 @@ def _initialLoadAndCleanup(file : list):
 
         #   Save results
         if marker_in_line:
-            assembly_code['labels'].append(marker_in_line)
+            assembly_code['labels'][marker_in_line] = len(assembly_code['lines']) + 1
         
         assembly_code['lines'].append(
             {
@@ -317,3 +318,29 @@ def _storeVariablesInData(assembly_code):
             }
 
     return assembly_code
+
+def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
+    """
+    This function analyzes the code which is stored in variable assembly_code
+    and makes decision where to start the code. I assume that the execution starts
+    in 2 different scenarios:
+
+    1. At the "start" label, and if one is not present
+    2. At the first line which is not empty, doesn't contain comment, and belongs
+    to .code section
+    """
+
+    # Case 1
+    for label in assembly_code['labels']:
+        if label.lower() == 'start':
+            line_number = assembly_code['labels'][label]
+            if assembly_code['lines'][line_number]['section'] == '.code':
+                return (line_number, assembly_code['lines'][line_number]['lines'])
+    
+    # Case 2
+    for n, line in enumerate(assembly_code['lines']):
+        if line['section'] == '.code':
+            return n, line['lines']
+        
+    # No code to execute
+    return -1, [-1]
