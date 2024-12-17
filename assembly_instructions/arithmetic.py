@@ -300,7 +300,7 @@ def SBB(HardwareRegister : HardwareRegisters,
         values_in_binary.append(prep_val.zfill(final_size))
 
     # Convert substracted value using the observation that: A - B - CF = A + ( -(B + CF) )
-    tmp = int(values_in_binary[1], base=2) + int(FlagRegister.readFlag("CF"))
+    tmp = int(values_in_binary[1], base=2) + FlagRegister.readFlag("CF")
     values_in_binary[1] = bin(tmp)[2:].zfill(32)[-32:]
 
     # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
