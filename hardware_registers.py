@@ -8,27 +8,27 @@ from errors import RegisterNotImplemented
 class HardwareRegisters():
         
     def __init__(self):
-        self._EAX = [Node(0) for _ in range(32)]
-        self._AX, self._AH, self._AL = self._EAX[16:], self._EAX[16:24], self._EAX[24:]
-        self._EBX = [Node(0) for _ in range(32)]
-        self._BX, self._BH, self._BL = self._EBX[16:], self._EBX[16:24], self._EBX[24:]
-        self._ECX = [Node(0) for _ in range(32)]
-        self._CX, self._CH, self._CL = self._ECX[16:], self._ECX[16:24], self._ECX[24:]
-        self._EDX = [Node(0) for _ in range(32)]
-        self._DX, self._DH, self._DL = self._EDX[16:], self._EDX[16:24], self._EDX[24:]
+        self._AX = [Node(0) for _ in range(16)]
+        self._AH, self._AL = self._AX[-16:-8], self._AX[-8:]
+        self._BX = [Node(0) for _ in range(16)]
+        self._BH, self._BL = self._BX[-16:-8], self._BX[-8:]
+        self._CX = [Node(0) for _ in range(16)]
+        self._CH, self._CL = self._CX[-16:-8], self._CX[-8:]
+        self._DX = [Node(0) for _ in range(16)]
+        self._DH, self._DL = self._DX[-16:-8], self._DX[-8:]
 
-        self.ESI = [Node(0) for _ in range(32)]
-        self.EDI = [Node(0) for _ in range(32)]
-        self.ESP = [Node(0) for _ in range(32)]
-        self.EBP = [Node(0) for _ in range(32)]
+        self._SI = [Node(0) for _ in range(16)]
+        self._DI = [Node(0) for _ in range(16)]
+        self._SP = [Node(0) for _ in range(16)]
+        self._BP = [Node(0) for _ in range(16)]
 
         self._listOfRegisters = {
-            "EAX" : self._EAX, "AX"  : self._AX,  "AH"  : self._AH,  "AL"  : self._AL,
-            "EBX" : self._EBX, "BX"  : self._BX,  "BH"  : self._BH,  "BL"  : self._BL,
-            "ECX" : self._ECX, "CX"  : self._CX,  "CH"  : self._CH,  "CL"  : self._CL,
-            "EDX" : self._EDX, "DX"  : self._DX,  "DH"  : self._DH,  "DL"  : self._DL,
+            "AX"  : self._AX,  "AH"  : self._AH,  "AL"  : self._AL,
+            "BX"  : self._BX,  "BH"  : self._BH,  "BL"  : self._BL,
+            "CX"  : self._CX,  "CH"  : self._CH,  "CL"  : self._CL,
+            "DX"  : self._DX,  "DH"  : self._DH,  "DL"  : self._DL,
 
-            "ESI" : self.ESI, "ESP" : self.ESP, "EBP" : self.EBP, "EDI" : self.EDI, 
+            "SI" : self._SI, "SP" : self._SP, "BP" : self._BP, "DI" : self._DI, 
         }
 
         self._regList = list(self._listOfRegisters.keys())
@@ -62,7 +62,7 @@ class HardwareRegisters():
         if reg not in self._regList:
             raise RegisterNotImplemented
         
-        effReg = ["ESI","EDI","EBP","EBX"]
+        effReg = ["SI", "DI", "BP", "BX"]
 
         return reg in effReg
 
@@ -83,3 +83,12 @@ class HardwareRegisters():
             print(f"{register} : {v} = {int('0b'+v,2)}")
 
     def listRegisters(self):    return self._regList
+
+    def getSize(self, register : str):
+        last_letter = register.upper()[-1]
+        match last_letter:
+            case "X":   return 16
+            case "I":   return 16
+            case "P":   return 16
+            case "H":   return 8
+            case "L":   return 8
