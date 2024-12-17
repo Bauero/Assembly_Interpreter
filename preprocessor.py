@@ -304,17 +304,17 @@ def _storeVariablesInData(assembly_code):
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()
 
-        storage_size = return_size_from_name(dtt)
+        storage_size = return_size_from_name(dtt)   # 8, 16, 32 etc. bits
 
         #   Write data, and receive it's size in data section
         start_add, size = assembly_code['data'].add_data(storage_size, var_content)
 
         #   If data have a name, store it with address, size and format
         if var_name:
-            assembly_code['variables'][var_name] = {
-                'address'   : start_add,
-                'size'      : size,
-                'format'    : storage_size
+            assembly_code['variables'][var_name] = {    # data : "ala"   # data : 68   # data : "Mati"
+                'address'   : start_add,                # 0              # 3           # 4
+                'size'      : size,                     # 3 (bytes)      # 1           # 8 (4 * 16 bits = 8 bytes)
+                'format'    : storage_size              # 8 (bits)       # 8 (bits)    # 16 bits
             }
 
     return assembly_code
