@@ -16,23 +16,6 @@ def CLC(HardwareRegister : HardwareRegisters,
         **kwargs):
     """CLEAR CARRY FLAG - This instruction sets carry flag to 0"""
 
-    CLC.__setattr__('params_range', [])
-    CLC.__setattr__('allowed_params_combinations', [])
-
-    FlagRegister.setFlag("CF", 0)
-    return None
-
-def STC(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Stack : Stack,
-        Data : Data,
-        Variables : dict,
-        **kwargs):
-    """SET CARRY FLAG - This instruction sets carry flag to 1"""
-
-    STC.__setattr__('params_range', [])
-    STC.__setattr__('allowed_params_combinations', [])
-
     FlagRegister.setFlag("CF", 0)
     return None
 
@@ -44,8 +27,29 @@ def CMC(HardwareRegister : HardwareRegisters,
         **kwargs):
     """COMPLEMENT CARRY FLAGA - This instruction reverses value of carry flag"""
 
-    CMC.__setattr__('params_range', [])
-    CMC.__setattr__('allowed_params_combinations', [])
-
     FlagRegister.setFlag("CF", not FlagRegister.readFlag("CF"))
     return None
+
+def STC(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        **kwargs):
+    """SET CARRY FLAG - This instruction sets carry flag to 1"""
+
+    FlagRegister.setFlag("CF", 1)
+    return None
+
+################################################################################
+#   FUNCTION ATTRIBUTES
+################################################################################
+
+CLC.params_range = [0]
+CLC.allowed_params_combinations = [()]
+
+CMC.params_range = [0]
+CMC.allowed_params_combinations = [()]
+
+STC.params_range = [0]
+STC.allowed_params_combinations = [()]
