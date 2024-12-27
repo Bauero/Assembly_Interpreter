@@ -35,10 +35,11 @@ class MultipurposeRegister(QWidget):
     high and low bits as well as a dedicated field for displaying decimal value of register
     """
 
-    def __init__(self, register_name, text_color = 'white', custom_name = ''):
+    def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
 
-        self.name = register_name
+        self.register_name = register_name
+        self.HR = HR
         
         # Main horizontal layout for the row
         row_layout = QHBoxLayout()
@@ -99,7 +100,7 @@ class MultipurposeRegister(QWidget):
         
         # Set the layout for this widget
         self.setLayout(row_layout)
-        self._setRegisterValue(0)
+        self.update()
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
@@ -125,8 +126,11 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setText(value[-8:])
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
+    def update(self):
+        self._setRegisterValue(self.HR.readFromRegister(self.register_name))
+
     def get_name(self):
-        return self.name
+        return self.register_name
     
     def set_interactive(self, value : bool = False):
         # self.register_upper_bits.setReadOnly(not value) # uncomment this line for 32
@@ -135,10 +139,11 @@ class MultipurposeRegister(QWidget):
         self.register_decimal_value.setReadOnly(not value)
 
 class FunctionalRegisters(QWidget):
-    def __init__(self, register_name, text_color = 'white', custom_name = ''):
+    def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
 
         self.register_name = register_name
+        self.HR = HR
 
         row_layout = QHBoxLayout()
 
@@ -169,7 +174,7 @@ class FunctionalRegisters(QWidget):
         row_layout.addWidget(self.register_decimal_value)
 
         self.setLayout(row_layout)
-        self._setRegisterValue(0)
+        self.update()
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
@@ -195,6 +200,9 @@ class FunctionalRegisters(QWidget):
 
     # Methods dedicated for interactive mode
 
+    def update(self):
+        self._setRegisterValue(self.HR.readFromRegister(self.register_name))
+
     def get_name(self):
         return self.register_name
 
@@ -203,8 +211,10 @@ class FunctionalRegisters(QWidget):
 
 class FlagRegister(QWidget):
 
-    def __init__(self):
+    def __init__(self, FR):
         super().__init__()
+
+        self.FR = FR
 
         wrapper = QHBoxLayout()
         body = QFormLayout()
@@ -241,7 +251,7 @@ class FlagRegister(QWidget):
         for attr_name in dir(self):
             if attr_name.endswith('_flag'):
                 attr_value = getattr(self, attr_name)
-                definition = getattr(FR(), f"def_{attr_name}")
+                definition = getattr(FR, f"def_{attr_name}")
                 attr_value.setToolTip(f'{definition()}')
                 attr_value.setModifiable(False)
                 if tmp < 5:
@@ -262,7 +272,7 @@ class FlagRegister(QWidget):
         wrapper.setStretch(1,1)     
 
         self.setLayout(wrapper)
-        self._setRegisterValue(4)
+        self.update()
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
@@ -296,6 +306,9 @@ class FlagRegister(QWidget):
         self.carry_flag.            setChecked(value[-1] == "1")
 
     
+    def update(self):
+        self._setRegisterValue(self.FR.readFlags())
+
     def get_name(self):
         return "FLAGS"
     

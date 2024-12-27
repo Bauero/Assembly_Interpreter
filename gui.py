@@ -120,17 +120,19 @@ class MainWindow(QWidget):
         self.variableSetion.setFixedWidth(300)
 
         # Add widgets to the left section
+        HR = self.code_handler.engine.HR
+        FR = self.code_handler.engine.FR
         self.left_section_elements = [
-            MultipurposeRegister("AX", "#3099FF", 'Arithmetic & general purpose'),
-            MultipurposeRegister("BX", "#3099FF", 'Used for memory & general purpose'),
-            MultipurposeRegister("CX", "#3099FF", 'Counter & general purpose register'),
-            MultipurposeRegister("DX", "#3099FF", 'Usef for memory, and buffor for some instrucitons like div'),
-            FunctionalRegisters("SI", 'orange', "Source Index Register"),
-            FunctionalRegisters("DI", 'orange', "Destination Index Register"),
-            FunctionalRegisters("SP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'),
-            FunctionalRegisters("BP", 'orange', 'Points to the base of stack'),
-            FunctionalRegisters("IP", "#CC3F0C", "Instruction Pointer Register"),
-            FlagRegister()
+            MultipurposeRegister(HR, "AX", "#3099FF", 'Arithmetic & general purpose'),
+            MultipurposeRegister(HR, "BX", "#3099FF", 'Used for memory & general purpose'),
+            MultipurposeRegister(HR, "CX", "#3099FF", 'Counter & general purpose register'),
+            MultipurposeRegister(HR, "DX", "#3099FF", 'Usef for memory, and buffor for some instrucitons like div'),
+            FunctionalRegisters(HR, "SI", 'orange', "Source Index Register"),
+            FunctionalRegisters(HR, "DI", 'orange', "Destination Index Register"),
+            FunctionalRegisters(HR, "SP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'),
+            FunctionalRegisters(HR, "BP", 'orange', 'Points to the base of stack'),
+            FunctionalRegisters(HR, "IP", "#CC3F0C", "Instruction Pointer Register"),
+            FlagRegister(FR)
         ]
         
         self._set_interactive_mode()
@@ -171,7 +173,7 @@ class MainWindow(QWidget):
         self.startAutoExecButton.clicked.   connect(lambda: self._toggle_automatic_execution)
         
         # Design custom comboBox, with values and pick default
-        comboBoxLabel = QLabel('Szybkość następnej instrukcji')
+        comboBoxLabel = QLabel('Odstęp do następnej instrukcji')
         comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
         for t in ['0.1s', '0.5s', '1s', '2s', '5s']:
@@ -379,8 +381,9 @@ class MainWindow(QWidget):
             case 'execute_instruction':
                 response = self.code_handler.executeCommand('execute_instruction')
                 self._act_on_response(response)
+                self._refresh()
             case 'reverse_instruction':
-                ...
+                self._refresh()
 
     # def _toggleVariableSectionVisible(self):
     #     self.variableSetion.setHidden(not self.variableSetion.isHidden())
@@ -394,6 +397,7 @@ class MainWindow(QWidget):
         """
 
         if response['status'] == 0:
+            self.code_field.setHighlight(response["highlight"])
             # TODO update registers, and highlight new instruction
             ...
         elif response['status'] == 1:
@@ -403,6 +407,9 @@ class MainWindow(QWidget):
             # TODO handle undefined error
             ...
 
+    def _refresh(self):
+        for element in self.left_section_elements:
+            element.update()
 
 
 if __name__ == "__main__":
