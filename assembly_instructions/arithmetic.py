@@ -42,7 +42,7 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters,
                               Stack : Stack, Data : Data, Variables : dict,
                               value : list, destination : int, name : str = ""):
 
-    oryginal_val = None
+    oryginal_val : list | str = []
     modified = None
 
     match destination:
@@ -73,10 +73,10 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters,
             ...
 
     response = {
-        "location" : name,
-        "modified_type" : modified,
-        "oryginal_value" : oryginal_val,
-        "new_value" : value
+        "location" :        name,
+        "modified_type" :   modified,
+        "oryginal_value" :  list(map(int, oryginal_val)),
+        "new_value" :       list(map(int, value))
     }
 
     return response
@@ -90,12 +90,6 @@ def ADD(HardwareRegister : HardwareRegisters,
         Variables : dict,
         **kwargs):
     """This function performs addition"""
-
-    ADD.__setattr__('params_range', [2])
-    ADD.__setattr__('allowed_params_combinations', [
-        (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-        (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
-    ])
 
     final_size = kwargs['final_size']
 
@@ -152,12 +146,6 @@ def ADC(HardwareRegister : HardwareRegisters,
         Variables : dict,
         **kwargs):
     """This funciton performs ADD with carry"""
-
-    ADC.__setattr__('params_range', [2])
-    ADC.__setattr__('allowed_params_combinations', [
-        (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-        (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
-    ])
 
     final_size = kwargs['final_size']
 
@@ -216,12 +204,6 @@ def SUB(HardwareRegister : HardwareRegisters,
         **kwargs):
     """This function performs substraction (A - B)"""
     
-    SUB.__setattr__('params_range', [2])
-    SUB.__setattr__('allowed_params_combinations', [
-        (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-        (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
-    ])
-    
     final_size = kwargs['final_size']
     values_in_binary = []
     
@@ -279,12 +261,6 @@ def SBB(HardwareRegister : HardwareRegisters,
         **kwargs):
     """This function performs substraction with borrow (A - B - CF)"""
     
-    SBB.__setattr__('params_range', [2])
-    SBB.__setattr__('allowed_params_combinations', [
-        (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-        (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
-    ])
-    
     final_size = kwargs['final_size']
     values_in_binary = []
     
@@ -337,3 +313,33 @@ def SBB(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     return o
+
+
+################################################################################
+#   SET FUNCITON ATTRIBUTES
+################################################################################
+
+
+ADD.params_range = [2]
+ADD.allowed_params_combinations = [
+    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
+    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+]
+
+ADD.params_range = [2]
+ADD.allowed_params_combinations = [
+    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
+    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+]
+
+SUB.params_range = [2]
+SUB.allowed_params_combinations = [
+    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
+    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+]
+
+SBB.params_range = [2]
+SBB.allowed_params_combinations = [
+    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
+    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+]
