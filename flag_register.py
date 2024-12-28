@@ -5,6 +5,8 @@ write operations to flag register, and holds definions for meaning of each flag
 
 from extration_of_data import bitsToInt
 
+list_of_flags = ["MD", "NT", "IO"," PL", "OF", "DF", "IF", "TF", "SF", "ZF", "PF", "CF"]
+
 class FlagRegister():
     
 	def __init__(self):
@@ -14,20 +16,22 @@ class FlagRegister():
 
 	#	set given flag to setValue
 	def setFlag(self, flag, setValue):
+		setValue = int(bool(setValue))
 		match(flag):
-				case "MD":	self.FLAGS[-16] = setValue
-				case "NT":  self.FLAGS[-15] = setValue
-				case "IO":  self.FLAGS[-14] = setValue
-				case "PL":  self.FLAGS[-13] = setValue
-				case "OF":  self.FLAGS[-12] = setValue
-				case "DF":  self.FLAGS[-11] = setValue
-				case "IF":  self.FLAGS[-10] = setValue
-				case "TF":  self.FLAGS[-9 ] = setValue
-				case "SF":  self.FLAGS[-8 ] = setValue
-				case "ZF":  self.FLAGS[-5 ] = setValue
-				case "PF":  self.FLAGS[-3 ] = setValue
-				case "CF":  self.FLAGS[-1 ] = setValue
-				case _: 	self.FLAGS[flag] = setValue
+			case "MD":	self.FLAGS[-16] = setValue
+			case "NT":  self.FLAGS[-15] = setValue
+			case "IO":  self.FLAGS[-14] = setValue
+			case "PL":  self.FLAGS[-13] = setValue
+			case "OF":  self.FLAGS[-12] = setValue
+			case "DF":  self.FLAGS[-11] = setValue
+			case "IF":  self.FLAGS[-10] = setValue
+			case "TF":  self.FLAGS[-9 ] = setValue
+			case "SF":  self.FLAGS[-8 ] = setValue
+			case "ZF":	self.FLAGS[-7 ] = setValue
+			case "AF":  self.FLAGS[-5 ] = setValue
+			case "PF":  self.FLAGS[-3 ] = setValue
+			case "CF":  self.FLAGS[-1 ] = setValue
+			case _: 	self.FLAGS[flag] = setValue
 
 	def setFlagRaw(self, valueInBits):
 		if valueInBits.startswith("Ob"):
@@ -39,11 +43,6 @@ class FlagRegister():
 	def setFlags(self, flagON : list = [], argOFF :list = []):
 		for f in flagON: self.setFlag(f,1)
 		for f in argOFF: self.setFlag(f,0)
-
-	def getRequiredFlags(self, name):
-		match(name):
-			case "ADC":	return ["CF"]
-			case _: return []
 
 	#	resetting self.flags
 	def clearFlags(self):
@@ -58,7 +57,24 @@ class FlagRegister():
 		result = ""
 		for i in self.FLAGS: result += str(i)
 		return result
-
+	
+	def readFlag(self, flag : str):
+		flag = flag.upper()
+		if flag in list_of_flags:
+			match(flag):
+				case "MD":	return self.FLAGS[-16]
+				case "NT":  return self.FLAGS[-15]
+				case "IO":  return self.FLAGS[-14]
+				case "PL":  return self.FLAGS[-13]
+				case "OF":  return self.FLAGS[-12]
+				case "DF":  return self.FLAGS[-11]
+				case "IF":  return self.FLAGS[-10]
+				case "TF":  return self.FLAGS[-9 ]
+				case "SF":  return self.FLAGS[-8 ]
+				case "ZF":	return self.FLAGS[-7 ]
+				case "AF":  return self.FLAGS[-5 ]
+				case "PF":  return self.FLAGS[-3 ]
+				case "CF":  return self.FLAGS[-1 ]
 
 	###################		CONSOLE, SHOW FLAG REGISTER CONTENT		###################		
 
@@ -70,6 +86,7 @@ class FlagRegister():
 		print(f"FL :  {result}  =  {dec}")
 
 	#	print flag register specifically
+	# 	source: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 	def printFlagsSpec(self):
 		print("Power	Sign 	Fl. Name	  Set	Meaning\n")
 		print(f"15	MD	Mode Flag	  {self.FLAGS[0]}	1 NATIVE MODE |" + 
@@ -90,13 +107,13 @@ class FlagRegister():
 
 		print(f"7	SF	Sign flag 	  {self.FLAGS[8]}	1 = NG(Negative) | 0 = PL(Positive)")
 		print(f"6	ZF	Zero flag	  {self.FLAGS[9]}	1 = NG(Negative) | 0 = PL(Positive)")
-		print(f"5	-	Reserved 	  {self.FLAGS[10]}	-")
+		print(f"5	-	Reserved 	  {self.FLAGS[10]}	0 - Always")
 		print(f"4	AF	Auxiliary Carry	  {self.FLAGS[11]}	1 = AC(Auxiliary Carry) | 0 "
 		+ "= NA(No Auxiliary Carry)")
 		
-		print(f"3	-	Reserved	  {self.FLAGS[12]}	-")
+		print(f"3	-	Reserved	  {self.FLAGS[12]}	0 - Always")
 		print(f"2	PF	Parity Flag	  {self.FLAGS[13]}	1 = PE(Parity Even) | 0 = PO(Parity Odd)")
-		print(f"1	-	Reserved	  {self.FLAGS[14]}	1 = Always")
+		print(f"1	-	Reserved	  {self.FLAGS[14]}	1 - Always")
 		print(f"0	CF	Carry Flag	  {self.FLAGS[15]}	1 = CY(Carry) | 0 = NC(No Carry)")
 
 
