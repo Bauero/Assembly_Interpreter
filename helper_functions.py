@@ -43,12 +43,12 @@ def covert_number_to_bit_list(value : str | int | list, size : int = 8):
     negative_value = False
 
     def _convert_str(value):
-        if  new_value := return_if_base_2_value(value):
-            conv_value = list(new_value)
-        elif new_value := return_if_base_16_value(value):
+        if new_value := return_if_base_16_value(value):
             conv_value = list(bin(int(new_value, base=16))[2:])
         elif return_if_base_10_value(value):
             conv_value = list(bin(int(value))[2:])
+        elif  new_value := return_if_base_2_value(value):
+            conv_value = list(new_value)
         else:
             raise WrongNumberBase(f"Number '{value}' seems to not belong to binary," +\
                                 " decimal or hexadecimal numbers")
