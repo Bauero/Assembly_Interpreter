@@ -36,7 +36,6 @@ class HardwareRegisters():
         }
 
         self._regList = list(self._listOfRegisters.keys())
-
         self.cleanAllRegisters()
 
         self.writeIntoRegister("AX", 11)
