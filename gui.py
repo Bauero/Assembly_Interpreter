@@ -1,7 +1,7 @@
 """
 This file contains main funciton responsible for handling a gui app
 """
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, QThread, pyqtSlot
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QWidget,
@@ -19,6 +19,8 @@ from PyQt6.QtWidgets import (
 from custom_gui_elements import *
 from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, \
                    ImproperJumpMarker, ImproperDataDefiniton
+from helper_functions import loadFileFromPath
+from color_pallete import *
 
 class MainWindow(QWidget):
     """
@@ -29,7 +31,10 @@ class MainWindow(QWidget):
     def __init__(self, code_handler):
         super().__init__()
         self.code_handler = code_handler
+        self.interactive_mode = False
         self._createUserInterface()
+        self.instructionCounter = 10
+        self.program_running = False
 
     def _createUserInterface(self):
         """This funciton creates whole UI interface"""
@@ -103,6 +108,7 @@ class MainWindow(QWidget):
         self.leftSection = QWidget()
         leftSectionLayout = QFormLayout()
         leftSectionLayout.setAlignment(alg_top)
+        # leftSectionLayout 
 
         # Right column of the page
         self.rightSection = QWidget()
@@ -110,67 +116,81 @@ class MainWindow(QWidget):
 
         # Optional varaible section
         self.variableSetion = QTextEdit()
-        self.variableSetion.setHidden(True)
+        # self.variableSetion.setHidden(True)
         self.variableSetion.setFixedWidth(300)
 
         # Add widgets to the left section
-        leftSectionLayout.addWidget(MultipurposeRegister("EAX", "#3099FF", 'Arithmetic & general purpose'))
-        leftSectionLayout.addWidget(MultipurposeRegister("EBX", "#3099FF", 'Used for memory & general purpose'))
-        leftSectionLayout.addWidget(MultipurposeRegister("ECX", "#3099FF", 'Counter & general purpose register'))
-        leftSectionLayout.addWidget(MultipurposeRegister("EDX", "#3099FF"))
-        leftSectionLayout.addWidget(FunctionalRegisters("ESI", 'orange'))
-        leftSectionLayout.addWidget(FunctionalRegisters("EDI", 'orange'))
-        leftSectionLayout.addWidget(FunctionalRegisters("ESP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'))
-        leftSectionLayout.addWidget(FunctionalRegisters("EBP", 'orange', 'Points to the base of stack'))
-        leftSectionLayout.addWidget(FunctionalRegisters("IP", "#CC3F0C"))
-        leftSectionLayout.addWidget(FlagRegister())
+        HR = self.code_handler.engine.HR
+        FR = self.code_handler.engine.FR
+        self.left_section_elements = [
+            MultipurposeRegister(HR, "AX", "#3099FF", 'Arithmetic & general purpose'),
+            MultipurposeRegister(HR, "BX", "#3099FF", 'Used for memory & general purpose'),
+            MultipurposeRegister(HR, "CX", "#3099FF", 'Counter & general purpose register'),
+            MultipurposeRegister(HR, "DX", "#3099FF", 'Usef for memory, and buffor for some instrucitons like div'),
+            FunctionalRegisters(HR, "SI", 'orange', "Source Index Register"),
+            FunctionalRegisters(HR, "DI", 'orange', "Destination Index Register"),
+            FunctionalRegisters(HR, "SP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'),
+            FunctionalRegisters(HR, "BP", 'orange', 'Points to the base of stack'),
+            FunctionalRegisters(HR, "IP", "#CC3F0C", "Instruction Pointer Register"),
+            FlagRegister(FR)
+        ]
+        
+        self._set_interactive_mode()
+
+        for element in self.left_section_elements:
+            leftSectionLayout.addWidget(element)
 
         self.leftSection.setLayout(leftSectionLayout)
         centralLayout.addWidget(self.leftSection)
 
-        # Create control buttons in right seciton
-        self.nextLineButton = QPushButton('Następna linia')
-        self.nextLineButton.setEnabled(False)
-        self.nextLineButton.clicked.connect(lambda: self._executeCommand('next_line'))
-        self.previousLineButton = QPushButton('Poprzednia linia')
-        self.previousLineButton.setEnabled(False)
-        self.previousLineButton.clicked.connect(lambda: self._executeCommand('previous_line'))
-        self.showVariables = QPushButton('Pokaż zmienne')
-        self.showVariables.clicked.connect(self._toggleVariableSectionVisible)
-
-        self.startExecutionButton = QPushButton('Start')
-        self.startExecutionButton.clicked.connect(lambda: self._executeCommand('start'))
-        self.pauseExecutionButton = QPushButton('Pauza')
-        self.pauseExecutionButton.setEnabled(False)
-        self.pauseExecutionButton.clicked.connect(lambda: self._executeCommand('pause'))
-        self.saveStateButton = QPushButton('Zapisz stan')
-        self.saveStateButton.setEnabled(False)
-        self.saveStateButton.clicked.connect(lambda: self._executeCommand('save_state'))
+        # Create all buttons for right section 
+        self.nextLineButton         = QPushButton('Wykonaj instrukcję')
+        self.previousLineButton     = QPushButton('Powrót do poprzedniej instrukcji')
+        # self.showVariables          = QPushButton('Pokaż zmienne')
+        self.startExecutionButton   = QPushButton('Uruchom program')
+        # self.pauseExecutionButton   = QPushButton('Zatrzymaj wykonanie kodu')
+        self.saveStateButton        = QPushButton('Zapisz stan')
+        self.startAutoExecButton    = QPushButton('Automatyczna egzeukcja kodu')
         
-        self.startAutoExecButton = QPushButton('Automatyczna egzeukcja kodu')
-        self.startAutoExecButton.setEnabled(True)
-        self.startAutoExecButton.setCheckable(True)
-        # self.startAutoExecButton.setStyleSheet("color: #3E7CFF;")
-        self.startAutoExecButton.clicked.connect(self._toggle_automatic_execution)
-        comboBoxLabel = QLabel('Częstotliwosć wykonywania komend')
+        # Set if buttons are enabled, and if are checkable
+        self.nextLineButton.        setEnabled(self.interactive_mode)
+        self.previousLineButton.    setEnabled(self.interactive_mode)
+        # self.pauseExecutionButton.  setEnabled(self.interactive_mode)
+        self.saveStateButton.       setEnabled(self.interactive_mode)
+        self.startAutoExecButton.   setEnabled(True)
+        self.startAutoExecButton.   setCheckable(True)
+
+        # Style buttons
+        self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
+        
+        # Link buttons with functions
+        self.nextLineButton.clicked.        connect(lambda: self._executeCommand('execute_instruction'))
+        self.previousLineButton.clicked.    connect(lambda: self._executeCommand('reverse_instruction'))
+        # self.showVariables.clicked.         connect(lambda: self._toggleVariableSectionVisible())
+        self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
+        # self.pauseExecutionButton.clicked.  connect(lambda: self._executeCommand('pause'))
+        self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
+        self.startAutoExecButton.clicked.   connect(lambda: self._toggle_automatic_execution)
+        
+        # Design custom comboBox, with values and pick default
+        comboBoxLabel = QLabel('Odstęp do następnej instrukcji')
         comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
-        self.executionFrequencyList.addItem('0.1s')
-        self.executionFrequencyList.addItem('0.5s')
-        self.executionFrequencyList.addItem('1s')
-        self.executionFrequencyList.addItem('2s')
-        self.executionFrequencyList.addItem('5s')
+        for t in ['0.1s', '0.5s', '1s', '2s', '5s']:
+            self.executionFrequencyList.addItem(t)
         self.executionFrequencyList.setCurrentIndex(2)
+        self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
+        # self.executionFrequencyList.currentIndex()
 
         # Combine buttons into rows for right column
         row_1 = QHBoxLayout()
         row_1.addWidget(self.nextLineButton)
         row_1.addWidget(self.previousLineButton)
-        row_1.addWidget(self.showVariables)
+        # row_1.addWidget(self.showVariables)
 
         row_2 = QHBoxLayout()
         row_2.addWidget(self.startExecutionButton)
-        row_2.addWidget(self.pauseExecutionButton)
+        # row_2.addWidget(self.pauseExecutionButton)
         row_2.addWidget(self.saveStateButton)
 
         row_3 = QHBoxLayout()
@@ -203,6 +223,17 @@ class MainWindow(QWidget):
     #   Functions which will be called as an action of buttons
     ############################################################################
 
+    def _set_interactive_mode(self, interactive_active : bool = False):
+        for element in self.left_section_elements:
+            setattr(self, element.get_name(), element)
+            element.set_interactive(interactive_active)
+        self.variableSetion.setHidden(False)
+
+    def on_frequency_change(self, index):
+        # Perform the action you want when the selection changes
+        selected_value = self.executionFrequencyList.itemText(index)
+        self._executeCommand(selected_value)
+
     @pyqtSlot()
     def _select_file_to_open_dialog(self):
         """Propt user to select file & handles excptions"""
@@ -223,8 +254,10 @@ class MainWindow(QWidget):
                 if not file_path: return
 
             try:
-                self.code_handler.loadFile(file_path, ignore_size_limit, ignore_file_type)
-
+                lines = self.code_handler.readPrepareFile(file_path, ignore_size_limit, ignore_file_type)
+                self.code_field.setText( self.code_handler.gcefat() )
+                self.code_field.setHighlight(lines)
+                self.code_field.setEditable(False)
             except FileDoesntExist:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Icon.Critical)
@@ -280,6 +313,9 @@ class MainWindow(QWidget):
                 msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
                 ans = msg.exec()
                 if ans == 2:
+                    raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
+                    self.code_field.setText("".join(raw_file))
+                    self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
                     self._open_interactive_mode()
                 return
             except ImproperJumpMarker as e:
@@ -291,6 +327,9 @@ class MainWindow(QWidget):
                 msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
                 ans = msg.exec()
                 if ans == 2:
+                    raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
+                    self.code_field.setText("".join(raw_file))
+                    self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
                     self._open_interactive_mode()
                 return
             except Exception as e:
@@ -302,20 +341,20 @@ class MainWindow(QWidget):
                 return
             
             break
-        
-        self.code_field.setText( self.code_handler.gcefat() )
+
         self.pagesStack.setCurrentIndex(1)
-        self.code_field.setEditable(False)
-        self.code_field.setHighlight([4,5])
         
     @pyqtSlot()
     def _open_interactive_mode(self):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Critical)
-        msg.setWindowTitle("Opcja niedostępna")
-        msg.setText("Ta funkcjonalność jeszcze nie została dodana")
-        msg.setStandardButtons(ok_button)
-        ans = msg.exec()
+        # msg = QMessageBox()
+        # msg.setIcon(QMessageBox.Icon.Critical)
+        # msg.setWindowTitle("Opcja niedostępna")
+        # msg.setText("Ta funkcjonalność jeszcze nie została dodana")
+        # msg.setStandardButtons(ok_button)
+        # ans = msg.exec()
+
+        self._set_interactive_mode(True)
+        self.pagesStack.setCurrentIndex(1)
 
     @pyqtSlot()
     def _toggle_automatic_execution(self):
@@ -323,30 +362,55 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _executeCommand(self, command):
-        try:
+    
+        match command:
+            case 'start_stop':
+                if self.program_running:
+                    self.nextLineButton.setEnabled(False)
+                    self.previousLineButton.setEnabled(False)
+                    self.startExecutionButton.setText("Uruchom program")
+                    self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
+                else:
+                    self.nextLineButton.setEnabled(True)
+                    if self.instructionCounter > 0:
+                        self.previousLineButton.setEnabled(True)
+                    self.startExecutionButton.setText( "Zatrzymaj program")
+                    self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
+                self.program_running = not self.program_running
+                #   TODO connect automatic code executioin
+            case 'execute_instruction':
+                response = self.code_handler.executeCommand('execute_instruction')
+                self._act_on_response(response)
+                self._refresh()
+            case 'reverse_instruction':
+                self._refresh()
+
+    # def _toggleVariableSectionVisible(self):
+    #     self.variableSetion.setHidden(not self.variableSetion.isHidden())
+
+    def _act_on_response(self, response : dict):
+        """
+        This funciton is suppose to handle answers from CodeHandler - when we request to
+        perform some action with code, CodeHandler, tries to do it using Engine, and 
+        returns status of this action - 0 = success ; 1 = defined error ; -1 = undefined error.
+        Response is returned in form of dictionary which contains mandatory filed - "status"
+        """
+
+        if response['status'] == 0:
+            self.code_field.setHighlight(response["highlight"])
+            # TODO update registers, and highlight new instruction
             ...
-        except Exception as e:
+        elif response['status'] == 1:
+            # TODO handle normal error - inform user what is wrong with code
+            ...
+        elif response['status'] == -1:
+            # TODO handle undefined error
             ...
 
-    def _toggleVariableSectionVisible(self):
-        self.variableSetion.setHidden(not self.variableSetion.isHidden())
-        # if self.variableSetion.isHidden():
-        #     old_width = self.width()
-        #     self.variableSetion.setHidden(False)
-        #     self.resize(old_width - 200, self.height())
-        # else:
-        #     self.variableSetion.setHidden(True)
-        # if self.variableSetion.isHidden():
-        #     # Shrink the width
-        #     self.setGeometry(460, 160, 1000, 400)
-        #     self.layout().update()  # Ensure the layout accounts for the new widget state
-        #     new_width = self.width() - self.variableSetion.width()
-        # else:
-        #     # Expand the width to accommodate the section
-        #     new_width = self.width() + self.variableSetion.width()
+    def _refresh(self):
+        for element in self.left_section_elements:
+            element.update()
 
-        # # Set the new size dynamically
-        # 
 
 if __name__ == "__main__":
     import sys

@@ -1,6 +1,6 @@
 #from op1arg import PUSH, POP
-from stack import saveValueToStack, readFromStack
-from multipurpose_registers import writeIntoRegister, readFromRegister
+from stack_oryginal import saveValueToStack, readFromStack
+from hardware_registers import writeIntoRegister, readFromRegister
 from extration_of_data import stringToInt, bitsToInt
 from flag_register import readFlags, setFlagRaw
 

@@ -5,6 +5,7 @@ allow for it's further use inside program.
 import os
 from re import match, search, sub
 from datatypes import Data
+from helper_functions import return_size_from_name
 from errors import ImproperJumpMarker, ImproperDataDefiniton
 
 ################################################################################
@@ -18,7 +19,7 @@ allowed_sections = ['code', 'stack', 'data', 'text']
 ################################################################################
 
 
-def loadMainFile(raw_file : list) -> dict | Exception:
+def loadMainFile(raw_file : list) -> tuple:
     """
     This function tries to read and load file speciphied in the path - this is main funciton
     responsible for reading code - executing it with success, shoudl allow to run code from
@@ -36,8 +37,9 @@ def loadMainFile(raw_file : list) -> dict | Exception:
     
     assembly_code = _wrapMultiLineData(assembly_code)
     assembly_code = _storeVariablesInData(assembly_code)
+    start = _decideWhereExecutioinStarts(assembly_code)
 
-    return assembly_code
+    return start, assembly_code
     
 
 ################################################################################
@@ -52,7 +54,7 @@ def _initialLoadAndCleanup(file : list):
 
     assembly_code = {
         'lines' : [],
-        'labels' : [],
+        'labels' : {},
         'variables' : {},
         'data' : Data()
     }
@@ -71,7 +73,7 @@ def _initialLoadAndCleanup(file : list):
             continue
 
         #   Detect indentifiers (points where code could jump to)
-        if match("^[a-zA-Z_][a-zA-Z0-9_]*:", line):
+        if match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
             values = line.split(':')
             assert len(values) > 0, 'Empty ":" in line - did you forget the identifier?'
             
@@ -80,12 +82,12 @@ def _initialLoadAndCleanup(file : list):
                 marker_in_line, line = values
                 
         #   Detect imporper line with ":"
-        if match("(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
+        if match(r"(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
             raise ImproperJumpMarker(number, f"\nIncorrect line with \":\" -> [{line}]'")
 
         #   Save results
         if marker_in_line:
-            assembly_code['labels'].append(marker_in_line)
+            assembly_code['labels'][marker_in_line] = len(assembly_code['lines']) + 1
         
         assembly_code['lines'].append(
             {
@@ -302,25 +304,43 @@ def _storeVariablesInData(assembly_code):
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()
 
-        match dtt.lower():
-            case "byte":    storage_size = 8
-            case 'db':      storage_size = 8
-            case "word":    storage_size = 16
-            case 'dw':      storage_size = 16
-            case "dword":   storage_size = 32
-            case 'dd':      storage_size = 32
-            case "qword":   storage_size = 64
-            case 'dq':      storage_size = 64
+        storage_size = return_size_from_name(dtt)   # 8, 16, 32 etc. bits
 
         #   Write data, and receive it's size in data section
         start_add, size = assembly_code['data'].add_data(storage_size, var_content)
 
         #   If data have a name, store it with address, size and format
         if var_name:
-            assembly_code['variables'][var_name] = {
-                'address'   : start_add,
-                'size'      : size,
-                'format'    : storage_size
+            assembly_code['variables'][var_name] = {    # data : "ala"   # data : 68   # data : "Mati"
+                'address'   : start_add,                # 0              # 3           # 4
+                'size'      : size,                     # 3 (bytes)      # 1           # 8 (4 * 16 bits = 8 bytes)
+                'format'    : storage_size              # 8 (bits)       # 8 (bits)    # 16 bits
             }
 
     return assembly_code
+
+def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
+    """
+    This function analyzes the code which is stored in variable assembly_code
+    and makes decision where to start the code. I assume that the execution starts
+    in 2 different scenarios:
+
+    1. At the "start" label, and if one is not present
+    2. At the first line which is not empty, doesn't contain comment, and belongs
+    to .code section
+    """
+
+    # Case 1
+    for label in assembly_code['labels']:
+        if label.lower().endswith('start'):
+            line_number = assembly_code['labels'][label]
+            if assembly_code['lines'][line_number]['section'] == '.code':
+                return (line_number, assembly_code['lines'][line_number]['lines'])
+    
+    # Case 2
+    for n, line in enumerate(assembly_code['lines']):
+        if line['section'] == '.code':
+            return n, line['lines']
+        
+    # No code to execute
+    return -1, [-1]

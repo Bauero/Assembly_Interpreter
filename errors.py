@@ -5,6 +5,21 @@ Each error should contain it's own definition, with descriptio abot what hapened
 which triggered en error
 """
 
+from abc import abstractmethod
+
+class DetailedException(Exception):
+    """
+    This is abstract class for methods which should rise speciphic exeption which
+    could later be used to prompt user with warning
+    """
+
+    @abstractmethod 
+    def line(self): ...
+
+    @abstractmethod
+    def message(self): ...
+
+
 
 ################################################################################
 ###     REGISTER ERRORS
@@ -111,7 +126,7 @@ class ArgumentNotExpected (Exception):
     """
     pass
 
-
+# TODO REMOVE
 class NotEnoughArguments (Exception):
     """
     This error is raised, if function tries to be executed, while not having
@@ -127,7 +142,7 @@ class NotEnoughArguments (Exception):
     """
     pass
 
-
+# TODO REMOVE
 class TooManyArgumentsToUnpack (Exception):
     """
     This error is passed if funciton is run having passed too many params
@@ -141,6 +156,27 @@ class TooManyArgumentsToUnpack (Exception):
     pass
 
 
+class ExecutionOfOperationInLineError (Exception):
+    """
+    This error is raised if some kind of error occured while processing a funciton.
+
+    It's designed to be raised instead of each indivudal error, but contain the source
+    error as paramether.
+    """
+
+    def __init__(self, exception : Exception):
+        self.raised_exc = exception
+
+    def __str__(self):
+        return str(self.raised_exc)
+    
+    def __repr__(self):
+        return self.raised_exc
+    
+    def source_exception(self):
+        return self.raised_exc
+
+
 ################################################################################
 ###     NUMBER ERROR
 ################################################################################
@@ -148,9 +184,17 @@ class TooManyArgumentsToUnpack (Exception):
 
 class WrongNumberBase (Exception):
     """
-    To be implemented later
+    This error means that system tried to read number as one in either binary, decimal or
+    hexadecimal system, but the number didn't qualify as valid.
     """
-    pass
+    def __init__(self, message : str = ""):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+    
+    def __repr__(self):
+        return self.__str__()
 
 
 class NumberTooBig (Exception):
@@ -158,7 +202,7 @@ class NumberTooBig (Exception):
     Provided number is too big for a given register
 
     ex.
-    mov ah,2987 (obviously, 8 bit register can't hold such a big number)
+    mov ah, 2987 (obviously, 8 bit register can't hold such a big number!)
     """
     pass
 
@@ -189,12 +233,44 @@ class ValueIsNotANumber (Exception):
     def __str__(self): return self.message
 
 
+class IncorectValueInListOfBits (Exception):
+    """
+    This error is raised if program is asked to ensure that list containst values which
+    suppose to be bits (like ['1', '1', '0']) but detects that one of the element is not
+    '0' or '1'
+    """
+    
+    def __init__(self, message = ""): self.message = message
+    def __str__(self): return self.message
+
+
+class NoExplicitSizeError (Exception):
+    """
+    This exceptin is raised if there is call to get data from address which is stored
+    in register or as provided address in memory, but no size is speciphied - 
+    therefore program doesn't know how much data to get from data:
+
+    EX 1:
+    MOV bx, var1
+    MOV ax, [bx]    # bx, contains address of var 1 - but how many bits are stored in var1,
+                    # this is undefined from the program perspective
+
+    EX 2:
+    MOV ax, [20h]
+    """
+    def __init__(self, message : str = ""):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 ################################################################################
 ###     FILE PROCESSING ERRORS
 ################################################################################
 
 
-class ImproperJumpMarker (Exception):
+class ImproperJumpMarker (DetailedException):
     """
     This error is raised when program detects statemenet which seems to be a 
     marker for jump. Allowed loop names examples:
@@ -259,7 +335,7 @@ class FileTypeNotAllowed (Exception):
 ################################################################################
 
 
-class ImproperDataDefiniton (Exception):
+class ImproperDataDefiniton (DetailedException):
     """
     This error is raised if during preprocessing of file a problem with reading data occurs.
 
@@ -287,7 +363,7 @@ class ImproperDataDefiniton (Exception):
     powit  8  "Witajcie w moich skromnych prograch :)", 0
     """
     def __init__(self, line_num : int | None = None, line_content : str = ''):
-        super().__init__()
+        # super().__init__()
         self._line_number = line_num
         self._line_content = line_content
     
@@ -304,7 +380,7 @@ class ImproperDataDefiniton (Exception):
 
 class SegmentationFault (Exception):
     """
-    This error is raised if a call for data outside .data segmetn is made. 
+    This error is raised if a call for data outside .data segment is made. 
 
     EX.
 
@@ -319,12 +395,30 @@ class SegmentationFault (Exception):
     ...
 
 
-class ModificationOutsideDataSection (Exception):
+class ModificationOutsideDataSection (DetailedException):
     """
     This error is raise if user tires to modify data outside boundaries of data
     section
     """
     ...
+
+
+class DataNotByteMultipleError (DetailedException):
+    """
+    This error is raised if, during saving data it is detected that value is stored
+    in address which is not a multiple of 8 (doesn't fit in inter number of bytes). This
+    is most likely a data storage error on the side of 
+    """
+
+    def __init__(self, message = "", line = None) -> None:
+        self._message = message
+        self._line = line
+
+    def line(self):
+        return self._line
+    
+    def message(self):
+        return self._message
 
 
 ################################################################################
@@ -364,7 +458,3 @@ class VariableAddressNotExisting (Exception):
     defined - propably a writing mistake
     """
     pass
-
-
-
- 

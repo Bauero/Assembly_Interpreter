@@ -4,21 +4,9 @@ to engine. It can communicate with engine to provide functionali like calling fu
 or jumps. It is also responible for managing history or operations done by program
 """
 
-import os
 from preprocessor import loadMainFile
-from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed
-
-
-################################################################################
-#   Global variables
-################################################################################
-
-allowed_file_types = ['.s','.asm']
-
-################################################################################
-#   Classes
-################################################################################
-
+from helper_functions import loadFileFromPath
+from errors import ExecutionOfOperationInLineError, DetailedException
 
 class CodeHandler():
     """
@@ -28,57 +16,128 @@ class CodeHandler():
 
     def __init__(self, engine):
         self.openFiles = []
-        self.fileExecLine = {}
         self.rawfiles = {}
         self.files = {}
         self.currentlyExecutedFile = ""
+        self.currentlyExecutedLine = {}
         self.engine = engine
+        self.working_in_interactive_mode = False
 
-    def loadFile(self, path_to_file, ignore_size_limit, ignore_file_type):
-        raw_file = _loadFile(path_to_file, ignore_size_limit, ignore_file_type)
+    def readPrepareFile(self, path_to_file, ignore_size_limit, ignore_file_type):
+        """This function, reads file and prepare it's content for processing"""
+
+        raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
+        
+        #   Prepare data
         assert type(raw_file) == list
         self.rawfiles[path_to_file] = raw_file
-        preprocessed_file = loadMainFile(raw_file)
-        self.currentlyExecutedFile = path_to_file
-        self.openFiles.append(path_to_file)
-        self.files[path_to_file] = preprocessed_file
+        start, preprocessed_instrucitons = loadMainFile(raw_file)
+        self.pass_variable_to_engine(preprocessed_instrucitons)
 
-    def executeCommand(self, command): ...
+        #   Save variables inside Code Handler
+        self.currentlyExecutedFile = path_to_file
+        self.currentlyExecutedLine[self.currentlyExecutedFile] = start
+        self.openFiles.append(path_to_file)
+        self.files[path_to_file] = preprocessed_instrucitons
+
+        if start != (-1, [-1]):
+                return start[1]
+        
+        # TODO what whould happen if there is no starting poing?
+
+    def readInteractive(self, data : str):
+        text_in_linex = data.split("\n")
+        
+        #   Prepare data
+        start, preprocessed_instrucitons = loadMainFile(text_in_linex)
+        self.pass_variable_to_engine(preprocessed_instrucitons)
+
+        #   Save variables inside Code Handler
+        self.start = start
+        self.files["interactive"] = preprocessed_instrucitons
+        self.currentlyExecutedFile = "interactive"
+
+        if start != (-1, [-1]):
+            return start[1]
+        
+    def pass_variable_to_engine(self, preprocessed_instrucitons):
+        assert type(preprocessed_instrucitons) == dict
+        self.engine.informAboutLabels(preprocessed_instrucitons['labels'])
+        self.engine.informAboutVariables(
+            preprocessed_instrucitons['variables'],
+            preprocessed_instrucitons['data']
+        )
+
+    def executeCommand(self, command):
+        """
+        This function is like transition layer between Engine and Gui - from Gui, user
+        orders line exeuction, code handler passes appriopriate line to engine, and controls
+        that the excution was correct. This function is responsible for catching any errors
+        and passing appriopriate info to Gui, which would then handle notifying user about
+        what went wrong
+        """
+
+        try:
+            match command:
+                case 'execute_instruction':
+                    #   Check which line in which file should be executed, and pass it to engine
+                    curr_line = self.currentlyExecutedLine[self.currentlyExecutedFile][0]
+                    curr_inst = self.files[self.currentlyExecutedFile]['lines'][
+                            curr_line
+                        ]
+                    #   Execute command and handle any What To Do things
+                    line_content = curr_inst['content']
+                    wtd = self.engine.executeInstruction(line_content)
+                    
+                    next_line = curr_line + 1
+                    self.engine.HR.writeIntoRegister("IP", next_line)
+                    lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
+                    
+                    self.currentlyExecutedLine[self.currentlyExecutedFile] = \
+                        [next_line, lines_in_source_file]
+                    
+                    status = {"status" : 0, "highlight" : lines_in_source_file}
+
+        except ExecutionOfOperationInLineError as exc:
+            org_exc = exc.source_exception()
+            status = {
+                "status" : 1,
+                "action" : "stop",
+                "exception" : org_exc 
+            }
+            if  org_exc.isinstance(DetailedException):
+                status['line'] = org_exc.line() if org_exc.line() else curr_line
+                status['message'] = org_exc.message()
+        
+        except NotImplementedError as e:
+            status = {
+                'status' : 1,
+                "action" : "stop",
+                "exception" : e,
+                "message" : "Instruction unrecognized"
+            }
+
+        except Exception as e:
+            """Handle undefined exceptions"""
+            
+            status = {
+                "status" : -1,
+                "exception" : ""
+            }
+        
+        finally:
+            return status
 
     def gcefat(self):
         """Get Currently Executed File As Text"""
         return  "".join(self.rawfiles[self.currentlyExecutedFile])
-        
+    
+    def set_interactive_mode(self, value : bool):
+        self.working_in_interactive_mode = value
 
-################################################################################
-#   Functions variables
-################################################################################
-
-
-def _loadFile(path_to_file : str, 
-              ignore_size_limit : bool = False,
-              ignore_file_type : bool = False) -> list | Exception:
-    """
-    This function loads file (if one exist) and returns loaded file as subscribtable
-    object for further processing.
-
-    :param:
-    - `ignore_size_limit` : bool - allow to process file above 1MB
-    - `ignore_file_type` : bool - allow to process file with extenstion other than .s or .asm
-    """
-
-    if not os.path.exists(path_to_file):
-        raise FileDoesntExist(path_to_file)
-    elif not ignore_size_limit and os.path.getsize(path_to_file) > 1000000: # > 1MB
-        raise FileSizeMightBeTooBig(path_to_file)
-    elif not ignore_file_type and \
-        (ext := os.path.splitext(path_to_file)[-1]) not in allowed_file_types:
-        raise FileTypeNotAllowed(ext)
-
-    raw_file = []
-
-    with open(path_to_file) as file:
-        for line in file:
-            raw_file.append(line)
-
-    return raw_file
+    def _handle_wtd(self, wtd):
+        """
+        This function should be able o handle engine output, and based on that decide
+        which line should be next, to execute
+        """
+        ...

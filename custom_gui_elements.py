@@ -4,7 +4,7 @@ file
 """
 
 from PyQt6.QtCore import Qt, QRect
-from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat
+from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat, QValidator
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,12 +17,13 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit
 )
+from flag_register import FlagRegister as FR
 
-alg_cent = Qt.AlignmentFlag.AlignCenter
-alg_right = Qt.AlignmentFlag.AlignRight
-alg_top = Qt.AlignmentFlag.AlignTop
-alg_jst = Qt.AlignmentFlag.AlignJustify
-ok_button = QMessageBox.StandardButton.Ok
+alg_cent =      Qt.AlignmentFlag.AlignCenter
+alg_right =     Qt.AlignmentFlag.AlignRight
+alg_top =       Qt.AlignmentFlag.AlignTop
+alg_jst =       Qt.AlignmentFlag.AlignJustify
+ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
 
 ################################################################################
@@ -34,10 +35,11 @@ class MultipurposeRegister(QWidget):
     high and low bits as well as a dedicated field for displaying decimal value of register
     """
 
-    def __init__(self, register_name, text_color = 'white', custom_name = ''):
+    def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
 
-        self.name = register_name
+        self.register_name = register_name
+        self.HR = HR
         
         # Main horizontal layout for the row
         row_layout = QHBoxLayout()
@@ -60,13 +62,14 @@ class MultipurposeRegister(QWidget):
         text_field_layout.setSpacing(0)  # No gaps between fields
 
         # Three separate text fields with widths for 16, 8, and 8 characters
-        self.register_upper_bits = QLineEdit()
-        self.register_upper_bits.setFixedWidth(140)  # Adjust for 16 characters
-        self.register_upper_bits.setAlignment(alg_right)
-        self.register_upper_bits.setReadOnly(True)
-        text_field_layout.addWidget(self.register_upper_bits)
+        # self.register_upper_bits = QLineEdit()
+        # self.register_upper_bits.setFixedWidth(140)  # Adjust for 16 characters
+        # self.register_upper_bits.setAlignment(alg_right)
+        # self.register_upper_bits.setReadOnly(True)
+        # text_field_layout.addWidget(self.register_upper_bits)
 
         self.register_high_bits = QLineEdit()
+        self.register_high_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
         self.register_high_bits.setFixedWidth(70)  # Adjust for 8 characters
         self.register_high_bits.setReadOnly(True)
         self.register_high_bits.setAlignment(alg_cent)
@@ -97,35 +100,50 @@ class MultipurposeRegister(QWidget):
         
         # Set the layout for this widget
         self.setLayout(row_layout)
-        self._setRegisterValue(0)
+        self.update()
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
         
-        if type(value) == list:
-            if len(value) < 32:
-                while len(value) < 32:
+        if type(value) == list:                  # Put this value for 32 bit mode
+            if len(value) < 16:                             # 32
+                while len(value) < 16:                      # 32
                     value.insert(0,0)
-            if len(value) > 32:
-                value = value[-32:-1]
+            if len(value) > 16:                             # 32
+                value = value[-16:]                         # -32
             value = "".join((str(x) for x in value))
 
         elif type(value) == int:
-            if value >= 2**32 or value <= -(2**16):
-                value %= 2**32+1
+            if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
+                value %= 2**16+1                           # 2**32 + 1
             value = bin(value)[2:]
         
         assert type(value) == str
-        value = value.zfill(32)
+        value = value.zfill(16)                            # 32
 
-        self.register_upper_bits.setText(value[:16])
-        self.register_high_bits.setText(value[16:24])
-        self.register_low_bits.setText(value[24:])
+        # self.register_upper_bits.setText(value[-32:-16]) # Uncomment this line 
+        self.register_high_bits.setText(value[-16:-8])
+        self.register_low_bits.setText(value[-8:])
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
+    def update(self):
+        self._setRegisterValue(self.HR.readFromRegister(self.register_name))
+
+    def get_name(self):
+        return self.register_name
+    
+    def set_interactive(self, value : bool = False):
+        # self.register_upper_bits.setReadOnly(not value) # uncomment this line for 32
+        self.register_high_bits.setReadOnly(not value)
+        self.register_low_bits.setReadOnly(not value)
+        self.register_decimal_value.setReadOnly(not value)
+
 class FunctionalRegisters(QWidget):
-    def __init__(self, register_name, text_color = 'white', custom_name = ''):
+    def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
+
+        self.register_name = register_name
+        self.HR = HR
 
         row_layout = QHBoxLayout()
 
@@ -136,12 +154,10 @@ class FunctionalRegisters(QWidget):
         register_label.setFont(font)
         row_layout.addWidget(register_label)
         register_label.setToolTip(
-            f'<span style="color: white;">\
-            {"Special register" if not custom_name else custom_name}\
-            </span>')
+            f'{"Special register" if not custom_name else custom_name}')
 
         self.register_content = QLineEdit()
-        self.register_content.setFixedWidth(280)
+        self.register_content.setFixedWidth(140)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
         row_layout.addWidget(self.register_content)
@@ -158,54 +174,68 @@ class FunctionalRegisters(QWidget):
         row_layout.addWidget(self.register_decimal_value)
 
         self.setLayout(row_layout)
-        self._setRegisterValue(0)
+        self.update()
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
         
-        if type(value) == list:
-            if len(value) < 32:
-                while len(value) < 32:
+        if type(value) == list:                  # Put this value for 32 bit mode
+            if len(value) < 16:                             # 32
+                while len(value) < 16:                      # 32
                     value.insert(0,0)
-            if len(value) > 32:
-                value = value[-32:-1]
+            if len(value) > 16:                             # 32
+                value = value[-16:]                         # -32
             value = "".join((str(x) for x in value))
 
         elif type(value) == int:
-            if value >= 2**32 or value < -(2**31):
-                value %= 2**32+1
+            if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
+                value %= 2**16+1                           # 2**32 + 1
             value = bin(value)[2:]
         
         assert type(value) == str
-        value = value.zfill(32)
+        value = value.zfill(16)                            # 32
 
         self.register_content.setText(value)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
+    # Methods dedicated for interactive mode
+
+    def update(self):
+        self._setRegisterValue(self.HR.readFromRegister(self.register_name))
+
+    def get_name(self):
+        return self.register_name
+
+    def set_interactive(self, value : bool = False):
+        self.register_content.setReadOnly(not value)
+
 class FlagRegister(QWidget):
 
-    def __init__(self):
+    def __init__(self, FR):
         super().__init__()
 
-        body = QFormLayout()
-    
-        firts_row = QHBoxLayout()
+        self.FR = FR
 
-        register_label = QLabel("EFLAGS")
-        # register_label.setFixedWidth(30)
+        wrapper = QHBoxLayout()
+        body = QFormLayout()
+        firts_row = QHBoxLayout()
+        register_label = QLabel("FLAGS")
         register_label.setStyleSheet("color: #30BB73;")
         font = QFont() ; font.setBold(True) ; font.setPointSize(15)
         register_label.setFont(font)
         firts_row.addWidget(register_label)
 
         self.register_content = QLineEdit()
-        self.register_content.setFixedWidth(280)
+        self.register_content.setFixedWidth(140)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
         firts_row.addWidget(self.register_content)
+        firts_row.setStretch(0, 1)
 
-        self.flag_indicators = QHBoxLayout()
-        self.flag_indicators.addStretch()
+        self.flag_indicators_row_1 = QHBoxLayout()
+        self.flag_indicators_row_1.addStretch()
+        self.flag_indicators_row_2 = QHBoxLayout()
+        self.flag_indicators_row_2.addStretch()
         self.overflow_flag          = CustomQCheckBox('OF')
         self.direction_flag         = CustomQCheckBox('DF')
         self.interrupt_flag         = CustomQCheckBox('IF')
@@ -216,68 +246,181 @@ class FlagRegister(QWidget):
         self.parity_flag            = CustomQCheckBox('PF')
         self.carry_flag             = CustomQCheckBox('CF')
 
-        self.overflow_flag.setModifiable(False)
-        self.direction_flag.setModifiable(False)
-        self.interrupt_flag.setModifiable(False)
-        self.trap_flag.setModifiable(False)
-        self.sign_flag.setModifiable(False)
-        self.zero_flag.setModifiable(False)
-        self.auxiliary_carry_flag.setModifiable(False)
-        self.parity_flag.setModifiable(False)
-        self.carry_flag.setModifiable(False)
+        tmp = 0
 
-        self.flag_indicators.addWidget(self.overflow_flag)
-        self.flag_indicators.addWidget(self.direction_flag)
-        self.flag_indicators.addWidget(self.interrupt_flag)
-        self.flag_indicators.addWidget(self.trap_flag)
-        self.flag_indicators.addWidget(self.sign_flag)
-        self.flag_indicators.addWidget(self.zero_flag)
-        self.flag_indicators.addWidget(self.auxiliary_carry_flag)
-        self.flag_indicators.addWidget(self.parity_flag)
-        self.flag_indicators.addWidget(self.carry_flag)
+        for attr_name in dir(self):
+            if attr_name.endswith('_flag'):
+                attr_value = getattr(self, attr_name)
+                definition = getattr(FR, f"def_{attr_name}")
+                attr_value.setToolTip(f'{definition()}')
+                attr_value.setModifiable(False)
+                if tmp < 5:
+                    self.flag_indicators_row_1.addWidget(attr_value)
+                else:
+                    self.flag_indicators_row_2.addWidget(attr_value)
+                tmp += 1
 
-        
+        self.flag_indicators_row_1.setStretch(0, 1)
+        self.flag_indicators_row_2.setStretch(1, 1)
         body.addRow(firts_row)
-        body.addRow(self.flag_indicators)
+        body.addRow(self.flag_indicators_row_1)
+        body.addRow(self.flag_indicators_row_2)
         firts_row.setStretch(0, 1)  # Stretch the layout for register label
         firts_row.setStretch(1, 2)  # Stretch the layout for register content field
-        self.flag_indicators.setStretch(1, 1)
-        
-        self.setLayout(body)
-        self._setRegisterValue(4)
+
+        wrapper.addLayout(body)   
+        wrapper.setStretch(1,1)     
+
+        self.setLayout(wrapper)
+        self.update()
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
         
-        if type(value) == list:
-            if len(value) < 32:
-                while len(value) < 32:
+        if type(value) == list:                  # Put this value for 32 bit mode
+            if len(value) < 16:                             # 32
+                while len(value) < 16:                      # 32
                     value.insert(0,0)
-            if len(value) > 32:
-                value = value[-32:-1]
+            if len(value) > 16:                             # 32
+                value = value[-16:]                         # -32
             value = "".join((str(x) for x in value))
 
         elif type(value) == int:
-            if value >= 2**32 or value < -(2**31):
-                value %= 2**32+1
+            if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
+                value %= 2**16+1                           # 2**32 + 1
             value = bin(value)[2:]
         
         assert type(value) == str
-        value = value.zfill(32)
+        value = value.zfill(16)                            # 32
 
         self.register_content.setText(value)
 
-        print(value[31])
+        self.overflow_flag.         setChecked(value[-12] == "1")
+        self.direction_flag.        setChecked(value[-11] == "1")
+        self.interrupt_flag.        setChecked(value[-10] == "1")
+        self.trap_flag.             setChecked(value[-9] == "1")
+        self.sign_flag.             setChecked(value[-8] == "1")
+        self.zero_flag.             setChecked(value[-7] == "1")
+        self.auxiliary_carry_flag.  setChecked(value[-5] == "1")
+        self.parity_flag.           setChecked(value[-3] == "1")
+        self.carry_flag.            setChecked(value[-1] == "1")
 
-        self.overflow_flag.         setChecked(value[20] == "1")
-        self.direction_flag.        setChecked(value[21] == "1")
-        self.interrupt_flag.        setChecked(value[22] == "1")
-        self.trap_flag.             setChecked(value[23] == "1")
-        self.sign_flag.             setChecked(value[24] == "1")
-        self.zero_flag.             setChecked(value[25] == "1")
-        self.auxiliary_carry_flag.  setChecked(value[27] == "1")
-        self.parity_flag.           setChecked(value[29] == "1")
-        self.carry_flag.            setChecked(value[31] == "1")
+    
+    def update(self):
+        self._setRegisterValue(self.FR.readFlags())
+
+    def get_name(self):
+        return "FLAGS"
+    
+    def set_interactive(self, value : bool = False):
+        for attr_name in dir(self):
+            if attr_name.endswith('_flag'):
+                attr_value = getattr(self, attr_name)
+                attr_value.setModifiable(value)
+        self.register_content.setReadOnly(not value)
+
+# class FlagRegister(QWidget):
+#     def __init__(self):
+#         super().__init__()
+
+#         wrapper = QVBoxLayout()
+#         body = QVBoxLayout()  # Zmieniono na QVBoxLayout, aby łatwiej zarządzać rzędami.
+        
+#         # Pierwszy rząd: labelka FLAGS i pole tekstowe
+#         firts_row = QHBoxLayout()
+#         register_label = QLabel("FLAGS")
+#         register_label.setStyleSheet("color: #30BB73;")
+#         font = QFont()
+#         font.setBold(True)
+#         font.setPointSize(15)
+#         register_label.setFont(font)
+#         firts_row.addWidget(register_label)
+#         firts_row.addStretch()  # Dodaje przestrzeń między elementami
+#         self.register_content = QLineEdit()
+#         self.register_content.setFixedWidth(240)
+#         self.register_content.setReadOnly(True)
+#         self.register_content.setAlignment(alg_right)  # Wyrównanie do prawej
+#         firts_row.addWidget(self.register_content)
+#         firts_row.setStretch(0, 1)  # FLAGS rozciąga się na lewo
+#         firts_row.setStretch(2, 2)  # register_content rozciąga się na prawo
+#         body.addLayout(firts_row)
+
+#         # Rzędy dla flag
+#         self.flag_indicators_row_1 = QHBoxLayout()
+#         self.flag_indicators_row_2 = QHBoxLayout()
+
+#         # Dodanie flag do rzędów
+#         flags = [
+#             ('OF', 'overflow_flag'),
+#             ('DF', 'direction_flag'),
+#             ('IF', 'interrupt_flag'),
+#             ('TF', 'trap_flag'),
+#             ('SF', 'sign_flag'),
+#             ('ZF', 'zero_flag'),
+#             ('AF', 'auxiliary_carry_flag'),
+#             ('PF', 'parity_flag'),
+#             ('CF', 'carry_flag')
+#         ]
+
+#         for idx, (label, attr_name) in enumerate(flags):
+#             checkbox = CustomQCheckBox(label)
+#             setattr(self, attr_name, checkbox)
+#             if idx < 5:
+#                 self.flag_indicators_row_1.addWidget(checkbox)
+#             else:
+#                 self.flag_indicators_row_2.addWidget(checkbox)
+
+#         # Rozciąganie flag w rzędach
+#         for row in [self.flag_indicators_row_1, self.flag_indicators_row_2]:
+#             row.addStretch(0)  # Wypełniacz po lewej
+#             row.addStretch()   # Wypełniacz po prawej
+
+#         self.flag_indicators_row_1.setSpacing(10)
+#         self.flag_indicators_row_1.addStretch(1)  # Wypełniacz na końcu
+#         self.flag_indicators_row_2.setSpacing(10)
+#         self.flag_indicators_row_2.addStretch(1)
+
+#         body.addLayout(self.flag_indicators_row_1)
+#         body.addLayout(self.flag_indicators_row_2)
+
+#         # Ustawienia głównego układu
+#         wrapper.addLayout(body)
+#         self.setLayout(wrapper)
+
+#         # Ustawienie początkowej wartości rejestru
+#         self._setRegisterValue(4)
+
+#     def _setRegisterValue(self, value : int | list | str):
+#         """This method sets value as bits in register"""
+        
+#         if type(value) == list:                  # Put this value for 32 bit mode
+#             if len(value) < 16:                             # 32
+#                 while len(value) < 16:                      # 32
+#                     value.insert(0,0)
+#             if len(value) > 16:                             # 32
+#                 value = value[-16:]                         # -32
+#             value = "".join((str(x) for x in value))
+
+#         elif type(value) == int:
+#             if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
+#                 value %= 2**16+1                           # 2**32 + 1
+#             value = bin(value)[2:]
+        
+#         assert type(value) == str
+#         value = value.zfill(16)                            # 32
+
+#         self.register_content.setText(value)
+
+#         self.overflow_flag.         setChecked(value[-12] == "1")
+#         self.direction_flag.        setChecked(value[-11] == "1")
+#         self.interrupt_flag.        setChecked(value[-10] == "1")
+#         self.trap_flag.             setChecked(value[-9] == "1")
+#         self.sign_flag.             setChecked(value[-8] == "1")
+#         self.zero_flag.             setChecked(value[-7] == "1")
+#         self.auxiliary_carry_flag.  setChecked(value[-5] == "1")
+#         self.parity_flag.           setChecked(value[-3] == "1")
+#         self.carry_flag.            setChecked(value[-1] == "1")
+
 
 class Terminal(QWidget):
     def __init__(self):
@@ -325,7 +468,6 @@ class CustomQCheckBox(QCheckBox):
     def isModifiable(self):
         return self.is_modifiable
 
-
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
@@ -336,7 +478,6 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.myeditor.lineNumberAreaPaintEvent(event)
-
 
 class CodeEditor(QPlainTextEdit):
     def __init__(self):
@@ -431,11 +572,11 @@ class CodeEditor(QPlainTextEdit):
     #     self.setExtraSelections(extraSelections)
 
     def setHighlight(self, line_numbers, 
-                     background_color =  Qt.GlobalColor.blue, 
-                     text_color =        Qt.GlobalColor.white):
+                 background_color=Qt.GlobalColor.blue, 
+                 text_color=Qt.GlobalColor.white):
         """
-        Podświetla wybrane linie.
-        
+        Podświetla wybrane linie i przewija widok, aby podświetlona linia była na środku.
+
         Args:
             line_numbers (list[int]): Lista numerów linii do podświetlenia (1-based).
             background_color (QColor): Kolor tła dla podświetlenia.
@@ -446,7 +587,6 @@ class CodeEditor(QPlainTextEdit):
 
         # Przechodzimy po liniach do podświetlenia
         for line_number in line_numbers:
-            # Upewniamy się, że numer linii jest poprawny
             if line_number <= 0:
                 continue
 
@@ -457,19 +597,36 @@ class CodeEditor(QPlainTextEdit):
 
                 # Konfiguracja tła
                 selection.format.setBackground(QColor(background_color))
-
-                # Konfiguracja tekstu
                 selection.format.setForeground(QColor(text_color))
-
-                # Pełne podświetlenie linii
                 selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
-
-                # Ustawienie kursora dla tej linii
                 selection.cursor = cursor
-                selection.cursor.clearSelection()  # Podświetlamy całą linię bez selekcji
+                selection.cursor.clearSelection()
 
                 # Dodajemy do listy podświetleń
                 extraSelections.append(selection)
+
+                # Przechowujemy informacje o podświetlonych liniach
+                self.highlighted_lines = line_numbers
+
+                # Aktualizacja podświetleń w edytorze
+                self.setExtraSelections(extraSelections)
+
+                # Automatyczne przewijanie
+                if line_numbers:
+                    # Wybieramy pierwszą linię z listy jako priorytet przewijania
+                    target_line = line_numbers[0]
+                    block = self.document().findBlockByLineNumber(target_line - 1)
+                    if block.isValid():
+                        block_top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+                        block_height = self.blockBoundingRect(block).height()
+                        
+                        # Obliczamy środek widoku
+                        viewport_height = self.viewport().height()
+                        target_center = block_top - (viewport_height // 2) + (block_height // 2)
+
+                        # Przewijamy, ustawiając linię na środku widoku
+                        vertical_scroll_bar = self.verticalScrollBar()
+                        vertical_scroll_bar.setValue(int(target_center))
 
         # Przechowujemy informacje o podświetlonych liniach
         self.highlighted_lines = line_numbers

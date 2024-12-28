@@ -1,98 +1,110 @@
-AAA: ASCII Adjust After Addition
-AAD: ASCII Adjust AX Before Division
-AAS: ASCII Adjust AL After Subtraction
-ADC: Add with Carry
-ADD: Add
-AND: Logical AND
-CALL: Call Procedure
-CBW: Convert Byte to Word (sign-extend AL into AX)
-CWDE: Convert Word to Doubleword (sign-extend AX into EAX)
-CLI: Clear Interrupt Flag
-INT: Interrupt
-INTO: Interrupt on Overflow
-IRET: Interrupt Return
-IRETD: Interrupt Return (with 32-bit operand size)
-JA: Jump if Above (CF=0 and ZF=0)
-JAE: Jump if Above or Equal (CF=0)
-JB: Jump if Below (CF=1)
-JBE: Jump if Below or Equal (CF=1 or ZF=1)
-JC: Jump if Carry (CF=1)
-JE: Jump if Equal (ZF=1)
-JG: Jump if Greater (ZF=0 and SF=OF)
-JGE: Jump if Greater or Equal (SF=OF)
-JL: Jump if Less (SF≠OF)
-JLE: Jump if Less or Equal (ZF=1 or SF≠OF)
-JNA: Jump if Not Above (CF=1 or ZF=1)
-JNAE: Jump if Not Above or Equal (CF=1)
-JNB: Jump if Not Below (CF=0)
-JNBE: Jump if Not Below or Equal (CF=0 and ZF=0)
-JNC: Jump if Not Carry (CF=0)
-JNE: Jump if Not Equal (ZF=0)
-JNG: Jump if Not Greater (ZF=1 or SF≠OF)
-JNGE: Jump if Not Greater or Equal (SF≠OF)
-JNL: Jump if Not Less (SF=OF)
-JNLE: Jump if Not Less or Equal (ZF=0 and SF=OF)
-JNO: Jump if Not Overflow (OF=0)
-JNP: Jump if Not Parity (PF=0)
-JNS: Jump if Not Sign (SF=0)
-JNZ: Jump if Not Zero (ZF=0)
-JO: Jump if Overflow (OF=1)
-JP: Jump if Parity (PF=1)
-JPE: Jump if Parity Even (PF=1)
-JPO: Jump if Parity Odd (PF=0)
-JS: Jump if Sign (SF=1)
-JZ: Jump if Zero (ZF=1)
-LAHF: Load AH with Flags
-LDS: Load pointer using DS
-LES: Load pointer using ES
-LFS: Load pointer using FS
-LGS: Load pointer using GS
-LSS: Load pointer using SS
-LODS: Load string
-LODSB: Load string byte
-LODSW: Load string word
-LODSD: Load string doubleword
-MOV: Move data between operands
-MOVS: Move string
-MOVSB: Move string byte
-MOVSW: Move string word
-MOVSD: Move string doubleword
-MUL: Unsigned multiply
-NEG: Two's complement negation
-NOP: No operation
-NOT: One's complement negation
-OR: Logical OR
-OUT: Output to port
-POP: Pop from stack
-PUSH: Push onto stack
-RCL: Rotate through carry left
-RCR: Rotate through carry right
-ROL: Rotate left
-ROR: Rotate right
-REP: Repeat string operation
-REPE: Repeat string operation while equal
-REPZ: Repeat string operation while zero
-REPNE: Repeat string operation while not equal
-REPNZ: Repeat string operation while not zero
-RET: Return from procedure
-SAHF: Store AH into flags
-SAL: Shift arithmetic left
-SAR: Shift arithmetic right
-SHL: Shift logical left
-SHR: Shift logical right
-SBB: Integer subtraction with borrow
-SCAS: Scan string
-SCASB: Scan string byte
-SCASW: Scan string word
-SCASD: Scan string doubleword
-STC: Set carry flag
-STD: Set direction flag
-STI: Set interrupt flag
-SUB: Subtract
-TEST: Logical compare
-WAIT: Wait for FPU
-FWAIT: Wait for FPU
-XCHG: Exchange
-XLAT: Translate byte in lookup table using AL
-XLATB: Translate byte in lookup table using AL
-XOR: Logical exclusive OR
+❌ AAA:     ASCII Adjust After Addition
+❌ AAD:     ASCII Adjust AX Before Division
+❌ AAS:     ASCII Adjust AL After Subtraction
+✅ ADC:     Add with Carry
+✅ ADD:     Add
+❌ AND:     Logical AND
+❌ CALL:    Call Procedure
+❌ CBW:     Convert Byte to Word (sign-extend AL into AX)
+❌ CWDE:    Convert Word to Doubleword (sign-extend AX into EAX)
+✅ CLC:     Clear Carry Flag
+✅ CMC:     Compliment Carry Flag
+✅ CLI:     Clear Interrupt Flag
+❌ INT:     Interrupt
+❌ INTO:    Interrupt on Overflow
+❌ IRET:    Interrupt Return
+❌ IRETD:   Interrupt Return (with 32-bit operand size)
+
+❌ JA:      Jump if Above (CF=0 and ZF=0)
+❌ JAE:     Jump if Above or Equal (CF=0)
+❌ JB:      Jump if Below (CF=1)
+❌ JBE:     Jump if Below or Equal (CF=1 or ZF=1)
+❌ JC:      Jump if Carry (CF=1)
+❌ JE:      Jump if Equal (ZF=1)
+❌ JG:      Jump if Greater (ZF=0 and SF=OF)
+❌ JGE:     Jump if Greater or Equal (SF=OF)
+❌ JL:      Jump if Less (SF≠OF)
+❌ JLE:     Jump if Less or Equal (ZF=1 or SF≠OF)
+❌ JNA:     Jump if Not Above (CF=1 or ZF=1)
+❌ JNAE:    Jump if Not Above or Equal (CF=1)
+❌ JNB:     Jump if Not Below (CF=0)
+❌ JNBE:    Jump if Not Below or Equal (CF=0 and ZF=0)
+❌ JNC:     Jump if Not Carry (CF=0)
+❌ JNE:     Jump if Not Equal (ZF=0)
+❌ JNG:     Jump if Not Greater (ZF=1 or SF≠OF)
+❌ JNGE:    Jump if Not Greater or Equal (SF≠OF)
+❌ JNL:     Jump if Not Less (SF=OF)
+❌ JNLE:    Jump if Not Less or Equal (ZF=0 and SF=OF)
+❌ JNO:     Jump if Not Overflow (OF=0)
+❌ JNP:     Jump if Not Parity (PF=0)
+❌ JNS:     Jump if Not Sign (SF=0)
+❌ JNZ:     Jump if Not Zero (ZF=0)
+❌ JO:      Jump if Overflow (OF=1)
+❌ JP:      Jump if Parity (PF=1)
+❌ JPE:     Jump if Parity Even (PF=1)
+❌ JPO:     Jump if Parity Odd (PF=0)
+❌ JS:      Jump if Sign (SF=1)
+❌ JZ:      Jump if Zero (ZF=1)
+
+❌ LAHF:    Load AH with Flags
+❌ LDS:     Load pointer using DS
+❌ LES:     Load pointer using ES
+❌ LFS:     Load pointer using FS
+❌ LGS:     Load pointer using GS
+❌ LSS:     Load pointer using SS
+❌ LODS:    Load string
+❌ LODSB:   Load string byte
+❌ LODSW:   Load string word
+❌ LODSD:   Load string doubleword
+
+❌ MOV:     Move data between operands
+❌ MOVS:    Move string
+❌ MOVSB:   Move string byte
+❌ MOVSW:   Move string word
+❌ MOVSD:   Move string doubleword
+
+❌ MUL:     Unsigned multiply
+❌ NEG:     Two's complement negation
+❌ NOP:     No operation
+❌ NOT:     One's complement negation
+❌ OR:      Logical OR
+❌ OUT:     Output to port
+❌ POP:     Pop from stack
+❌ PUSH:    Push onto stack
+❌ RCL:     Rotate through carry left
+❌ RCR:     Rotate through carry right
+❌ ROL:     Rotate left
+❌ ROR:     Rotate right
+
+❌ REP:     Repeat string operation
+❌ REPE:    Repeat string operation while equal
+❌ REPZ:    Repeat string operation while zero
+❌ REPNE:   Repeat string operation while not equal
+❌ REPNZ:   Repeat string operation while not zero
+
+❌ RET:     Return from procedure
+❌ SAHF:    Store AH into flags
+
+❌ SAL:     Shift arithmetic left
+❌ SAR:     Shift arithmetic right
+❌ SHL:     Shift logical left
+❌ SHR:     Shift logical right
+
+❌ SBB:     Integer subtraction with borrow
+
+❌ SCAS:    Scan string
+❌ SCASB:   Scan string byte
+❌ SCASW:   Scan string word
+❌ SCASD:   Scan string doubleword
+
+❌ STC:     Set carry flag
+❌ STD:     Set direction flag
+❌ STI:     Set interrupt flag
+❌ SUB:     Subtract
+❌ TEST:    Logical compare
+❌ WAIT:    Wait for FPU
+❌ FWAIT:   Wait for FPU
+❌ XCHG:    Exchange
+❌ XLAT:    Translate byte in lookup table using AL
+❌ XLATB:   Translate byte in lookup table using AL
+❌ XOR:     Logical exclusive OR

@@ -1,5 +1,5 @@
 from errors import OperationNotPossible
-from bit_operations import bitAddition, bitSubstraction, bitXOR
+from assembly_instructions.bit_operations import bitAddition, bitSubstraction, bitXOR
 from registers_operation_check import registerAddressValue, possibleOpperation,\
     additionalOpReq, getValue, saveInDestination, getMaxSize
 from flag_register import getRequiredFlags
