@@ -332,7 +332,7 @@ def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
 
     # Case 1
     for label in assembly_code['labels']:
-        if label.lower() == 'start':
+        if label.lower().endswith('start'):
             line_number = assembly_code['labels'][label]
             if assembly_code['lines'][line_number]['section'] == '.code':
                 return (line_number, assembly_code['lines'][line_number]['lines'])
