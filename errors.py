@@ -5,6 +5,21 @@ Each error should contain it's own definition, with descriptio abot what hapened
 which triggered en error
 """
 
+from abc import abstractmethod
+
+class DetailedException(Exception):
+    """
+    This is abstract class for methods which should rise speciphic exeption which
+    could later be used to prompt user with warning
+    """
+
+    @abstractmethod 
+    def line(self): ...
+
+    @abstractmethod
+    def message(self): ...
+
+
 
 ################################################################################
 ###     REGISTER ERRORS
@@ -111,7 +126,7 @@ class ArgumentNotExpected (Exception):
     """
     pass
 
-
+# TODO REMOVE
 class NotEnoughArguments (Exception):
     """
     This error is raised, if function tries to be executed, while not having
@@ -127,7 +142,7 @@ class NotEnoughArguments (Exception):
     """
     pass
 
-
+# TODO REMOVE
 class TooManyArgumentsToUnpack (Exception):
     """
     This error is passed if funciton is run having passed too many params
@@ -153,6 +168,12 @@ class ExecutionOfOperationInLineError (Exception):
         self.raised_exc = exception
 
     def __str__(self):
+        return str(self.raised_exc)
+    
+    def __repr__(self):
+        return self.raised_exc
+    
+    def source_exception(self):
         return self.raised_exc
 
 
@@ -181,7 +202,7 @@ class NumberTooBig (Exception):
     Provided number is too big for a given register
 
     ex.
-    mov ah,2987 (obviously, 8 bit register can't hold such a big number)
+    mov ah, 2987 (obviously, 8 bit register can't hold such a big number!)
     """
     pass
 
@@ -249,7 +270,7 @@ class NoExplicitSizeError (Exception):
 ################################################################################
 
 
-class ImproperJumpMarker (Exception):
+class ImproperJumpMarker (DetailedException):
     """
     This error is raised when program detects statemenet which seems to be a 
     marker for jump. Allowed loop names examples:
@@ -314,7 +335,7 @@ class FileTypeNotAllowed (Exception):
 ################################################################################
 
 
-class ImproperDataDefiniton (Exception):
+class ImproperDataDefiniton (DetailedException):
     """
     This error is raised if during preprocessing of file a problem with reading data occurs.
 
@@ -342,7 +363,7 @@ class ImproperDataDefiniton (Exception):
     powit  8  "Witajcie w moich skromnych prograch :)", 0
     """
     def __init__(self, line_num : int | None = None, line_content : str = ''):
-        super().__init__()
+        # super().__init__()
         self._line_number = line_num
         self._line_content = line_content
     
@@ -359,7 +380,7 @@ class ImproperDataDefiniton (Exception):
 
 class SegmentationFault (Exception):
     """
-    This error is raised if a call for data outside .data segmetn is made. 
+    This error is raised if a call for data outside .data segment is made. 
 
     EX.
 
@@ -374,12 +395,30 @@ class SegmentationFault (Exception):
     ...
 
 
-class ModificationOutsideDataSection (Exception):
+class ModificationOutsideDataSection (DetailedException):
     """
     This error is raise if user tires to modify data outside boundaries of data
     section
     """
     ...
+
+
+class DataNotByteMultipleError (DetailedException):
+    """
+    This error is raised if, during saving data it is detected that value is stored
+    in address which is not a multiple of 8 (doesn't fit in inter number of bytes). This
+    is most likely a data storage error on the side of 
+    """
+
+    def __init__(self, message = "", line = None) -> None:
+        self._message = message
+        self._line = line
+
+    def line(self):
+        return self._line
+    
+    def message(self):
+        return self._message
 
 
 ################################################################################
@@ -419,7 +458,3 @@ class VariableAddressNotExisting (Exception):
     defined - propably a writing mistake
     """
     pass
-
-
-
- 
