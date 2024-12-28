@@ -16,6 +16,7 @@ def AND(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """Performs logical and operation on two numbers"""
 
@@ -80,6 +81,7 @@ def OR(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """Performs logical and operation on two numbers"""
 
@@ -144,6 +146,7 @@ def XOR(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """Performs logical and operation on two numbers"""
 
@@ -208,6 +211,7 @@ def NOT(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """Performs logical and operation on two numbers"""
 

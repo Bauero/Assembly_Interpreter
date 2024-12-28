@@ -91,6 +91,7 @@ def ADD(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """This function performs addition"""
 
@@ -159,6 +160,7 @@ def ADC(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """This funciton performs ADD with carry"""
 
@@ -228,6 +230,7 @@ def SUB(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """This function performs substraction (A - B)"""
     
@@ -297,6 +300,7 @@ def SBB(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """This function performs substraction with borrow (A - B - CF)"""
     

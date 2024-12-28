@@ -142,7 +142,13 @@ class Engine():
         if function in self.funtionNameLink:
             try:
                 output = self.funtionNameLink[function](
-                    self.HR, self.FR, self.ST, self.data, self.variables, **kwargs
+                    self.HR,
+                    self.FR,
+                    self.ST,
+                    self.data,
+                    self.variables,
+                    self.labels,
+                    **kwargs
                 )
                 return output
             except Exception as e:

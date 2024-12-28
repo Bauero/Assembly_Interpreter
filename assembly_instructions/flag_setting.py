@@ -17,6 +17,7 @@ def CLC(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """CLEAR CARRY FLAG - This instruction sets carry flag to 0"""
 
@@ -39,6 +40,7 @@ def CMC(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """COMPLEMENT CARRY FLAGA - This instruction reverses value of carry flag"""
 
@@ -61,6 +63,7 @@ def STC(HardwareRegister : HardwareRegisters,
         Stack : Stack,
         Data : Data,
         Variables : dict,
+        Labels : dict,
         **kwargs):
     """SET CARRY FLAG - This instruction sets carry flag to 1"""
 
