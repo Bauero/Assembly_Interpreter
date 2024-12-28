@@ -6,8 +6,9 @@ from inspect import signature
 from helper_functions import *
 from stack import Stack
 from flag_register import FlagRegister
-from assembly_instructions.arithmetic import *
+from assembly_instructions.arithmetic_instrunctions import *
 from assembly_instructions.flag_setting import *
+from assembly_instructions.logical_instrunctions import *
 from hardware_registers import HardwareRegisters
 from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError
 
