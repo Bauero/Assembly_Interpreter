@@ -1,6 +1,7 @@
 # A single node of a singly linked list
 import re
-from errors import SegmentationFault, ValueIsNotANumber, ModificationOutsideDataSection
+from errors import SegmentationFault, ValueIsNotANumber, \
+                    ModificationOutsideDataSection, DataNotByteMultipleError
 
 class Node:
     
@@ -44,7 +45,7 @@ class Data:
 
     @property
     def size(self):
-        return len(self.data) // 8
+        return len(self.data)
 
     def add_data(self, size = 8, content = None):
 
@@ -122,7 +123,11 @@ class Data:
             for c in element:
                 self.data.extend([int(x) for x in bin(ord(c))[2:].zfill(size)])
 
-        return starting_address, self.size - starting_address
+        if self.size // 8 != self.size / 8:
+            raise DataNotByteMultipleError(f"Stored data is not a multiple of 8 - \
+                                           value stored: {content}")
+
+        return starting_address, (self.size - starting_address) // 8
 
     def modify_data(self, starting_bit = 0, list_of_new_bits : list = []):
         try:
@@ -133,16 +138,16 @@ class Data:
         except ValueError:
             raise ValueIsNotANumber(f"Value '{bit}' cannot be converted to 0 or 1")
 
-    def get_data(self, starting_bit = 0, length = 1, size = 8):
+    def get_data(self, starting_byte = 0, no_of_bytes = 1):
 
-        size /= 8
+        no_of_bits = no_of_bytes * 8
 
         try:
-            start = starting_bit * 8
-            end = start + length * 8
+            start = starting_byte * 8
+            end = start + no_of_bits
             return self.data[start : end]
         except IndexError:
             raise SegmentationFault
 
-    def get_data_as_str(self, starting_bit = 0, length = 1,  size = 8):
-        return "".join(str(c) for c in self.get_data(starting_bit, length, size))
+    def get_data_as_str(self, starting_byte = 0, no_of_bytes = 1):
+        return "".join(str(c) for c in self.get_data(starting_byte, no_of_bytes))
