@@ -40,6 +40,8 @@ def covert_number_to_bit_list(value : str | int | list, size : int = 8):
     assert size > 0, f"Cannot convert number to size which is less or equal to 0"
     assert size % 8 == 0, f"Cannot convert number, as the speciphied size is not mutiple of 8"
  
+    negative_value = False
+
     def _convert_str(value):
         if  new_value := return_if_base_2_value(value):
             conv_value = list(new_value)
@@ -55,8 +57,13 @@ def covert_number_to_bit_list(value : str | int | list, size : int = 8):
     converted_value = []
 
     if type(value) == str:
+        if value[0] == "-":
+            negative_value = True
+            value = value[1:].strip()
         converted_value = _convert_str(value)
     elif type(value) == int:
+        if value < 0:   negative_value = True
+        value = abs(value)
         converted_value = list(bin(value)[2:])
     elif type(value) == list:
         value = [str(e) for e in value] # ensure all elemetns in value are str
@@ -69,7 +76,14 @@ def covert_number_to_bit_list(value : str | int | list, size : int = 8):
     while len(converted_value) < size:  converted_value.insert(0, '0')
 
     #   Get {size} bits from the end - cut any bits which woulnd't fit in specified size
-    return converted_value[-size:]
+    adjusted_number = converted_value[-size:]
+
+    if negative_value:
+        adjusted_number_str = "".join(adjusted_number)
+        return list(inverse_Twos_Compliment_Number(adjusted_number_str))
+    
+    else:
+        return adjusted_number
     
 def convert_number_to_bits_in_str(value : str | int | list, size = 8):
     """
@@ -117,3 +131,20 @@ def loadFileFromPath(path_to_file : str,
             raw_file.append(line)
 
     return raw_file
+
+def inverse_Twos_Compliment_Number(value : str):
+
+    """Convert value to two's compliment of the source value and return it"""
+
+    if value[0] == "0":
+        # Inverse value
+        value = "".join(["1" if x == "0" else "0" for x in value])
+        # + 1
+        output = bin(int(value, base=2) + 1)[2:].zfill(len(value))[-len(value):]
+    else:
+        # - 1
+        value = bin(int(value, base=2) - 1)[2:].zfill(len(value))[-len(value):]
+        # Inverse value
+        output = "".join(["1" if x == "0" else "0" for x in value])
+
+    return output
