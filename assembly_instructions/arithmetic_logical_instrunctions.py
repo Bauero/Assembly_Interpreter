@@ -73,15 +73,17 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters,
             ...
 
     response = {
-        "action" :          "memory_changed",
         "location" :        name,
-        "modified_type" :   modified,
         "oryginal_value" :  list(map(int, oryginal_val)),
         "new_value" :       list(map(int, value))
     }
 
-    return response
+    return modified, response
 
+
+################################################################################
+#   FUNCTION DEFINITIONS
+################################################################################
 
 
 def ADD(HardwareRegister : HardwareRegisters, 
@@ -116,13 +118,15 @@ def ADD(HardwareRegister : HardwareRegisters,
         b1 = int(values_in_binary[0][bit])
         b2 = int(values_in_binary[1][bit])
         sum = b1 + b2 + carry
-        carry =  sum > 1
+        carry = sum > 1
         output.insert(0, str(sum % 2))
         if abs(bit) == 4:
             auxiliary_carry = carry
 
     # Resuce size of number if needed
     output = output[-final_size:]   # {final_size} bits from the end
+
+    previous_flags = list(FlagRegister.readFlags())
 
     # Set appriopriate flags
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
@@ -134,11 +138,21 @@ def ADD(HardwareRegister : HardwareRegisters,
                                             values_in_binary[1],
                                             output))
 
+    new_flags = list(FlagRegister.readFlags())
+
     # Save value in the destination, and returned what have changed for history bilding
-    o = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
-    return o
+    all_changes = {
+        m[0] : m[1],
+        "flags" : {
+            "previous_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
 
 def ADC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -164,7 +178,7 @@ def ADC(HardwareRegister : HardwareRegisters,
             raise WrongNumberBase(v)
         values_in_binary.append(prep_val.zfill(final_size))
         
-    # Perform binary addition
+    # Perform binary addition   
     output = []
     carry = FlagRegister.readFlag("CF")
     assert type(carry) == int, "Carry flag was red from the flag register, but it's type is not int"
@@ -173,13 +187,15 @@ def ADC(HardwareRegister : HardwareRegisters,
         b1 = int(values_in_binary[0][bit])
         b2 = int(values_in_binary[1][bit])
         sum = b1 + b2 + carry
-        carry =  sum > 1
+        carry = sum > 1
         output.insert(0, str(sum % 2))
         if abs(bit) == 4:
             auxiliary_carry = carry
 
     # Resuce size of number if needed
     output = output[-final_size:]   # {final_size} bits from the end
+
+    previous_flags = list(FlagRegister.readFlags())
 
     # Set appriopriate flags
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
@@ -191,11 +207,21 @@ def ADC(HardwareRegister : HardwareRegisters,
                                             values_in_binary[1],
                                             output))
 
+    new_flags = list(FlagRegister.readFlags())
+
     # Save value in the destination
-    o = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
-    return o
+    all_changes = {
+        m[0] : m[1],
+        "flags" : {
+            "previous_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
 
 def SUB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -230,13 +256,15 @@ def SUB(HardwareRegister : HardwareRegisters,
         b1 = int(values_in_binary[0][bit])
         b2 = int(values_in_binary[1][bit])
         sum = b1 + b2 + carry
-        carry =  sum > 1
+        carry = sum > 1
         output.insert(0, str(sum % 2))
         if abs(bit) == 4:
             auxiliary_carry = carry
 
     # Resuce size of number if needed
     output = output[-final_size:]   # {final_size} bits from the end
+
+    previous_flags = list(FlagRegister.readFlags())
 
     # Set appriopriate flags
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
@@ -248,11 +276,21 @@ def SUB(HardwareRegister : HardwareRegisters,
                                             values_in_binary[1],
                                             output))
 
-    # Save value in the destination, and returned what have changed for history bilding
-    o = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+    new_flags = list(FlagRegister.readFlags())
 
-    return o
+    # Save value in the destination, and returned what have changed for history bilding
+    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+    
+    all_changes = {
+        m[0] : m[1],
+        "flags" : {
+            "previous_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
 
 def SBB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -291,13 +329,15 @@ def SBB(HardwareRegister : HardwareRegisters,
         b1 = int(values_in_binary[0][bit])
         b2 = int(values_in_binary[1][bit])
         sum = b1 + b2 + carry
-        carry =  sum > 1
+        carry = sum > 1
         output.insert(0, str(sum % 2))
         if abs(bit) == 4:
             auxiliary_carry = carry
 
     # Resuce size of number if needed
     output = output[-final_size:]   # {final_size} bits from the end
+
+    previous_flags = list(FlagRegister.readFlags())
 
     # Set appriopriate flags
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
@@ -309,15 +349,24 @@ def SBB(HardwareRegister : HardwareRegisters,
                                             values_in_binary[1],
                                             output))
 
+    new_flags = list(FlagRegister.readFlags())
+
     # Save value in the destination, and returned what have changed for history bilding
-    o = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
-    return o
+    all_changes = {
+        m[0] : m[1],
+        "flags" : {
+            "previous_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
 
+    return all_changes
 
 ################################################################################
-#   SET FUNCITON ATTRIBUTES
+#   FUNCITON ATTRIBUTES
 ################################################################################
 
 
@@ -327,8 +376,8 @@ ADD.allowed_params_combinations = [
     (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
 ]
 
-ADD.params_range = [2]
-ADD.allowed_params_combinations = [
+ADC.params_range = [2]
+ADC.allowed_params_combinations = [
     (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
     (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
 ]
