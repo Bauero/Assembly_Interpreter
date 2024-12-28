@@ -7,6 +7,7 @@ from helper_functions import *
 from stack import Stack
 from flag_register import FlagRegister
 from assembly_instructions.arithmetic import *
+from assembly_instructions.flag_setting import *
 from hardware_registers import HardwareRegisters
 from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError
 
@@ -48,7 +49,7 @@ class Engine():
         self.variables = variables
         self.data = data
 
-    def executeCommand(self, command : str):
+    def executeInstruction(self, command : str):
         """This function is responsible for command execution - it splits line to under"""
 
         elements_in_line = []
@@ -63,9 +64,10 @@ class Engine():
         # Explicitly ignore elements of command
 
         def _to_ignore(element : str):
-            return element.lower() in ['ptr']
+            ignore_list = ['ptr']
+            return element.lower() not in ignore_list
 
-        elements_in_line = [filter(_to_ignore, elements_in_line)]
+        elements_in_line = list(filter(_to_ignore, elements_in_line))
 
         # Fix for case when explicite value length is given
         #   ['mov', 'word', '[bp]', '32'] -> ['mov', 'word [bp]', '32']
@@ -90,24 +92,31 @@ class Engine():
         assert elements_types[0] == 'keyword', \
                 f"First element in line '{command}' is of type {elements_types[0]} - only"+ \
                     " values type 'keyword' are allowed"
-        mapped_params = self._check_if_operation_allowed(elements_in_line[0], elements_in_line[1:])
+        mapped_params = self._check_if_operation_allowed(elements_in_line[0], elements_types[1:])
 
+        #   This function returns 2 list - actual values, and sizes which are assigned to vars
         #   ['mov', 'AX', '10'] -> [329, 10] or  ['add', 'var1', 'word 20'] -> [70, 20]
-        values = list(map(lambda e: self._get_value_or_address(
-                            elements_in_line[1:],
-                            mapped_params
-                        ), elements_in_line))
+        values, sizes = self._get_value_or_address(elements_in_line[1:], mapped_params)
+        
+        # Verify sizes
+        if len(sizes) == 2:
+            assert sizes[0] >= sizes[1], f"Size of {elements_types[0]} is smaller than " +\
+                                         f"size of {elements_types[1]}"
+            final_size = max(sizes)
+        elif len(sizes) == 1:
+            final_size = sizes[0]
+        else:
+            final_size = None    
         
         output = self._functionExecutor(
-            elements_in_line[0], 
+            elements_in_line[0].upper(), 
             source_params = elements_in_line[1:],
-            param_types = elements_types[1:],
+            param_types = mapped_params,
+            final_size = final_size,
             values = values
             )
 
-        if output:
-            #   TODO Add support to stuff like output to terminal
-            ...
+        return output
 
     ############################################################################
     #   Private Methods
@@ -132,7 +141,7 @@ class Engine():
         if function in self.funtionNameLink:
             try:
                 output = self.funtionNameLink[function](
-                    self.HR, self.FR, self.ST, self.data, kwargs
+                    self.HR, self.FR, self.ST, self.data, self.variables, **kwargs
                 )
                 return output
             except Exception as e:
@@ -173,7 +182,7 @@ class Engine():
             
             return final_element.startswith("[") and \
                      final_element.endswith("]") and \
-                        final_element in list(self.variables)
+                        final_element[1:-1] in list(self.variables)
         
         def _is_call_for_value_under_address(element : str):
             """Return True if value is call to access memory stored under some address"""
@@ -192,41 +201,34 @@ class Engine():
                 else:
                     return False
             
-            if return_if_base_2_value(to_check_for_being_number):
+            if return_if_base_16_value(to_check_for_being_number):
                 return True
             elif return_if_base_10_value(to_check_for_being_number):
                 return True
-            elif return_if_base_16_value(to_check_for_being_number):
+            elif return_if_base_2_value(to_check_for_being_number):
                 return True
             
             return False    
         
             
-        if element.upper() in self.funcList:
-            return "keyword"
-        elif element.upper() in self.HR.listRegisters():
-            return "register"
-        elif _call_eff_add_in_reg(element):
-            return "[address_in_reg]"
-        elif element in list(self.variables):
-            return "variable"
-        elif _call_for_var_content(element):
-            return "[variable]"
+        if element.upper() in self.funcList:                return "keyword"
+        elif element.upper() in self.HR.listRegisters():    return "register"
+        elif _call_eff_add_in_reg(element):                 return "[address_in_reg]"
+        elif element in list(self.variables):               return "variable"
+        elif _call_for_var_content(element):                return "[variable]"
         #   TODO
         # elif element in list(self.procedures):
         #     return "procedure"
-        elif _is_call_for_value_under_address(element):
-            return "[combo_address]"
-        elif _check_if_value_is_number(element):
-            return "value"
-        else:
-            return "undefined"
+        elif _is_call_for_value_under_address(element):     return "[combo_address]"
+        elif _check_if_value_is_number(element):            return "value"
+        else:                                               return "undefined"
 
-    def _check_if_operation_allowed(self, keyword : str, *params):
+    def _check_if_operation_allowed(self, keyword : str, params):
         """This operation would ensure that function have the required
         amount of params passed - it assumes that each funciton defined and used
         in the program have """
 
+        keyword = keyword.upper()
         if not len(params) in self.funtionNameLink[keyword].params_range:
             raise ArgumentNotExpected
         
@@ -263,16 +265,23 @@ class Engine():
         This function is responsible for getting either address of value of the param
         """
         values = []
+        sizes = []
 
         for id, elem_type in enumerate(mapped_params):
             
             match elem_type:
                 case 1:
-                    values.append(self.variables[elements[id]]['address'])
+                    var = self.variables[elements[id]]
+                    address, format = var['address'], var['format']
+                    values.append(address) ; sizes.append(format)
                 case 2:
-                    values.append(self.variables[elements[id][1:-1]]['value'])
+                    var = self.variables[elements[id][1:-1]]
+                    value, format = var['value'], var['format']
+                    values.append(value) ; sizes.append(format)
                 case 3:
-                    values.append(self.HR.readFromRegister(elements[id]))
+                    val = self.HR.readFromRegister(elements[id])
+                    size = len(val)
+                    values.append(val + "b") ; sizes.append(size)
                 case 4:
                     try:
                         size, register = elements[id].split(' ')
@@ -284,9 +293,9 @@ class Engine():
                     starting_point = self.HR.readFromRegister(register[1:-1])
                     starting_point = int(starting_point, base=2)
 
-                    size = return_size_from_name(size)
-
-                    values.append(self.data.get_data_as_str(starting_point, size = size))
+                    sizes.append(size)
+                    size = return_size_from_name(size) // 8     # How many bytes to get
+                    values.append(self.data.get_data_as_str(starting_point, size))
                 case 5:
                     try:
                         size, register = elements[id].split(' ')
@@ -296,25 +305,32 @@ class Engine():
                         raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
 
                     address = convert_number_to_int_with_binary_capacity(register[1:-1], 16)
-                    size = return_size_from_name(size)
-                    values.append(self.data.get_data_as_str(address, size = size))
+                    sizes.append(size)
+                    size = return_size_from_name(size) // 8
+                    values.append(self.data.get_data_as_str(address, size))
                 case 6:
                     #TODO
                     values.append(None)
                 case 7:
                     try:
-                        size = 16
+                        
                         if ' ' in elements[id].strip():
                             size, number = elements[id].split(' ')
                             if size.upper() not in allowed_data_types:
                                 raise ValueError
-                        values.append(convert_number_to_bits_in_str(number, size))
+                        else:
+                            # Set size to match previous size or 16 bits by default
+                            if len(sizes) > 0:      size = sizes[0]
+                            else:                   size = 16
+                            number = elements[id].strip()
+                        sizes.append(size)
+                        values.append(convert_number_to_bits_in_str(number, size) + "b")
                     except ValueError:
                         raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
 
-        return values
+        return values, sizes
 
-    #   Methods executed only at ititialization
+    #   Methods executed only at initialization
 
     def _prepareFunctions(self):
         """Is responsible for creating an addresable list of function since
@@ -355,4 +371,4 @@ class Engine():
             else:
                 self.funcArguments[f] = "dict"
 
-        self.funcList = [self.funcSignature]    # List all functions available
+        self.funcList = [name for name in self.funcSignature]    # List all functions available
