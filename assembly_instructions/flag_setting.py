@@ -8,6 +8,10 @@ from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
 
+################################################################################
+#   FUNCTION DEFINITIONS
+################################################################################
+
 def CLC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Stack : Stack,
