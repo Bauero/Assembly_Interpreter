@@ -21,6 +21,8 @@ class HardwareRegisters():
         self._DI = [Node(0) for _ in range(16)]
         self._SP = [Node(0) for _ in range(16)]
         self._BP = [Node(0) for _ in range(16)]
+        
+        self._IP = [Node(0) for _ in range(16)]
 
         self._listOfRegisters = {
             "AX"  : self._AX,  "AH"  : self._AH,  "AL"  : self._AL,
@@ -28,23 +30,33 @@ class HardwareRegisters():
             "CX"  : self._CX,  "CH"  : self._CH,  "CL"  : self._CL,
             "DX"  : self._DX,  "DH"  : self._DH,  "DL"  : self._DL,
 
-            "SI" : self._SI, "SP" : self._SP, "BP" : self._BP, "DI" : self._DI, 
+            "SI" : self._SI, "SP" : self._SP, "BP" : self._BP, "DI" : self._DI,
+
+            "IP" : self._IP 
         }
 
         self._regList = list(self._listOfRegisters.keys())
 
         self.cleanAllRegisters()
 
+        self.writeIntoRegister("AX", 11)
+        self.writeIntoRegister("BX", 12)
+        self.writeIntoRegister("CX", 13)
+        self.writeIntoRegister("DX", 14)
+
     #	inputs the restult into register r, bit by bit
     def writeIntoRegister(self, r, resutl):
         #	converstion of the number to list of binary (in str)
         listaDoWpisania = []
-        if len(self._listOfRegisters[r]) == 16:
-            listaDoWpisania = list("{0:016b}".format(resutl))
-        elif len(self._listOfRegisters[r]) == 8:
-            listaDoWpisania = list("{0:08b}".format(resutl))
-        else:
-            listaDoWpisania = list("{0:0b}".format(resutl))
+        if type(resutl) == int:
+            if len(self._listOfRegisters[r]) == 16:
+                listaDoWpisania = list("{0:016b}".format(resutl))
+            elif len(self._listOfRegisters[r]) == 8:
+                listaDoWpisania = list("{0:08b}".format(resutl))
+            else:
+                listaDoWpisania = list("{0:0b}".format(resutl))
+        elif type(resutl) == list:
+            listaDoWpisania = resutl
 
         #	update of the register (using int, not string)
         for i in range(-1,-len(listaDoWpisania)-1,-1):
