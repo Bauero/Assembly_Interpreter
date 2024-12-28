@@ -73,6 +73,7 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters,
             ...
 
     response = {
+        "action" :          "memory_changed",
         "location" :        name,
         "modified_type" :   modified,
         "oryginal_value" :  list(map(int, oryginal_val)),
