@@ -23,7 +23,7 @@ class Stack():
     
     def read(self, start : int, bytes : int):
         assert start >= 0, f"Tried to read stack from start = \"{start}\", which is incorrect"
-        assert start <= 2**16, f"Tried to write stack from start = \"{start}\", which is incorrect"
+        assert start < 2**16, f"Tried to write stack from start = \"{start}\", which is incorrect"
         assert bytes > 0, f"Tried to read stack negative amount of bytes - this is not allowed"
 
         return self._read_raw(start, bytes)
@@ -31,18 +31,20 @@ class Stack():
     def write(self, start : int, value):
         
         assert start >= 0, f"Tried to write stack from start = \"{start}\", which is incorrect"
-        assert start <= 2**16, f"Tried to write stack from start = \"{start}\", which is incorrect"
+        assert start < 2**16, f"Tried to write stack from start = \"{start}\", which is incorrect"
         assert type(value) in [str, int, list], "Cannort write value to stack which is in incorrect "+\
                                                 "format - allowed: 'str', 'int', 'list' - value format" +\
                                                 f" is {type(value)}"
         
-        self._write_raw(start, covert_number_to_bit_list(value, 16))
+        converted_value = covert_number_to_bit_list(value, 16)
+
+        self._write_raw(start, converted_value)
 
     def read_stack(self):
         return_list = []
-        count = 2**16
-        for i in range(-8, - count - 1, -8):
-            return_list.append("".join(map(str, self.memory[count+i : count+i+8])) )
+        count = 2**16-1
+        for i in range(count, -1, -1):
+            return_list.append(f"{self.memory[i]:08b}")
         return return_list
 
     ############################################################################
@@ -50,20 +52,17 @@ class Stack():
     ############################################################################
 
     def _read_raw(self, start : int, bytes : int):
-        bits = []
-        start -= 1 # Stack points to new address - we have to decrement it to read previous value
-        for byte in range(bytes):
-            # read values from memory, and append them as bits to the list
-            bits.extend(list(bin(self.memory[start])[2:]))
-            start -= 1
-        return start, bits
+        read_bytes = []
+        for i in range(start, start+bytes):
+            read_bytes.append(f"{self.memory[i]:08b}")
+        return read_bytes
 
     def _write_raw(self, start : int, sequence : list):
 
         assert len(sequence) % 8 == 0, f"Dividing sequence \"{sequence}\" to be written in stack " +\
                                         "is not dividable by 8!"
         for byte in range(len(sequence) // 8, 0, -1):
-            self.memory[start] = int("".join(sequence[ 8*(byte - 1) : 8 * byte ]))
+            self.memory[start] = int("".join(sequence[ 8*(byte - 1) : 8 * byte ]), 2)
             start -= 1
 
         return start
