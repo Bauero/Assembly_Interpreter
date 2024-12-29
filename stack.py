@@ -107,7 +107,7 @@ Little or bit endian?
                                                                                      {ADDRESS}  {VALUE}
 So for our AX example:                                                                            ...
                                                                                         FFFD    00000000
-AX = 10100100 01010101 ->       AH = 01010101 -> ADDRES: FFFEh      ->      STACK:      FFFE    01010101
+AX = 10100100 01010101 ->       AH = 10100100 -> ADDRES: FFFEh      ->      STACK:      FFFE    10100100
                                 AL = 01010101 -> ADDRES: FFFFh                          FFFF    01010101
                                                                 (end of segment)  __________________________
 
