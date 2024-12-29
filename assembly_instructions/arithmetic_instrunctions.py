@@ -146,7 +146,9 @@ def ADD(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [
+            m[1]
+        ],
         "flags" : {
             "previous_value" :  previous_flags,
             "new_value" :       new_flags
@@ -216,7 +218,9 @@ def ADC(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [
+            m[1]
+        ],
         "flags" : {
             "previous_value" :  previous_flags,
             "new_value" :       new_flags
@@ -286,7 +290,9 @@ def SUB(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
     
     all_changes = {
-        m[0] : m[1],
+        m[0] : [
+            m[1]
+        ],
         "flags" : {
             "previous_value" :  previous_flags,
             "new_value" :       new_flags
@@ -360,7 +366,9 @@ def SBB(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [
+            m[1]
+        ],
         "flags" : {
             "previous_value" :  previous_flags,
             "new_value" :       new_flags
