@@ -164,7 +164,7 @@ class MainWindow(QWidget):
         self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
         
         # Link buttons with functions
-        self.nextLineButton.clicked.        connect(lambda: self._executeCommand('execute_instruction'))
+        self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
         self.previousLineButton.clicked.    connect(lambda: self._executeCommand('reverse_instruction'))
         # self.showVariables.clicked.         connect(lambda: self._toggleVariableSectionVisible())
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
@@ -378,8 +378,8 @@ class MainWindow(QWidget):
                     self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
                 self.program_running = not self.program_running
                 #   TODO connect automatic code executioin
-            case 'execute_instruction':
-                response = self.code_handler.executeCommand('execute_instruction')
+            case 'next_instruction':
+                response = self.code_handler.executeCommand('next_instruction')
                 self._act_on_response(response)
                 self._refresh()
             case 'reverse_instruction':
