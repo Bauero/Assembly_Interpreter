@@ -80,11 +80,9 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters,
 
     return modified, response
 
-
 ################################################################################
 #   FUNCTION DEFINITIONS
 ################################################################################
-
 
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -380,7 +378,6 @@ def SBB(HardwareRegister : HardwareRegisters,
 ################################################################################
 #   FUNCITON ATTRIBUTES
 ################################################################################
-
 
 ADD.params_range = [2]
 ADD.allowed_params_combinations = [
