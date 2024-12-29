@@ -154,7 +154,7 @@ class Engine():
             except Exception as e:
                 raise ExecutionOfOperationInLineError(e)
         else:
-            raise NotImplementedError
+            raise ExecutionOfOperationInLineError(NotImplementedError())
         
     def _define_element_type(self, element : str):
         """Define in which catergory an element belongs - also checks if it's valid:
@@ -168,6 +168,7 @@ class Engine():
         - [address_value]   ([20h])
         - [combo_address]   ([BX+20h])
         - value             (word 10h, or 20 or 10b)
+        - label             (l1, start etc.)
         - undefined         (anything else, which doesn't match the filters)
         """
 
@@ -217,7 +218,9 @@ class Engine():
             
             return False    
         
-            
+        def _check_if_value_is_label(element : str):
+            return element.lower() in map(lambda x: x.lower(), self.labels)
+
         if element.upper() in self.funcList:                return "keyword"
         elif element.upper() in self.HR.listRegisters():    return "register"
         elif _call_eff_add_in_reg(element):                 return "[address_in_reg]"
@@ -228,6 +231,7 @@ class Engine():
         #     return "procedure"
         elif _is_call_for_value_under_address(element):     return "[combo_address]"
         elif _check_if_value_is_number(element):            return "value"
+        elif _check_if_value_is_label(element):             return "label"
         else:                                               return "undefined"
 
     def _check_if_operation_allowed(self, keyword : str, params):
