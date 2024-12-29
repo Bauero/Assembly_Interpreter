@@ -10,7 +10,8 @@ from assembly_instructions.arithmetic_instrunctions import *
 from assembly_instructions.flag_setting import *
 from assembly_instructions.logical_instrunctions import *
 from hardware_registers import HardwareRegisters
-from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError
+from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
+                    LabelNotRecognizedError
 
 
 ################################################################################
@@ -118,6 +119,35 @@ class Engine():
             )
 
         return output
+
+    def load_new_state_after_change(self, change : dict, forward : bool):
+        """
+        The purpose of this method is to directly change state of the simulated
+        HR, FR, STACK or manipulate date, allowing to undo/redo instruction, and
+        ommit resource-intensive processing, when running already processed instructions
+        """
+
+        source = "new_value" if forward else "oryginal_value"
+
+        for modified_elem in change:
+            changes = change[modified_elem]
+
+            match modified_elem:
+                case "register":
+                    for modification in changes:
+                        reg = modification['location']
+                        self.HR.writeIntoRegister(reg, modification[source])
+                case "variable":
+                    for modification in changes:
+                        var = modification['location']
+                        add = self.variables[var]['address']
+                        self.data.modify_data(add, modification[source])
+                case "flags":
+                    self.FR.setFlagRaw(changes[source])
+                case "stack":
+                    for modification in changes:
+                        start = modification["start"]
+                        self.ST.write(start, modification[source])
 
     ############################################################################
     #   Private Methods
@@ -251,7 +281,8 @@ class Engine():
             4. [address_in_reg]  ([BX])
             5. [address_value]   (word [20h])
             6. [combo_address]   ([BX+20h])
-            7. value             (word 10h, or 20 or 10b)"""
+            7. value             (word 10h, or 20 or 10b)
+            8. label             (start:, or l1:)"""
         
         def _map_values(value : str) -> int:
             match value:
@@ -262,6 +293,7 @@ class Engine():
                 case "[address_value]":     return 5
                 case "[combo_address]":     return 6
                 case "value":               return 7
+                case "label":               return 8
             return -1
         
         mapped_params = tuple(map(_map_values, params))
@@ -324,7 +356,6 @@ class Engine():
                     values.append(None)
                 case 7:
                     try:
-                        
                         if ' ' in elements[id].strip():
                             size, number = elements[id].split(' ')
                             if size.upper() not in allowed_data_types:
@@ -338,6 +369,13 @@ class Engine():
                         values.append(convert_number_to_bits_in_str(number, size) + "b")
                     except ValueError:
                         raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
+                case 8:
+                    sizes.append(16)
+                    try:
+                        label_line = self.labels[elements[0]]
+                        values.append(label_line)
+                    except ValueError:
+                        raise LabelNotRecognizedError
 
         return values, sizes
 
