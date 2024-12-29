@@ -34,8 +34,12 @@ class FlagRegister():
 			case _: 	self.FLAGS[flag] = setValue
 
 	def setFlagRaw(self, valueInBits):
+
+		if type(valueInBits) == list:
+			valueInBits = "".join(valueInBits)
+
 		if valueInBits.startswith("Ob"):
-			valueInBits = valueInBits.remove("Ob")
+			valueInBits = valueInBits[2:]
 		
 		for bit in range(len(valueInBits)):
 			self.FLAGS[bit] = int(bool(bit))
