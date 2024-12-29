@@ -38,6 +38,13 @@ class Stack():
         
         self._write_raw(start, covert_number_to_bit_list(value, 16))
 
+    def read_stack(self):
+        return_list = []
+        count = 2**16
+        for i in range(-8, - count - 1, -8):
+            return_list.append("".join(map(str, self.memory[count+i : count+i+8])) )
+        return return_list
+
     ############################################################################
     #   Private Methods
     ############################################################################
