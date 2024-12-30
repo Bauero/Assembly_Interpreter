@@ -209,3 +209,18 @@ def convert_number_to_bit_list(v : str, final_size : int) -> str:
         raise WrongNumberBase(v)
 
     return prep_val.zfill(final_size)
+
+
+def equal_no_of_0_1(value : list | str):
+    count_0 = 0
+    count_1 = 0
+    for b in value:
+        if b == "0":    count_0 += 1
+        else:           count_1 += 1
+    return count_0 == count_1
+
+def sign_changed(n1 : str, n2 : str, output : list):
+    n1b, n2b = int(n1[0]), int(n2[0])
+    if n1b == n2b and n1b != int(output[0]):
+        return True
+    return False

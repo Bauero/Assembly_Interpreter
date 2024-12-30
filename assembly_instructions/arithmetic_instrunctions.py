@@ -7,10 +7,8 @@ from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
-from helper_functions import return_size_from_name, convert_number_to_int_with_binary_capacity,\
-                             inverse_Twos_Compliment_Number, save_value_in_destination, \
-                             convert_number_to_bit_list
-from errors import WrongNumberBase
+from helper_functions import equal_no_of_0_1, sign_changed, convert_number_to_bit_list, \
+                             inverse_Twos_Compliment_Number, save_value_in_destination
 
 """ 
 Allowed combinations, and it's numbers
@@ -21,21 +19,6 @@ Allowed combinations, and it's numbers
     5. [address_value]   (word [20h])
     6. [combo_address]   ([BX+20h])
     7. value             (word 10h, or 20 or 10b)"""
-
-
-def equal_no_of_0_1(value : list | str):
-    count_0 = 0
-    count_1 = 0
-    for b in value:
-        if b == "0":    count_0 += 1
-        else:           count_1 += 1
-    return count_0 == count_1
-
-def sign_changed(n1 : str, n2 : str, output : list):
-    n1b, n2b = int(n1[0]), int(n2[0])
-    if n1b == n2b and n1b != int(output[0]):
-        return True
-    return False
 
 ################################################################################
 #   FUNCTION DEFINITIONS
@@ -252,7 +235,10 @@ def SBB(HardwareRegister : HardwareRegisters,
         values_in_binary.append(output)
 
     # Convert substracted value using the observation that: A - B - CF = A + ( -(B + CF) )
-    tmp = int(values_in_binary[1], base=2) + FlagRegister.readFlag("CF")
+    assert type(values_in_binary[1]) == str
+    CF = FlagRegister.readFlag("CF")
+    assert type(CF) == int
+    tmp = int(values_in_binary[1], base=2) + CF
     values_in_binary[1] = bin(tmp)[2:].zfill(32)[-32:]
 
     # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
