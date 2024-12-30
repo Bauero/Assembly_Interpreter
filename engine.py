@@ -7,8 +7,10 @@ from helper_functions import *
 from stack import Stack
 from flag_register import FlagRegister
 from assembly_instructions.arithmetic_instrunctions import *
-from assembly_instructions.flag_setting import *
+from assembly_instructions.flag_setting_instructions import *
 from assembly_instructions.logical_instrunctions import *
+from assembly_instructions.flow_control_instructions import *
+from assembly_instructions.jump_instructions import *
 from hardware_registers import HardwareRegisters
 from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
                     LabelNotRecognizedError
@@ -51,7 +53,7 @@ class Engine():
         self.variables = variables
         self.data = data
 
-    def executeInstruction(self, command : str):
+    def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it splits line to under"""
 
         elements_in_line = []
@@ -115,7 +117,8 @@ class Engine():
             source_params = elements_in_line[1:],
             param_types = mapped_params,
             final_size = final_size,
-            values = values
+            values = values,
+            line = line
             )
 
         return output
