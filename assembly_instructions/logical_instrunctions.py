@@ -6,6 +6,7 @@ from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
+from helper_functions import save_value_in_destination, convert_number_to_bit_list
 
 ################################################################################
 #   FUNCTION DEFINITIONS
@@ -26,15 +27,8 @@ def AND(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
         
     # Perform binary and operation
     output = []
@@ -91,15 +85,8 @@ def OR(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
         
     # Perform binary or operation
     output = []
@@ -156,15 +143,8 @@ def XOR(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
         
     # Perform binary xor operation
     output = []
@@ -221,15 +201,8 @@ def NOT(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
         
     # Perform binary not operation
     output = list(map(lambda x: not int(x) == 1, values_in_binary[0]))
