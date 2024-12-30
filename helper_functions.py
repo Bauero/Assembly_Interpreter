@@ -1,5 +1,8 @@
 import re
 import os
+from stack import Stack
+from datatypes import Data
+from hardware_registers import HardwareRegisters
 from errors import WrongNumberBase, IncorectValueInListOfBits, FileDoesntExist, \
                     FileSizeMightBeTooBig, FileTypeNotAllowed
 
@@ -148,3 +151,45 @@ def inverse_Twos_Compliment_Number(value : str):
         output = "".join(["1" if x == "0" else "0" for x in value])
 
     return output
+
+def save_value_in_destination(HardwareRegister : HardwareRegisters,
+                              Stack : Stack, Data : Data, Variables : dict,
+                              value : list, destination : int, name : str = ""):
+
+    oryginal_val : list | str = []
+    modified = None
+
+    match destination:
+        case 2:
+            name = name.split(" ")[-1][1:-1]
+            start = Variables[name]['address']
+            size = Variables[name]['size']
+            oryginal_val = Data.get_data(start, size)
+            modified = "variable"
+            Data.modify_data(start, value)
+        case 3:
+            oryginal_val = HardwareRegister.readFromRegister(name)
+            modified = "register"
+            HardwareRegister.writeIntoRegister(name, value)
+        case 4:
+            size, address = name.split(" ")
+            address = HardwareRegister.readFromRegister(name)
+            address = convert_number_to_int_with_binary_capacity(address, 16)
+            Data.modify_data(address, value)
+        case 5:
+            size, address = name.split(" ")
+            size = return_size_from_name(size)
+            address = convert_number_to_int_with_binary_capacity(address, 16)
+            oryginal_val = Data.get_data(address, size)
+            Data.modify_data(address, value)
+        case 6:
+            # TODO
+            ...
+
+    response = {
+        "location" :        name,
+        "oryginal_value" :  list(map(int, oryginal_val)),
+        "new_value" :       list(map(int, value))
+    }
+
+    return modified, response
