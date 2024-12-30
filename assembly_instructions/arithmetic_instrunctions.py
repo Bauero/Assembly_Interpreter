@@ -350,6 +350,133 @@ def CMP(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
+def DEC(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """This instruction substract 1 from the argument, and store the new value inside
+    source value. Affects flags OF, SF, ZF, AF, and PF accordingly"""
+
+    final_size = kwargs['final_size']
+    values_in_binary = []
+    
+    for v in kwargs['values']:
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
+
+    #   Add binary numer, represeting 1 in binary, the size of final_size
+    values_in_binary.append("0" * final_size-1 + "1")
+
+    # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
+    values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
+
+    # Perform binary addition
+    output = []
+    carry = 0
+    auxiliary_carry = 0
+    for bit in range(-1, - final_size -1, -1):
+        b1 = int(values_in_binary[0][bit])
+        b2 = int(values_in_binary[1][bit])
+        sum = b1 + b2 + carry
+        carry = sum > 1
+        output.insert(0, str(sum % 2))
+        if abs(bit) == 4:
+            auxiliary_carry = carry
+
+    # Resuce size of number if needed
+    output = output[-final_size:]   # {final_size} bits from the end
+
+    previous_flags = list(FlagRegister.readFlags())
+
+    # Set appriopriate flags
+    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
+    FlagRegister.setFlag("SF", output[0] == "1")
+    FlagRegister.setFlag("PF", equal_no_of_0_1(output))
+    FlagRegister.setFlag("AF", auxiliary_carry)
+    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
+                                            values_in_binary[1],
+                                            output))
+
+    new_flags = list(FlagRegister.readFlags())
+    
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+
+    all_changes = {
+        m[0] : [ m[1] ],
+        "flags" : {
+            "previous_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
+def INC(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """This instruction adds 1 to the argument, and store the new value inside
+    source value. Affects flags OF, SF, ZF, AF, and PF accordingly"""
+
+    final_size = kwargs['final_size']
+    values_in_binary = []
+    
+    for v in kwargs['values']:
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
+
+    #   Add binary numer, represeting 1 in binary, the size of final_size
+    values_in_binary.append("0" * final_size-1 + "1")
+
+    # Perform binary addition
+    output = []
+    carry = 0
+    auxiliary_carry = 0
+    for bit in range(-1, - final_size -1, -1):
+        b1 = int(values_in_binary[0][bit])
+        b2 = int(values_in_binary[1][bit])
+        sum = b1 + b2 + carry
+        carry = sum > 1
+        output.insert(0, str(sum % 2))
+        if abs(bit) == 4:
+            auxiliary_carry = carry
+
+    # Resuce size of number if needed
+    output = output[-final_size:]   # {final_size} bits from the end
+
+    previous_flags = list(FlagRegister.readFlags())
+
+    # Set appriopriate flags
+    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
+    FlagRegister.setFlag("SF", output[0] == "1")
+    FlagRegister.setFlag("PF", equal_no_of_0_1(output))
+    FlagRegister.setFlag("AF", auxiliary_carry)
+    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
+                                            values_in_binary[1],
+                                            output))
+
+    new_flags = list(FlagRegister.readFlags())
+    
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+
+    all_changes = {
+        m[0] : [ m[1] ],
+        "flags" : {
+            "previous_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
 ################################################################################
 #   FUNCITON ATTRIBUTES
 ################################################################################
@@ -383,3 +510,9 @@ CMP.allowed_params_combinations = [
     (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
     (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
 ]
+
+INC.params_range = [1]
+INC.allowed_params_combinations = [ (2,), (3,) ]
+
+DEC.params_range = [1]
+DEC.allowed_params_combinations = [ (2,), (3,) ]
