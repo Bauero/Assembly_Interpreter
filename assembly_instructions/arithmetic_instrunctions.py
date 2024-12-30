@@ -7,11 +7,9 @@ from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
-from helper_functions import return_if_base_16_value, return_if_base_10_value, \
-                                return_if_base_2_value, return_size_from_name, \
-                                convert_number_to_int_with_binary_capacity,    \
-                                inverse_Twos_Compliment_Number, \
-                                save_value_in_destination
+from helper_functions import return_size_from_name, convert_number_to_int_with_binary_capacity,\
+                             inverse_Twos_Compliment_Number, save_value_in_destination, \
+                             convert_number_to_bit_list
 from errors import WrongNumberBase
 
 """ 
@@ -58,15 +56,8 @@ def ADD(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
         
     # Perform binary addition
     output = []
@@ -129,15 +120,8 @@ def ADC(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
         
     # Perform binary addition   
     output = []
@@ -199,15 +183,8 @@ def SUB(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
 
     # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
@@ -271,15 +248,8 @@ def SBB(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
 
     # Convert substracted value using the observation that: A - B - CF = A + ( -(B + CF) )
     tmp = int(values_in_binary[1], base=2) + FlagRegister.readFlag("CF")
@@ -349,15 +319,8 @@ def CMP(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['values']:
-        if new_val := return_if_base_16_value(v):
-            prep_val = bin(int(new_val[2:], base=16))[2:]
-        elif new_val := return_if_base_10_value(v):
-            prep_val = bin(int(new_val))[2:]
-        elif new_val := return_if_base_2_value(v):
-            prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-        else:
-            raise WrongNumberBase(v)
-        values_in_binary.append(prep_val.zfill(final_size))
+        output = convert_number_to_bit_list(v, final_size)
+        values_in_binary.append(output)
 
     # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])

@@ -42,6 +42,8 @@ class HardwareRegisters():
         self.writeIntoRegister("BX", 12)
         self.writeIntoRegister("CX", 13)
         self.writeIntoRegister("DX", 14)
+        self.writeIntoRegister("SP", 2**16-1)
+        self.writeIntoRegister("BP", 2**16-1)
 
     #	inputs the restult into register r, bit by bit
     def writeIntoRegister(self, r, resutl):
