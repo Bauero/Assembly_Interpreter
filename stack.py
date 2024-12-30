@@ -8,7 +8,7 @@ This file contains stack class which represents how stack works in assembly
 
 import array
 from errors import WrongNumberBase, IncorectValueInListOfBits
-from helper_functions import *
+from helper_functions import covert_number_to_bit_list
 
 
 class Stack():
