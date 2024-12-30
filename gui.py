@@ -314,6 +314,7 @@ class MainWindow(QWidget):
                 ans = msg.exec()
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
+                    assert type(raw_file) == str
                     self.code_field.setText("".join(raw_file))
                     self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
                     self._open_interactive_mode()
@@ -328,6 +329,7 @@ class MainWindow(QWidget):
                 ans = msg.exec()
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
+                    assert type(raw_file) == str
                     self.code_field.setText("".join(raw_file))
                     self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
                     self._open_interactive_mode()
