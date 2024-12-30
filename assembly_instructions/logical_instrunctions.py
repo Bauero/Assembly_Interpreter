@@ -6,7 +6,8 @@ from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
-from helper_functions import save_value_in_destination, convert_number_to_bit_list
+from helper_functions import save_value_in_destination, convert_number_to_bit_list, \
+                                equal_no_of_0_1
 
 ################################################################################
 #   FUNCTION DEFINITIONS
