@@ -1,7 +1,7 @@
 import re
 import os
-from stack import Stack
-from datatypes import Data
+# from stack import Stack
+# from datatypes import Data
 from hardware_registers import HardwareRegisters
 from errors import WrongNumberBase, IncorectValueInListOfBits, FileDoesntExist, \
                     FileSizeMightBeTooBig, FileTypeNotAllowed
@@ -152,8 +152,7 @@ def inverse_Twos_Compliment_Number(value : str):
 
     return output
 
-def save_value_in_destination(HardwareRegister : HardwareRegisters,
-                              Stack : Stack, Data : Data, Variables : dict,
+def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variables : dict,
                               value : list, destination : int, name : str = ""):
 
     oryginal_val : list | str = []
@@ -193,3 +192,20 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters,
     }
 
     return modified, response
+
+def convert_number_to_bit_list(v : str, final_size : int) -> str:
+    """
+    This function automatically detects which type of number was passed, and unifies them
+    to string of 1 and 0 with the given length
+    """
+
+    if new_val := return_if_base_16_value(v):
+        prep_val = bin(int(new_val[2:], base=16))[2:]
+    elif new_val := return_if_base_10_value(v):
+        prep_val = bin(int(new_val))[2:]
+    elif new_val := return_if_base_2_value(v):
+        prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
+    else:
+        raise WrongNumberBase(v)
+
+    return prep_val.zfill(final_size)

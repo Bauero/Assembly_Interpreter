@@ -90,7 +90,7 @@ def ADD(HardwareRegister : HardwareRegisters,
     new_flags = list(FlagRegister.readFlags())
 
     # Save value in the destination, and returned what have changed for history bilding
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
@@ -155,7 +155,7 @@ def ADC(HardwareRegister : HardwareRegisters,
     new_flags = list(FlagRegister.readFlags())
 
     # Save value in the destination
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
@@ -220,7 +220,7 @@ def SUB(HardwareRegister : HardwareRegisters,
     new_flags = list(FlagRegister.readFlags())
 
     # Save value in the destination, and returned what have changed for history bilding
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
     
     all_changes = {
@@ -289,7 +289,7 @@ def SBB(HardwareRegister : HardwareRegisters,
     new_flags = list(FlagRegister.readFlags())
 
     # Save value in the destination, and returned what have changed for history bilding
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {

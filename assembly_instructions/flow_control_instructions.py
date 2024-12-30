@@ -48,7 +48,7 @@ def LOOP(HardwareRegister : HardwareRegisters,
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
         CX_binary = covert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HardwareRegister, Stack, Data, Variables,
+        m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0:
@@ -88,7 +88,7 @@ def LOOPZ(HardwareRegister : HardwareRegisters,
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
         CX_binary = covert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HardwareRegister, Stack, Data, Variables,
+        m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and ZF:
@@ -128,7 +128,7 @@ def LOOPE(HardwareRegister : HardwareRegisters,
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
         CX_binary = covert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HardwareRegister, Stack, Data, Variables,
+        m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and ZF:
@@ -168,7 +168,7 @@ def LOOPNZ(HardwareRegister : HardwareRegisters,
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
         CX_binary = covert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HardwareRegister, Stack, Data, Variables,
+        m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and not ZF:
@@ -208,7 +208,7 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
         CX_binary = covert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HardwareRegister, Stack, Data, Variables,
+        m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and not ZF:

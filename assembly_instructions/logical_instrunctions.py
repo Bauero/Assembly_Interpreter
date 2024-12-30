@@ -63,7 +63,7 @@ def AND(HardwareRegister : HardwareRegisters,
     
     new_flags = list(FlagRegister.readFlags())
 
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
@@ -128,7 +128,7 @@ def OR(HardwareRegister : HardwareRegisters,
     
     new_flags = list(FlagRegister.readFlags())
 
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
@@ -193,7 +193,7 @@ def XOR(HardwareRegister : HardwareRegisters,
     
     new_flags = list(FlagRegister.readFlags())
 
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
@@ -237,7 +237,7 @@ def NOT(HardwareRegister : HardwareRegisters,
     # Resuce size of number if needed
     output = output[-final_size:]   # {final_size} bits from the end
 
-    m = save_value_in_destination(HardwareRegister, Stack, Data, Variables, output,
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
