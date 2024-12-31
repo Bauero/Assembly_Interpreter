@@ -53,6 +53,7 @@ class MultipurposeRegister(QWidget):
         register_label.setToolTip(f'<span style="color: white;">\
             {"General purpose register" if not custom_name else custom_name}\
             </span>')
+        row_layout.insertSpacing(1,9)
         
         # Container for the H and L labels and main text fields
         main_field_layout = QVBoxLayout()
@@ -62,14 +63,17 @@ class MultipurposeRegister(QWidget):
         text_field_layout.setSpacing(0)  # No gaps between fields
 
         self.register_high_bits = QLineEdit()
+        self.register_high_bits.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
         self.register_high_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
-        self.register_high_bits.setFixedWidth(70)  # Adjust for 8 characters
+        self.register_high_bits.setFixedWidth(90)  # Adjust for 8 characters
         self.register_high_bits.setReadOnly(True)
         self.register_high_bits.setAlignment(alg_cent)
         text_field_layout.addWidget(self.register_high_bits)
 
         self.register_low_bits = QLineEdit()
-        self.register_low_bits.setFixedWidth(70)  # Adjust for 8 characters
+        self.register_low_bits.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
+        self.register_low_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
+        self.register_low_bits.setFixedWidth(90)  # Adjust for 8 characters
         self.register_low_bits.setReadOnly(True)
         self.register_low_bits.setAlignment(alg_cent)
         text_field_layout.addWidget(self.register_low_bits)
@@ -86,7 +90,7 @@ class MultipurposeRegister(QWidget):
 
         # Smaller text field (8 characters wide)
         self.register_decimal_value = QLineEdit()
-        self.register_decimal_value.setFixedWidth(100)  # Adjust width as needed
+        self.register_decimal_value.setFixedWidth(60)  # Adjust width as needed
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
         row_layout.addWidget(self.register_decimal_value)
@@ -150,7 +154,8 @@ class FunctionalRegisters(QWidget):
             f'{"Special register" if not custom_name else custom_name}')
 
         self.register_content = QLineEdit()
-        self.register_content.setFixedWidth(140)
+        self.register_content.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
+        self.register_content.setFixedWidth(180)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
         row_layout.addWidget(self.register_content)
@@ -161,7 +166,7 @@ class FunctionalRegisters(QWidget):
 
         # Smaller text field (8 characters wide)
         self.register_decimal_value = QLineEdit()
-        self.register_decimal_value.setFixedWidth(100)  # Adjust width as needed
+        self.register_decimal_value.setFixedWidth(60)  # Adjust width as needed
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
         row_layout.addWidget(self.register_decimal_value)
@@ -203,6 +208,11 @@ class FunctionalRegisters(QWidget):
         self.register_content.setReadOnly(not value)
 
 class FlagRegister(QWidget):
+    """
+    This class is responsible for display of flag register = it containts a text
+    field with source value, and below it, there are checkbox'es working like 
+    indicators for all flags which are important for the user
+    """
 
     def __init__(self, FR):
         super().__init__()
@@ -217,52 +227,69 @@ class FlagRegister(QWidget):
         font = QFont() ; font.setBold(True) ; font.setPointSize(15)
         register_label.setFont(font)
         firts_row.addWidget(register_label)
+        firts_row.insertSpacing(1,20)
 
         self.register_content = QLineEdit()
-        self.register_content.setFixedWidth(140)
+        self.register_content.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
+        self.register_content.setFixedWidth(200)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
         firts_row.addWidget(self.register_content)
-        firts_row.setStretch(0, 1)
 
         self.flag_indicators_row_1 = QHBoxLayout()
-        self.flag_indicators_row_1.addStretch()
         self.flag_indicators_row_2 = QHBoxLayout()
-        self.flag_indicators_row_2.addStretch()
-        self.overflow_flag          = CustomQCheckBox('OF')
-        self.direction_flag         = CustomQCheckBox('DF')
-        self.interrupt_flag         = CustomQCheckBox('IF')
-        self.trap_flag              = CustomQCheckBox('TF')
-        self.sign_flag              = CustomQCheckBox('SF')
-        self.zero_flag              = CustomQCheckBox('ZF')
-        self.auxiliary_carry_flag   = CustomQCheckBox('AF')
-        self.parity_flag            = CustomQCheckBox('PF')
-        self.carry_flag             = CustomQCheckBox('CF')
+        self.flag_indicators_row_3 = QHBoxLayout()
 
-        tmp = 0
+        #   Define all flags, in order they should be displayed
+        self.overflow_flag          = CustomQCheckBox('Overflow')
+        self.direction_flag         = CustomQCheckBox('Direction')
+        self.interrupt_flag         = CustomQCheckBox('Interrrupt')
+        self.trap_flag              = CustomQCheckBox('Trap')
+        self.sign_flag              = CustomQCheckBox('Sign')
+        self.zero_flag              = CustomQCheckBox('Zero')
+        self.auxiliary_carry_flag   = CustomQCheckBox('Auxiliary carry')
+        self.parity_flag            = CustomQCheckBox('Parity')
+        self.carry_flag             = CustomQCheckBox('Carry')
 
+        #   Automatically assign all flags it's definitions defined in FlagRegister file,
+        # so that it will be displeyd when user hovers cousor over the checkbox
         for attr_name in dir(self):
             if attr_name.endswith('_flag'):
                 attr_value = getattr(self, attr_name)
                 definition = getattr(FR, f"def_{attr_name}")
                 attr_value.setToolTip(f'{definition()}')
                 attr_value.setModifiable(False)
-                if tmp < 5:
-                    self.flag_indicators_row_1.addWidget(attr_value)
-                else:
-                    self.flag_indicators_row_2.addWidget(attr_value)
-                tmp += 1
+                # self.flag_indicators_row_1.addWidget(attr_value)
+
+        self.flag_indicators_row_1.addWidget(self.overflow_flag)
+        self.flag_indicators_row_1.insertSpacing(1,30)
+        self.flag_indicators_row_1.addWidget(self.direction_flag)
+        self.flag_indicators_row_1.insertSpacing(3,30)
+        self.flag_indicators_row_1.addWidget(self.interrupt_flag)
+
+        self.flag_indicators_row_2.addWidget(self.trap_flag)
+        self.flag_indicators_row_2.insertSpacing(1,30)
+        self.flag_indicators_row_2.addWidget(self.sign_flag)
+        self.flag_indicators_row_2.insertSpacing(3,30)
+        self.flag_indicators_row_2.addWidget(self.zero_flag)
+
+        self.flag_indicators_row_3.addWidget(self.auxiliary_carry_flag)
+        self.flag_indicators_row_3.addWidget(self.parity_flag)
+        self.flag_indicators_row_3.insertSpacing(2,30)
+        self.flag_indicators_row_3.addWidget(self.carry_flag)
 
         self.flag_indicators_row_1.setStretch(0, 1)
-        self.flag_indicators_row_2.setStretch(1, 1)
+        self.flag_indicators_row_2.setStretch(1, 2)
+        self.flag_indicators_row_3.setStretch(2, 3)
         body.addRow(firts_row)
         body.addRow(self.flag_indicators_row_1)
         body.addRow(self.flag_indicators_row_2)
-        firts_row.setStretch(0, 1)  # Stretch the layout for register label
-        firts_row.setStretch(1, 2)  # Stretch the layout for register content field
+        body.addRow(self.flag_indicators_row_3)
+        # firts_row.setStretch(0, 1)  # Stretch the layout for register label
+        # firts_row.setStretch(1, 2)  # Stretch the layout for register content field
 
         wrapper.addLayout(body)   
-        wrapper.setStretch(1,1)     
+        # wrapper.setStretch(1,1)     
 
         self.setLayout(wrapper)
         self.update()
@@ -297,8 +324,7 @@ class FlagRegister(QWidget):
         self.auxiliary_carry_flag.  setChecked(value[-5] == "1")
         self.parity_flag.           setChecked(value[-3] == "1")
         self.carry_flag.            setChecked(value[-1] == "1")
-
-    
+   
     def update(self):
         self._setRegisterValue(self.FR.readFlags())
 
@@ -364,7 +390,7 @@ class LineNumberArea(QWidget):
         self.myeditor = editor
 
     def sizeHint(self):
-        return self.myeditor.line_number_area_idth(), 0
+        return self.myeditor.line_number_area_width(), 0
 
     def paintEvent(self, event):
         self.myeditor.lineNumberAreaPaintEvent(event)
@@ -377,17 +403,17 @@ class CodeEditor(QPlainTextEdit):
         super().__init__()
         self.lineNumberArea = LineNumberArea(self)
 
-        self.blockCountChanged.connect(self.updateLine_number_area_idth)
+        self.blockCountChanged.connect(self.updateLine_number_area_width)
         self.updateRequest.connect(self.updateLineNumberArea)
         # self.cursorPositionChanged.connect(self.highlightCurrentLine)
 
-        self.updateLine_number_area_idth(0)
+        self.updateLine_number_area_width(0)
         self.textCursor().movePosition(QTextCursor.MoveOperation.Start)  # Przesuń kursor na początek
         # self.highlightCurrentLine()
 
         self.highlighted_lines = []
 
-    def line_number_area_idth(self):
+    def line_number_area_width(self):
         digits = 1
         count = max(1, self.blockCount())
         while count >= 10:
@@ -396,8 +422,8 @@ class CodeEditor(QPlainTextEdit):
         space = 10 + self.fontMetrics().horizontalAdvance('9') * digits
         return space
 
-    def updateLine_number_area_idth(self, _):
-        self.setViewportMargins(self.line_number_area_idth(), 0, 0, 0)
+    def updateLine_number_area_width(self, _):
+        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
 
     def updateLineNumberArea(self, rect, dy):
         if dy != 0:
@@ -406,17 +432,16 @@ class CodeEditor(QPlainTextEdit):
             self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
 
         if rect.contains(self.viewport().rect()):
-            self.updateLine_number_area_idth(0)
+            self.updateLine_number_area_width(0)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
 
         cr = self.contentsRect()
-        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_idth(), cr.height()))
+        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
 
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
-        # painter.fillRect(event.rect(), Qt.GlobalColor.gray)
 
         block = self.firstVisibleBlock()
         blockNumber = block.blockNumber()
