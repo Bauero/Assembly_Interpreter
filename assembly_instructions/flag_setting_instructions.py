@@ -42,7 +42,7 @@ def CMC(HardwareRegister : HardwareRegisters,
         Variables : dict,
         Labels : dict,
         **kwargs):
-    """COMPLEMENT CARRY FLAGA - This instruction reverses value of carry flag"""
+    """COMPLEMENT CARRY FLAG - This instruction reverses value of carry flag"""
 
     previous_state = FlagRegister.readFlags()
     FlagRegister.setFlag("CF", not FlagRegister.readFlag("CF"))
