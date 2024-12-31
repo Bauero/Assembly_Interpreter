@@ -358,11 +358,11 @@ class MainWindow(QWidget):
         self._set_interactive_mode(True)
         self.pagesStack.setCurrentIndex(1)
 
-    @pyqtSlot()
+    # @pyqtSlot()s
     def _toggle_automatic_execution(self):
         self.automatic_execution = self.startAutoExecButton.isChecked()
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def _executeCommand(self, command):
     
         match command:
@@ -388,8 +388,6 @@ class MainWindow(QWidget):
                 response = self.code_handler.executeCommand('previous_instruction')
                 self._act_on_response(response)
                 self._refresh()
-    # def _toggleVariableSectionVisible(self):
-    #     self.variableSetion.setHidden(not self.variableSetion.isHidden())
 
     def _act_on_response(self, response : dict):
         """
@@ -399,16 +397,24 @@ class MainWindow(QWidget):
         Response is returned in form of dictionary which contains mandatory filed - "status"
         """
 
-        if response['status'] == 0:
-            self.code_field.setHighlight(response["highlight"])
-            # TODO update registers, and highlight new instruction
-            ...
-        elif response['status'] == 1:
-            # TODO handle normal error - inform user what is wrong with code
-            ...
-        elif response['status'] == -1:
-            # TODO handle undefined error
-            ...
+        match response['status']:
+
+            #   Everything went as expected - continue execution
+            case 0:
+                self.code_field.setHighlight(response["highlight"])
+
+            #   Predefined error occured - notify user ; stop execution
+            case 1: ...
+
+            #   Undefined error occured - notify user ; stop execution
+            case -1: ...
+
+            #   All instructions were executed - notify user about finishing program
+            case 'finish': ...
+
+            #################    SYSTEM INTERRUP HANDLING    ###################
+
+            #   
 
     def _refresh(self):
         for element in self.left_section_elements:
