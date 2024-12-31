@@ -116,9 +116,15 @@ class MainWindow(QWidget):
         rightSectionLayout = QFormLayout()
 
         # Optional varaible section
-        self.variableSetion = QTextEdit()
-        # self.variableSetion.setHidden(True)
-        self.variableSetion.setFixedWidth(300)
+        ST = self.code_handler.engine.ST
+        self.stackSection = StackEditor(ST)
+        self.stackSection.update()
+        self.stackColumn = QVBoxLayout()
+        stack_label = QLabel("Stack")
+        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+        stack_label.setFont(font)
+        self.stackColumn.addWidget(stack_label)
+        self.stackColumn.addWidget(self.stackSection)
 
         # Add widgets to the left section
         HR = self.code_handler.engine.HR
@@ -200,7 +206,7 @@ class MainWindow(QWidget):
         rightSectionLayout.addRow(row_3)
         self.rightSection.setLayout(rightSectionLayout)
         centralLayout.addWidget(self.rightSection)
-        centralLayout.addWidget(self.stackSection)
+        centralLayout.addLayout(self.stackColumn)
 
         # Add the central section to the main layout
         programLayout.addWidget(self.centerSection)
@@ -377,10 +383,12 @@ class MainWindow(QWidget):
                 response = self.code_handler.executeCommand('next_instruction')
                 self._act_on_response(response)
                 self._refresh()
+                self.stackSection.update()
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
                 self._act_on_response(response)
                 self._refresh()
+                self.stackSection.update()
 
     def _act_on_response(self, response : dict):
         """

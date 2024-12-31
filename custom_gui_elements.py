@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QPlainTextEdit
 )
 from flag_register import FlagRegister as FR
+from random import randint
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -78,7 +79,6 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setAlignment(alg_cent)
         text_field_layout.addWidget(self.register_low_bits)
 
-        
         main_field_layout.addLayout(text_field_layout)
 
         # Add main_field_layout to the row layout
@@ -528,3 +528,22 @@ class CodeEditor(QPlainTextEdit):
 
     def setEditable(self, editable):
         self.setReadOnly(not editable)
+
+class StackEditor(QPlainTextEdit):
+
+    def __init__(self, stack):
+        super().__init__()
+        self.stack = stack
+        self.setFixedWidth(180)
+        self.bits = []
+        
+    def update(self):
+
+        def format_line(line):
+            return f"{str(hex(line[0])[2:]).zfill(4)}\t{line[1]}"
+
+        fresh_stack = self.stack.read_stack()
+        if self.bits != fresh_stack:
+            numbered_line_pairs = zip(range(2**16-1,-1,-1), fresh_stack)
+            self.setPlainText("\n".join(map(format_line, numbered_line_pairs)))
+
