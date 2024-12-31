@@ -165,7 +165,7 @@ class CodeHandler():
                 self.history.add_new_instruction(curr_line, wtd, next_line)
 
                 #   In case of end of file, stop executon - return info to user
-                if next_line == -1: return {"status" : 10}
+                if next_line == -1: return {"status" : "finish"}
                 
                 self.engine.HR.writeIntoRegister("IP", next_line)
                 lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
