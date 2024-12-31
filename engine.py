@@ -5,12 +5,14 @@ This file contains Engine Class, which is responsible for simluation of operatio
 from inspect import signature
 from helper_functions import *
 from stack import Stack
+from datatypes import Data
 from flag_register import FlagRegister
 from assembly_instructions.arithmetic_instrunctions import *
 from assembly_instructions.flag_setting_instructions import *
 from assembly_instructions.logical_instrunctions import *
 from assembly_instructions.flow_control_instructions import *
 from assembly_instructions.jump_instructions import *
+from assembly_instructions.stack_instructions import *
 from hardware_registers import HardwareRegisters
 from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
                     LabelNotRecognizedError
@@ -91,12 +93,13 @@ class Engine():
         #   ['mov', 'AX', '10'] -> ['keyword', 'register', 'value']
         elements_types = list(map(lambda e: self._define_element_type(e), elements_in_line))
         
-        
         assert elements_in_line, f"Line '{command}' seems to contain no values to process"
         assert elements_types[0] == 'keyword', \
                 f"First element in line '{command}' is of type {elements_types[0]} - only"+ \
                     " values type 'keyword' are allowed"
         mapped_params = self._check_if_operation_allowed(elements_in_line[0], elements_types[1:])
+
+        elements_in_line = self._standardize_case_for_register_names(elements_in_line, elements_types)
 
         #   This function returns 2 list - actual values, and sizes which are assigned to vars
         #   ['mov', 'AX', '10'] -> [329, 10] or  ['add', 'var1', 'word 20'] -> [70, 20]
@@ -149,7 +152,7 @@ class Engine():
                     self.FR.setFlagRaw(changes[source])
                 case "stack":
                     for modification in changes:
-                        start = modification["start"]
+                        start = modification["location"]
                         self.ST.write(start, modification[source])
 
     ############################################################################
@@ -305,6 +308,16 @@ class Engine():
             raise ArgumentNotExpected
         else:
             return mapped_params
+
+    def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
+        """This funciton ensures that all calls for register are in capital names"""
+
+        for i in range(len(elements)):
+            mp = mapped_params[i]
+            if mp == "register":
+                elements[i] = elements[i].upper()
+
+        return elements
 
     def _get_value_or_address(self, elements : list, mapped_params : tuple):
         """
