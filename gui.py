@@ -106,6 +106,7 @@ class MainWindow(QWidget):
 
         # Left column of the page
         self.leftSection = QWidget()
+        # self.leftSection.setFixedWidth(400)
         leftSectionLayout = QFormLayout()
         leftSectionLayout.setAlignment(alg_top)
         # leftSectionLayout 
@@ -146,16 +147,13 @@ class MainWindow(QWidget):
         # Create all buttons for right section 
         self.nextLineButton         = QPushButton('Wykonaj instrukcję')
         self.previousLineButton     = QPushButton('Powrót do poprzedniej instrukcji')
-        # self.showVariables          = QPushButton('Pokaż zmienne')
         self.startExecutionButton   = QPushButton('Uruchom program')
-        # self.pauseExecutionButton   = QPushButton('Zatrzymaj wykonanie kodu')
         self.saveStateButton        = QPushButton('Zapisz stan')
-        self.startAutoExecButton    = QPushButton('Automatyczna egzeukcja kodu')
+        self.startAutoExecButton    = QPushButton('Automatyczne wykonywanie linii')
         
         # Set if buttons are enabled, and if are checkable
         self.nextLineButton.        setEnabled(self.interactive_mode)
         self.previousLineButton.    setEnabled(self.interactive_mode)
-        # self.pauseExecutionButton.  setEnabled(self.interactive_mode)
         self.saveStateButton.       setEnabled(self.interactive_mode)
         self.startAutoExecButton.   setEnabled(True)
         self.startAutoExecButton.   setCheckable(True)
@@ -166,9 +164,7 @@ class MainWindow(QWidget):
         # Link buttons with functions
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
         self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
-        # self.showVariables.clicked.         connect(lambda: self._toggleVariableSectionVisible())
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
-        # self.pauseExecutionButton.clicked.  connect(lambda: self._executeCommand('pause'))
         self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
         self.startAutoExecButton.clicked.   connect(lambda: self._toggle_automatic_execution)
         
@@ -180,17 +176,14 @@ class MainWindow(QWidget):
             self.executionFrequencyList.addItem(t)
         self.executionFrequencyList.setCurrentIndex(2)
         self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
-        # self.executionFrequencyList.currentIndex()
 
         # Combine buttons into rows for right column
         row_1 = QHBoxLayout()
         row_1.addWidget(self.nextLineButton)
         row_1.addWidget(self.previousLineButton)
-        # row_1.addWidget(self.showVariables)
 
         row_2 = QHBoxLayout()
         row_2.addWidget(self.startExecutionButton)
-        # row_2.addWidget(self.pauseExecutionButton)
         row_2.addWidget(self.saveStateButton)
 
         row_3 = QHBoxLayout()
@@ -207,7 +200,7 @@ class MainWindow(QWidget):
         rightSectionLayout.addRow(row_3)
         self.rightSection.setLayout(rightSectionLayout)
         centralLayout.addWidget(self.rightSection)
-        centralLayout.addWidget(self.variableSetion)
+        centralLayout.addWidget(self.stackSection)
 
         # Add the central section to the main layout
         programLayout.addWidget(self.centerSection)
@@ -227,7 +220,7 @@ class MainWindow(QWidget):
         for element in self.left_section_elements:
             setattr(self, element.get_name(), element)
             element.set_interactive(interactive_active)
-        self.variableSetion.setHidden(False)
+        self.stackSection.setHidden(False)
 
     def on_frequency_change(self, index):
         # Perform the action you want when the selection changes
