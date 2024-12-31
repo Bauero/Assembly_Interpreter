@@ -165,7 +165,7 @@ class MainWindow(QWidget):
         
         # Link buttons with functions
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
-        self.previousLineButton.clicked.    connect(lambda: self._executeCommand('reverse_instruction'))
+        self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
         # self.showVariables.clicked.         connect(lambda: self._toggleVariableSectionVisible())
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
         # self.pauseExecutionButton.clicked.  connect(lambda: self._executeCommand('pause'))
@@ -384,9 +384,10 @@ class MainWindow(QWidget):
                 response = self.code_handler.executeCommand('next_instruction')
                 self._act_on_response(response)
                 self._refresh()
-            case 'reverse_instruction':
+            case 'previous_instruction':
+                response = self.code_handler.executeCommand('previous_instruction')
+                self._act_on_response(response)
                 self._refresh()
-
     # def _toggleVariableSectionVisible(self):
     #     self.variableSetion.setHidden(not self.variableSetion.isHidden())
 
