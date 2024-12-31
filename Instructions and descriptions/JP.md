@@ -1,0 +1,1 @@
+Jump if parity flag is active -> PF=1

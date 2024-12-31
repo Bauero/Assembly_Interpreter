@@ -1,0 +1,1 @@
+Performs logical and operation on two numbers
