@@ -61,13 +61,6 @@ class MultipurposeRegister(QWidget):
         text_field_layout = QHBoxLayout()
         text_field_layout.setSpacing(0)  # No gaps between fields
 
-        # Three separate text fields with widths for 16, 8, and 8 characters
-        # self.register_upper_bits = QLineEdit()
-        # self.register_upper_bits.setFixedWidth(140)  # Adjust for 16 characters
-        # self.register_upper_bits.setAlignment(alg_right)
-        # self.register_upper_bits.setReadOnly(True)
-        # text_field_layout.addWidget(self.register_upper_bits)
-
         self.register_high_bits = QLineEdit()
         self.register_high_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
         self.register_high_bits.setFixedWidth(70)  # Adjust for 8 characters
@@ -371,27 +364,30 @@ class LineNumberArea(QWidget):
         self.myeditor = editor
 
     def sizeHint(self):
-        return self.myeditor.lineNumberAreaWidth(), 0
+        return self.myeditor.line_number_area_idth(), 0
 
     def paintEvent(self, event):
         self.myeditor.lineNumberAreaPaintEvent(event)
 
 class CodeEditor(QPlainTextEdit):
+    """This class is responsible for creation of code field, which allows for display of 
+    custom text field, with numered lines, and option to highlight a certain line"""
+
     def __init__(self):
         super().__init__()
         self.lineNumberArea = LineNumberArea(self)
 
-        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.blockCountChanged.connect(self.updateLine_number_area_idth)
         self.updateRequest.connect(self.updateLineNumberArea)
         # self.cursorPositionChanged.connect(self.highlightCurrentLine)
 
-        self.updateLineNumberAreaWidth(0)
+        self.updateLine_number_area_idth(0)
         self.textCursor().movePosition(QTextCursor.MoveOperation.Start)  # Przesuń kursor na początek
         # self.highlightCurrentLine()
 
         self.highlighted_lines = []
 
-    def lineNumberAreaWidth(self):
+    def line_number_area_idth(self):
         digits = 1
         count = max(1, self.blockCount())
         while count >= 10:
@@ -400,8 +396,8 @@ class CodeEditor(QPlainTextEdit):
         space = 10 + self.fontMetrics().horizontalAdvance('9') * digits
         return space
 
-    def updateLineNumberAreaWidth(self, _):
-        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
+    def updateLine_number_area_idth(self, _):
+        self.setViewportMargins(self.line_number_area_idth(), 0, 0, 0)
 
     def updateLineNumberArea(self, rect, dy):
         if dy != 0:
@@ -410,13 +406,13 @@ class CodeEditor(QPlainTextEdit):
             self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
 
         if rect.contains(self.viewport().rect()):
-            self.updateLineNumberAreaWidth(0)
+            self.updateLine_number_area_idth(0)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
 
         cr = self.contentsRect()
-        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.lineNumberAreaWidth(), cr.height()))
+        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_idth(), cr.height()))
 
     def lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
