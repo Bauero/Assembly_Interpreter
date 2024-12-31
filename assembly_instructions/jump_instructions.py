@@ -219,8 +219,8 @@ def JG(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     ZF = FlagRegister.readFlag("ZF")
     
     if SF == OF and ZF == 0:
@@ -237,8 +237,8 @@ def JNLE(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     ZF = FlagRegister.readFlag("ZF")
     
     if SF == OF and ZF == 0:
@@ -255,8 +255,8 @@ def JGE(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     
     if SF == OF:
         return {"next_instruction" : label}
@@ -272,8 +272,8 @@ def JNL(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     
     if SF == OF:
         return {"next_instruction" : label}
@@ -289,8 +289,8 @@ def JL(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     
     if SF <= OF:
         return {"next_instruction" : label}
@@ -306,8 +306,8 @@ def JNGE(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     
     if SF <= OF:
         return {"next_instruction" : label}
@@ -323,8 +323,8 @@ def JLE(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     ZF = FlagRegister.readFlag("ZF")
     
     if SF <= OF and ZF:
@@ -341,8 +341,8 @@ def JNG(HardwareRegister : HardwareRegisters,
 
     label = kwargs['values'][0]
 
-    SF = FlagRegister.readFlag("SF")
-    OF = FlagRegister.readFlag("OF")
+    SF = bool(FlagRegister.readFlag("SF"))
+    OF = bool(FlagRegister.readFlag("OF"))
     ZF = FlagRegister.readFlag("ZF")
     
     if SF <= OF and ZF:
