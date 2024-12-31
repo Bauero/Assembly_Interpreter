@@ -22,17 +22,34 @@ class History():
         
         if self.current_instruction + 1 == len(self.history):
             return None
+
         self.current_instruction += 1
-        return self.history[self.current_instruction]
+        record = self.history[self.current_instruction].values()
+        exec_line, change, next_line = record
+        return next_line, change
+        
+        # if self.current_instruction + 1 >= len(self.history):
+        #     return None
+        # self.current_instruction += 1
+        # return self.history[self.current_instruction]
 
     def load_previous_instruction_if_executed(self):
         """Load previous instruction if there are any done before the current"""
-
-        if self.current_instruction -1 < 0:
+        
+        #   We tried to load last executed instruction - we are at the end of history
+        if self.current_instruction == -1:
             return None
-        if self.current_instruction != 0:
-            self.current_instruction -= 1
-        return self.history[self.current_instruction]
+        # if self.current_instruction + 1 == len(self.history):
+        record = self.history[self.current_instruction].values()
+        exec_line, change, next_line = record
+        self.current_instruction -= 1
+        return exec_line, change
+        # else:
+        #     self.current_instruction -= 1
+        #     record = self.history[self.current_instruction]
+        #     exec_line, change, next_line = record
+        #     return exec_line, change
+
 
     def add_new_instruction(self, executed_line, change, next_line):
         
@@ -42,7 +59,7 @@ class History():
             "next_line" : next_line,
         }
         self.history.append(entry)
-        self.current_instruction = len(self.history)
+        self.current_instruction += 1
 
     def history_length(self):
         return len(self.history)
@@ -77,3 +94,6 @@ class History():
         del self.variables
 
         return return_all
+
+    def print_state(self, text):
+        print(text, self.current_instruction, self.history)
