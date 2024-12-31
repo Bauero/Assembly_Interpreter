@@ -11,7 +11,7 @@ from helper_functions import convert_number_to_int_with_binary_capacity, \
                              convert_number_to_bit_list, \
                              save_value_in_destination
 
-LIST_OF_REGISTERS = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
+list_of_registers = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
 
 ################################################################################
 #   FUNCTION DEFINITIONS
@@ -44,16 +44,18 @@ def PUSH(HardwareRegister : HardwareRegisters,
     SP_value -= no_bytes_conv_value
 
     output = {
-        "stack" : {
-            "location" : SP_value_backup,
-            "oryginal_value" :  list(map(int, backup_stack)),
-            "new_value" :       list(map(int, converted_value))
-        },
-        "register" : {
+        "stack" : [
+            {
+                "location" : SP_value_backup,
+                "oryginal_value" :  list(map(int, backup_stack)),
+                "new_value" :       list(map(int, converted_value))
+            }
+        ],
+        "register" : [{
             "location" : "SP",
             "oryginal_value" :  list(map(int, bin(SP_value_backup)[2:])),
             "new_value" :       list(map(int, bin(SP_value)[2:]))
-        }
+        }]
     }
 
     return output
@@ -83,16 +85,18 @@ def PUSHF(HardwareRegister : HardwareRegisters,
     SP_value -= 1
 
     output = {
-        "stack" : {
-            "location" : SP_value_backup,
-            "oryginal_value" :  list(map(int, backup_stack)),
-            "new_value" :       list(map(int, value))
-        },
-        "register" : {
+        "stack" : [
+            {
+                "location" : SP_value_backup,
+                "oryginal_value" :  list(map(int, backup_stack)),
+                "new_value" :       list(map(int, value))
+            }
+        ],
+        "register" : [{
             "location" : "SP",
             "oryginal_value" :  list(map(int, bin(SP_value_backup)[2:])),
             "new_value" :       list(map(int, bin(SP_value)[2:]))
-        }
+        }]
     }
 
     return output
@@ -123,7 +127,7 @@ def PUSHA(HardwareRegister : HardwareRegisters,
 
     reg_content = []
 
-    for register in LIST_OF_REGISTERS:
+    for register in list_of_registers:
         reg_bits = HardwareRegister.readFromRegister(register)
         reg_value = convert_number_to_int_with_binary_capacity(reg_bits, 16)
         reg_content.append(reg_content)
@@ -140,16 +144,18 @@ def PUSHA(HardwareRegister : HardwareRegisters,
     values_on_stack = reg_content[-1:]
 
     output = {
-        "stack" : {
-            "location" : SP_backup,
-            "oryginal_value" :  list(map(int, backup_stack)),
-            "new_value" :       list(map(int, values_on_stack))
-        },
-        "register" : {
+        "stack" : [
+            {
+                "location" : SP_backup,
+                "oryginal_value" :  list(map(int, backup_stack)),
+                "new_value" :       list(map(int, values_on_stack))
+            }
+        ],
+        "register" : [{
             "location" : "SP",
             "oryginal_value" :  list(map(int, bin(SP_backup)[2:])),
             "new_value" :       list(map(int, bin(SP_value)[2:]))
-        }
+        }]
     }
 
     return output
@@ -241,7 +247,7 @@ def POPF(HardwareRegister : HardwareRegisters,
             }      
         ],
          "flags" : {
-            "previous_value" :  list(flag_reg_backup),
+            "oryginal_value" :  list(flag_reg_backup),
             "new_value" :       list(comb_value)
         }
     }
@@ -263,7 +269,7 @@ def POPA(HardwareRegister : HardwareRegisters,
     SP_value_backup = SP_value
 
     #   Save values of all registers, and then reverse the order of the list
-    register_backups = [HardwareRegister.readFromRegister(r) for r in LIST_OF_REGISTERS][-1:]
+    register_backups = [HardwareRegister.readFromRegister(r) for r in list_of_registers][-1:]
 
     #   Update all registers
     all_bytes = Stack.read(SP_value, 16)
@@ -271,7 +277,7 @@ def POPA(HardwareRegister : HardwareRegisters,
     for i in range(0,16, 2):
         value = list("".join(all_bytes[i:i+2]))
         new_registers_values.append(value)
-        register = LIST_OF_REGISTERS[- (i // 2) - 1]
+        register = list_of_registers[- (i // 2) - 1]
         HardwareRegister.writeIntoRegister(register, value)
 
     all_changes = {
@@ -279,7 +285,7 @@ def POPA(HardwareRegister : HardwareRegisters,
     }
 
     #   Generate history of changes for all registers
-    for n, register in enumerate(LIST_OF_REGISTERS[-1:]):
+    for n, register in enumerate(list_of_registers[-1:]):
         all_changes["register"].append(
             {
                 "location" :        register,
@@ -298,16 +304,16 @@ PUSH.params_range = [1]
 PUSH.allowed_params_combinations = [ (1,), (2,), (3,), (4,), (5,), (6,), (7,) ]
 
 PUSHF.params_range = [0]
-PUSHF.allowed_params_combitnations = [()]
+PUSHF.allowed_params_combinations = [()]
 
 PUSHA.params_range = [0]
-PUSHA.allowed_params_combitnations = [()]
+PUSHA.allowed_params_combinations = [()]
 
 POP.params_range = [1]
 POP.allowed_params_combinations = [ (2,), (3,), (4,), (5,), (6,) ]
 
 POPF.params_range = [0]
-POPF.allowed_params_combitnations = [()]
+POPF.allowed_params_combinations = [()]
 
 POPA.params_range = [0]
-POPA.allowed_params_combitnations = [()]
+POPA.allowed_params_combinations = [()]

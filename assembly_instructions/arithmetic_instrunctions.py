@@ -81,7 +81,7 @@ def ADD(HardwareRegister : HardwareRegisters,
             m[1]
         ],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -146,7 +146,7 @@ def ADC(HardwareRegister : HardwareRegisters,
             m[1]
         ],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -211,7 +211,7 @@ def SUB(HardwareRegister : HardwareRegisters,
             m[1]
         ],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -283,7 +283,7 @@ def SBB(HardwareRegister : HardwareRegisters,
             m[1]
         ],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -343,7 +343,7 @@ def CMP(HardwareRegister : HardwareRegisters,
     
     all_changes = {
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -408,7 +408,7 @@ def DEC(HardwareRegister : HardwareRegisters,
     all_changes = {
         m[0] : [ m[1] ],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -470,7 +470,7 @@ def INC(HardwareRegister : HardwareRegisters,
     all_changes = {
         m[0] : [ m[1] ],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }

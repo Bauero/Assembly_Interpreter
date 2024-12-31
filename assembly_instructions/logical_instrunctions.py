@@ -62,9 +62,9 @@ def AND(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [m[1]],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -95,7 +95,7 @@ def OR(HardwareRegister : HardwareRegisters,
     for bit in range(-1, - final_size -1, -1):
         b1 = int(values_in_binary[0][bit])
         b2 = int(values_in_binary[1][bit])
-        result = b1 or b2
+        result = str(int(b1 or b2))
         carry = result == 1
         output.insert(0, str(result))
         if abs(bit) == 4:
@@ -120,9 +120,9 @@ def OR(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [m[1]],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -153,7 +153,7 @@ def XOR(HardwareRegister : HardwareRegisters,
     for bit in range(-1, - final_size -1, -1):
         b1 = int(values_in_binary[0][bit])
         b2 = int(values_in_binary[1][bit])
-        result = (b1 or b2) and not (b1 and b2)
+        result = str(int((b1 or b2) and not (b1 and b2)))
         carry = b1 and b2
         output.insert(0, str(result))
         if abs(bit) == 4:
@@ -178,9 +178,9 @@ def XOR(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [m[1]],
         "flags" : {
-            "previous_value" :  previous_flags,
+            "oryginal_value" :  previous_flags,
             "new_value" :       new_flags
         }
     }
@@ -206,7 +206,7 @@ def NOT(HardwareRegister : HardwareRegisters,
         values_in_binary.append(output)
         
     # Perform binary not operation
-    output = list(map(lambda x: not int(x) == 1, values_in_binary[0]))
+    output = list(map(lambda x: str(int(not int(x) == 1)), values_in_binary[0]))
 
     # Resuce size of number if needed
     output = output[-final_size:]   # {final_size} bits from the end
@@ -215,7 +215,7 @@ def NOT(HardwareRegister : HardwareRegisters,
                              kwargs['param_types'][0], kwargs['source_params'][0])
 
     all_changes = {
-        m[0] : m[1],
+        m[0] : [m[1]],
     }
 
     return all_changes
