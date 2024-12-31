@@ -13,6 +13,7 @@ from assembly_instructions.logical_instrunctions import *
 from assembly_instructions.flow_control_instructions import *
 from assembly_instructions.jump_instructions import *
 from assembly_instructions.stack_instructions import *
+from assembly_instructions.data_movement_instructions import *
 from hardware_registers import HardwareRegisters
 from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
                     LabelNotRecognizedError
