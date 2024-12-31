@@ -156,7 +156,28 @@ class TooManyArgumentsToUnpack (Exception):
     pass
 
 
+class LabelNotRecognizedError (DetailedException):
+    """
+    This error occurs if label which is used in ex. jump, cannot be recognized.
+
+    This can occur fe. if defined label is in different case than the one used
+    while calling:
+    
+    Label1 != label1
+    """
+
+    def __init__(self, line_num = None, error_message = ""):
+        self.error_message = error_message
+        self.line_num = line_num
+
+    def line(self):
+        return self.line_num
+    
+    def message(self):
+        return self.error_message
+
 class ExecutionOfOperationInLineError (Exception):
+
     """
     This error is raised if some kind of error occured while processing a funciton.
 

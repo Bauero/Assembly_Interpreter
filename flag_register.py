@@ -31,14 +31,17 @@ class FlagRegister():
 			case "AF":  self.FLAGS[-5 ] = setValue
 			case "PF":  self.FLAGS[-3 ] = setValue
 			case "CF":  self.FLAGS[-1 ] = setValue
-			case _: 	self.FLAGS[flag] = setValue
 
 	def setFlagRaw(self, valueInBits):
+
+		if type(valueInBits) == list:
+			valueInBits = "".join(valueInBits)
+
 		if valueInBits.startswith("Ob"):
-			valueInBits = valueInBits.remove("Ob")
+			valueInBits = valueInBits[2:]
 		
 		for bit in range(len(valueInBits)):
-			self.FLAGS[bit] = int(bool(bit))
+			self.FLAGS[bit] = int(valueInBits[bit] == '1')
 
 	def setFlags(self, flagON : list = [], argOFF :list = []):
 		for f in flagON: self.setFlag(f,1)

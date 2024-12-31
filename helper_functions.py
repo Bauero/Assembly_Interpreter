@@ -1,5 +1,8 @@
 import re
 import os
+# from stack import Stack
+# from datatypes import Data
+from hardware_registers import HardwareRegisters
 from errors import WrongNumberBase, IncorectValueInListOfBits, FileDoesntExist, \
                     FileSizeMightBeTooBig, FileTypeNotAllowed
 
@@ -43,12 +46,12 @@ def covert_number_to_bit_list(value : str | int | list, size : int = 8):
     negative_value = False
 
     def _convert_str(value):
-        if  new_value := return_if_base_2_value(value):
-            conv_value = list(new_value)
-        elif new_value := return_if_base_16_value(value):
+        if new_value := return_if_base_16_value(value):
             conv_value = list(bin(int(new_value, base=16))[2:])
         elif return_if_base_10_value(value):
             conv_value = list(bin(int(value))[2:])
+        elif  new_value := return_if_base_2_value(value):
+            conv_value = list(new_value)
         else:
             raise WrongNumberBase(f"Number '{value}' seems to not belong to binary," +\
                                 " decimal or hexadecimal numbers")
@@ -148,3 +151,76 @@ def inverse_Twos_Compliment_Number(value : str):
         output = "".join(["1" if x == "0" else "0" for x in value])
 
     return output
+
+def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variables : dict,
+                              value : list, destination : int, name : str = ""):
+
+    oryginal_val : list | str = []
+    modified = None
+
+    match destination:
+        case 2:
+            name = name.split(" ")[-1][1:-1]
+            start = Variables[name]['address']
+            size = Variables[name]['size']
+            oryginal_val = Data.get_data(start, size)
+            modified = "variable"
+            Data.modify_data(start, value)
+        case 3:
+            oryginal_val = HardwareRegister.readFromRegister(name)
+            modified = "register"
+            HardwareRegister.writeIntoRegister(name, value)
+        case 4:
+            size, address = name.split(" ")
+            address = HardwareRegister.readFromRegister(name)
+            address = convert_number_to_int_with_binary_capacity(address, 16)
+            Data.modify_data(address, value)
+        case 5:
+            size, address = name.split(" ")
+            size = return_size_from_name(size)
+            address = convert_number_to_int_with_binary_capacity(address, 16)
+            oryginal_val = Data.get_data(address, size)
+            Data.modify_data(address, value)
+        case 6:
+            # TODO
+            ...
+
+    response = {
+        "location" :        name,
+        "oryginal_value" :  list(map(int, oryginal_val)),
+        "new_value" :       list(map(int, value))
+    }
+
+    return modified, response
+
+def convert_number_to_bit_list(v : str, final_size : int) -> str:
+    """
+    This function automatically detects which type of number was passed, and unifies them
+    to string of 1 and 0 with the given length
+    """
+
+    if new_val := return_if_base_16_value(v):
+        prep_val = bin(int(new_val[2:], base=16))[2:]
+    elif new_val := return_if_base_10_value(v):
+        prep_val = bin(int(new_val))[2:]
+    elif new_val := return_if_base_2_value(v):
+        prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
+    else:
+        raise WrongNumberBase(v)
+
+    return prep_val.zfill(final_size)
+
+
+def equal_no_of_0_1(value : list | str):
+    count_0 = 0
+    count_1 = 0
+    for b in value:
+        if b == "0":    count_0 += 1
+        else:           count_1 += 1
+    return count_0 == count_1
+
+def sign_changed(n1 : str, n2 : str, output : list):
+    n1b, n2b = int(n1[0]), int(n2[0])
+    if n1b == n2b and n1b != int(output[0]):
+        return True
+    return False

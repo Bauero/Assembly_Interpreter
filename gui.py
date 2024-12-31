@@ -164,8 +164,8 @@ class MainWindow(QWidget):
         self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
         
         # Link buttons with functions
-        self.nextLineButton.clicked.        connect(lambda: self._executeCommand('execute_instruction'))
-        self.previousLineButton.clicked.    connect(lambda: self._executeCommand('reverse_instruction'))
+        self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
+        self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
         # self.showVariables.clicked.         connect(lambda: self._toggleVariableSectionVisible())
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
         # self.pauseExecutionButton.clicked.  connect(lambda: self._executeCommand('pause'))
@@ -314,6 +314,7 @@ class MainWindow(QWidget):
                 ans = msg.exec()
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
+                    assert type(raw_file) == str
                     self.code_field.setText("".join(raw_file))
                     self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
                     self._open_interactive_mode()
@@ -328,6 +329,7 @@ class MainWindow(QWidget):
                 ans = msg.exec()
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
+                    assert type(raw_file) == str
                     self.code_field.setText("".join(raw_file))
                     self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
                     self._open_interactive_mode()
@@ -378,13 +380,14 @@ class MainWindow(QWidget):
                     self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
                 self.program_running = not self.program_running
                 #   TODO connect automatic code executioin
-            case 'execute_instruction':
-                response = self.code_handler.executeCommand('execute_instruction')
+            case 'next_instruction':
+                response = self.code_handler.executeCommand('next_instruction')
                 self._act_on_response(response)
                 self._refresh()
-            case 'reverse_instruction':
+            case 'previous_instruction':
+                response = self.code_handler.executeCommand('previous_instruction')
+                self._act_on_response(response)
                 self._refresh()
-
     # def _toggleVariableSectionVisible(self):
     #     self.variableSetion.setHidden(not self.variableSetion.isHidden())
 

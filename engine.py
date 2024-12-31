@@ -5,11 +5,17 @@ This file contains Engine Class, which is responsible for simluation of operatio
 from inspect import signature
 from helper_functions import *
 from stack import Stack
+from datatypes import Data
 from flag_register import FlagRegister
-from assembly_instructions.arithmetic import *
-from assembly_instructions.flag_setting import *
+from assembly_instructions.arithmetic_instrunctions import *
+from assembly_instructions.flag_setting_instructions import *
+from assembly_instructions.logical_instrunctions import *
+from assembly_instructions.flow_control_instructions import *
+from assembly_instructions.jump_instructions import *
+from assembly_instructions.stack_instructions import *
 from hardware_registers import HardwareRegisters
-from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError
+from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
+                    LabelNotRecognizedError
 
 
 ################################################################################
@@ -49,7 +55,7 @@ class Engine():
         self.variables = variables
         self.data = data
 
-    def executeInstruction(self, command : str):
+    def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it splits line to under"""
 
         elements_in_line = []
@@ -87,12 +93,13 @@ class Engine():
         #   ['mov', 'AX', '10'] -> ['keyword', 'register', 'value']
         elements_types = list(map(lambda e: self._define_element_type(e), elements_in_line))
         
-        
         assert elements_in_line, f"Line '{command}' seems to contain no values to process"
         assert elements_types[0] == 'keyword', \
                 f"First element in line '{command}' is of type {elements_types[0]} - only"+ \
                     " values type 'keyword' are allowed"
         mapped_params = self._check_if_operation_allowed(elements_in_line[0], elements_types[1:])
+
+        elements_in_line = self._standardize_case_for_register_names(elements_in_line, elements_types)
 
         #   This function returns 2 list - actual values, and sizes which are assigned to vars
         #   ['mov', 'AX', '10'] -> [329, 10] or  ['add', 'var1', 'word 20'] -> [70, 20]
@@ -113,10 +120,40 @@ class Engine():
             source_params = elements_in_line[1:],
             param_types = mapped_params,
             final_size = final_size,
-            values = values
+            values = values,
+            line = line
             )
 
         return output
+
+    def load_new_state_after_change(self, change : dict, forward : bool):
+        """
+        The purpose of this method is to directly change state of the simulated
+        HR, FR, STACK or manipulate date, allowing to undo/redo instruction, and
+        ommit resource-intensive processing, when running already processed instructions
+        """
+
+        source = "new_value" if forward else "oryginal_value"
+
+        for modified_elem in change:
+            changes = change[modified_elem]
+
+            match modified_elem:
+                case "register":
+                    for modification in changes:
+                        reg = modification['location']
+                        self.HR.writeIntoRegister(reg, modification[source])
+                case "variable":
+                    for modification in changes:
+                        var = modification['location']
+                        add = self.variables[var]['address']
+                        self.data.modify_data(add, modification[source])
+                case "flags":
+                    self.FR.setFlagRaw(changes[source])
+                case "stack":
+                    for modification in changes:
+                        start = modification["location"]
+                        self.ST.write(start, modification[source])
 
     ############################################################################
     #   Private Methods
@@ -141,13 +178,19 @@ class Engine():
         if function in self.funtionNameLink:
             try:
                 output = self.funtionNameLink[function](
-                    self.HR, self.FR, self.ST, self.data, self.variables, **kwargs
+                    self.HR,
+                    self.FR,
+                    self.ST,
+                    self.data,
+                    self.variables,
+                    self.labels,
+                    **kwargs
                 )
                 return output
             except Exception as e:
                 raise ExecutionOfOperationInLineError(e)
         else:
-            raise NotImplementedError
+            raise ExecutionOfOperationInLineError(NotImplementedError())
         
     def _define_element_type(self, element : str):
         """Define in which catergory an element belongs - also checks if it's valid:
@@ -161,6 +204,7 @@ class Engine():
         - [address_value]   ([20h])
         - [combo_address]   ([BX+20h])
         - value             (word 10h, or 20 or 10b)
+        - label             (l1, start etc.)
         - undefined         (anything else, which doesn't match the filters)
         """
 
@@ -210,7 +254,9 @@ class Engine():
             
             return False    
         
-            
+        def _check_if_value_is_label(element : str):
+            return element.lower() in map(lambda x: x.lower(), self.labels)
+
         if element.upper() in self.funcList:                return "keyword"
         elif element.upper() in self.HR.listRegisters():    return "register"
         elif _call_eff_add_in_reg(element):                 return "[address_in_reg]"
@@ -221,6 +267,7 @@ class Engine():
         #     return "procedure"
         elif _is_call_for_value_under_address(element):     return "[combo_address]"
         elif _check_if_value_is_number(element):            return "value"
+        elif _check_if_value_is_label(element):             return "label"
         else:                                               return "undefined"
 
     def _check_if_operation_allowed(self, keyword : str, params):
@@ -240,7 +287,8 @@ class Engine():
             4. [address_in_reg]  ([BX])
             5. [address_value]   (word [20h])
             6. [combo_address]   ([BX+20h])
-            7. value             (word 10h, or 20 or 10b)"""
+            7. value             (word 10h, or 20 or 10b)
+            8. label             (start:, or l1:)"""
         
         def _map_values(value : str) -> int:
             match value:
@@ -251,6 +299,7 @@ class Engine():
                 case "[address_value]":     return 5
                 case "[combo_address]":     return 6
                 case "value":               return 7
+                case "label":               return 8
             return -1
         
         mapped_params = tuple(map(_map_values, params))
@@ -259,6 +308,16 @@ class Engine():
             raise ArgumentNotExpected
         else:
             return mapped_params
+
+    def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
+        """This funciton ensures that all calls for register are in capital names"""
+
+        for i in range(len(elements)):
+            mp = mapped_params[i]
+            if mp == "register":
+                elements[i] = elements[i].upper()
+
+        return elements
 
     def _get_value_or_address(self, elements : list, mapped_params : tuple):
         """
@@ -313,7 +372,6 @@ class Engine():
                     values.append(None)
                 case 7:
                     try:
-                        
                         if ' ' in elements[id].strip():
                             size, number = elements[id].split(' ')
                             if size.upper() not in allowed_data_types:
@@ -327,6 +385,13 @@ class Engine():
                         values.append(convert_number_to_bits_in_str(number, size) + "b")
                     except ValueError:
                         raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
+                case 8:
+                    sizes.append(16)
+                    try:
+                        label_line = self.labels[elements[0]]
+                        values.append(label_line)
+                    except ValueError:
+                        raise LabelNotRecognizedError
 
         return values, sizes
 
