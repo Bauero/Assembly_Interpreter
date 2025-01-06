@@ -127,7 +127,7 @@ class Data:
             raise DataNotByteMultipleError(f"Stored data is not a multiple of 8 - \
                                            value stored: {content}")
 
-        return starting_address, (self.size - starting_address) // 8
+        return starting_address//8, (self.size - starting_address) // 8
 
     def modify_data(self, starting_bit = 0, list_of_new_bits : list = []):
         try:
