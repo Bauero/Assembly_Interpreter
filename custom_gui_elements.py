@@ -547,3 +547,36 @@ class StackEditor(QPlainTextEdit):
             numbered_line_pairs = zip(range(2**16-1,-1,-1), fresh_stack)
             self.setPlainText("\n".join(map(format_line, numbered_line_pairs)))
 
+class VariableEditor(QPlainTextEdit):
+
+    def __init__(self, engine):
+        super().__init__()
+        self.engine = engine
+        self.setMinimumWidth(300)
+        self.bits = []
+        
+    def update(self):
+
+        variables = self.engine.variables
+        data = self.engine.data
+
+        end_text = f"#\tsize\t{'name':10}\taddres\tcontent\n\n"
+        
+        if variables == None:
+            self.setPlainText(end_text)
+            return
+
+        def format_line(pair):
+            line, variable = pair
+            address, size, format = variables[variable].values()
+            content = data.get_data(address, size)
+            divided_content = []
+            for i in range(0, len(content)-1, 8):
+                raw_content_part = [str(b) for b in content[i : i+8]]
+                divided_content.append("".join(raw_content_part))
+            formatted_content = " ".join(divided_content)
+            return f"{line}\t{size}\t{variable:10}\t{address}\t{formatted_content}"
+
+        end_text += "\n".join(map(format_line, enumerate(variables)))
+
+        self.setPlainText(end_text)

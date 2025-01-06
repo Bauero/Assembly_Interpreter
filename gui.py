@@ -115,7 +115,7 @@ class MainWindow(QWidget):
         self.rightSection = QWidget()
         rightSectionLayout = QFormLayout()
 
-        # Optional varaible section
+        # Stack section
         ST = self.code_handler.engine.ST
         self.stackSection = StackEditor(ST)
         self.stackSection.update()
@@ -125,6 +125,17 @@ class MainWindow(QWidget):
         stack_label.setFont(font)
         self.stackColumn.addWidget(stack_label)
         self.stackColumn.addWidget(self.stackSection)
+        
+        # Variable section
+        engine = self.code_handler.engine
+        self.variableSection = VariableEditor(engine)
+        self.variableSection.update()
+        self.variableColumn = QVBoxLayout()
+        variables_label = QLabel("Variables")
+        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+        variables_label.setFont(font)
+        self.variableColumn.addWidget(variables_label)
+        self.variableColumn.addWidget(self.variableSection)
 
         # Add widgets to the left section
         HR = self.code_handler.engine.HR
@@ -207,6 +218,7 @@ class MainWindow(QWidget):
         self.rightSection.setLayout(rightSectionLayout)
         centralLayout.addWidget(self.rightSection)
         centralLayout.addLayout(self.stackColumn)
+        centralLayout.addLayout(self.variableColumn)
 
         # Add the central section to the main layout
         programLayout.addWidget(self.centerSection)
@@ -344,6 +356,7 @@ class MainWindow(QWidget):
             break
 
         self.pagesStack.setCurrentIndex(1)
+        self.variableSection.update()
         
     @pyqtSlot()
     def _open_interactive_mode(self):
@@ -384,11 +397,13 @@ class MainWindow(QWidget):
                 self._act_on_response(response)
                 self._refresh()
                 self.stackSection.update()
+                self.variableSection.update()
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
                 self._act_on_response(response)
                 self._refresh()
                 self.stackSection.update()
+                self.variableSection.update()
 
     def _act_on_response(self, response : dict):
         """
