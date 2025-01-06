@@ -106,6 +106,7 @@ class MainWindow(QWidget):
 
         # Left column of the page
         self.leftSection = QWidget()
+        # self.leftSection.setFixedWidth(400)
         leftSectionLayout = QFormLayout()
         leftSectionLayout.setAlignment(alg_top)
         # leftSectionLayout 
@@ -114,10 +115,27 @@ class MainWindow(QWidget):
         self.rightSection = QWidget()
         rightSectionLayout = QFormLayout()
 
-        # Optional varaible section
-        self.variableSetion = QTextEdit()
-        # self.variableSetion.setHidden(True)
-        self.variableSetion.setFixedWidth(300)
+        # Stack section
+        ST = self.code_handler.engine.ST
+        self.stackSection = StackEditor(ST)
+        self.stackSection.update()
+        self.stackColumn = QVBoxLayout()
+        stack_label = QLabel("Stack")
+        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+        stack_label.setFont(font)
+        self.stackColumn.addWidget(stack_label)
+        self.stackColumn.addWidget(self.stackSection)
+        
+        # Variable section
+        engine = self.code_handler.engine
+        self.variableSection = VariableEditor(engine)
+        self.variableSection.update()
+        self.variableColumn = QVBoxLayout()
+        variables_label = QLabel("Variables")
+        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+        variables_label.setFont(font)
+        self.variableColumn.addWidget(variables_label)
+        self.variableColumn.addWidget(self.variableSection)
 
         # Add widgets to the left section
         HR = self.code_handler.engine.HR
@@ -146,16 +164,13 @@ class MainWindow(QWidget):
         # Create all buttons for right section 
         self.nextLineButton         = QPushButton('Wykonaj instrukcję')
         self.previousLineButton     = QPushButton('Powrót do poprzedniej instrukcji')
-        # self.showVariables          = QPushButton('Pokaż zmienne')
         self.startExecutionButton   = QPushButton('Uruchom program')
-        # self.pauseExecutionButton   = QPushButton('Zatrzymaj wykonanie kodu')
         self.saveStateButton        = QPushButton('Zapisz stan')
-        self.startAutoExecButton    = QPushButton('Automatyczna egzeukcja kodu')
+        self.startAutoExecButton    = QPushButton('Automatyczne wykonywanie linii')
         
         # Set if buttons are enabled, and if are checkable
         self.nextLineButton.        setEnabled(self.interactive_mode)
         self.previousLineButton.    setEnabled(self.interactive_mode)
-        # self.pauseExecutionButton.  setEnabled(self.interactive_mode)
         self.saveStateButton.       setEnabled(self.interactive_mode)
         self.startAutoExecButton.   setEnabled(True)
         self.startAutoExecButton.   setCheckable(True)
@@ -166,9 +181,7 @@ class MainWindow(QWidget):
         # Link buttons with functions
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
         self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
-        # self.showVariables.clicked.         connect(lambda: self._toggleVariableSectionVisible())
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
-        # self.pauseExecutionButton.clicked.  connect(lambda: self._executeCommand('pause'))
         self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
         self.startAutoExecButton.clicked.   connect(lambda: self._toggle_automatic_execution)
         
@@ -180,17 +193,14 @@ class MainWindow(QWidget):
             self.executionFrequencyList.addItem(t)
         self.executionFrequencyList.setCurrentIndex(2)
         self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
-        # self.executionFrequencyList.currentIndex()
 
         # Combine buttons into rows for right column
         row_1 = QHBoxLayout()
         row_1.addWidget(self.nextLineButton)
         row_1.addWidget(self.previousLineButton)
-        # row_1.addWidget(self.showVariables)
 
         row_2 = QHBoxLayout()
         row_2.addWidget(self.startExecutionButton)
-        # row_2.addWidget(self.pauseExecutionButton)
         row_2.addWidget(self.saveStateButton)
 
         row_3 = QHBoxLayout()
@@ -207,7 +217,8 @@ class MainWindow(QWidget):
         rightSectionLayout.addRow(row_3)
         self.rightSection.setLayout(rightSectionLayout)
         centralLayout.addWidget(self.rightSection)
-        centralLayout.addWidget(self.variableSetion)
+        centralLayout.addLayout(self.stackColumn)
+        centralLayout.addLayout(self.variableColumn)
 
         # Add the central section to the main layout
         programLayout.addWidget(self.centerSection)
@@ -227,7 +238,7 @@ class MainWindow(QWidget):
         for element in self.left_section_elements:
             setattr(self, element.get_name(), element)
             element.set_interactive(interactive_active)
-        self.variableSetion.setHidden(False)
+        self.stackSection.setHidden(False)
 
     def on_frequency_change(self, index):
         # Perform the action you want when the selection changes
@@ -345,6 +356,7 @@ class MainWindow(QWidget):
             break
 
         self.pagesStack.setCurrentIndex(1)
+        self.variableSection.update()
         
     @pyqtSlot()
     def _open_interactive_mode(self):
@@ -358,11 +370,11 @@ class MainWindow(QWidget):
         self._set_interactive_mode(True)
         self.pagesStack.setCurrentIndex(1)
 
-    @pyqtSlot()
+    # @pyqtSlot()s
     def _toggle_automatic_execution(self):
         self.automatic_execution = self.startAutoExecButton.isChecked()
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def _executeCommand(self, command):
     
         match command:
@@ -384,12 +396,14 @@ class MainWindow(QWidget):
                 response = self.code_handler.executeCommand('next_instruction')
                 self._act_on_response(response)
                 self._refresh()
+                self.stackSection.update()
+                self.variableSection.update()
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
                 self._act_on_response(response)
                 self._refresh()
-    # def _toggleVariableSectionVisible(self):
-    #     self.variableSetion.setHidden(not self.variableSetion.isHidden())
+                self.stackSection.update()
+                self.variableSection.update()
 
     def _act_on_response(self, response : dict):
         """
@@ -399,16 +413,24 @@ class MainWindow(QWidget):
         Response is returned in form of dictionary which contains mandatory filed - "status"
         """
 
-        if response['status'] == 0:
-            self.code_field.setHighlight(response["highlight"])
-            # TODO update registers, and highlight new instruction
-            ...
-        elif response['status'] == 1:
-            # TODO handle normal error - inform user what is wrong with code
-            ...
-        elif response['status'] == -1:
-            # TODO handle undefined error
-            ...
+        match response['status']:
+
+            #   Everything went as expected - continue execution
+            case 0:
+                self.code_field.setHighlight(response["highlight"])
+
+            #   Predefined error occured - notify user ; stop execution
+            case 1: ...
+
+            #   Undefined error occured - notify user ; stop execution
+            case -1: ...
+
+            #   All instructions were executed - notify user about finishing program
+            case 'finish': ...
+
+            #################    SYSTEM INTERRUP HANDLING    ###################
+
+            #   
 
     def _refresh(self):
         for element in self.left_section_elements:

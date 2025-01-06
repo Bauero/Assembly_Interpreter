@@ -1,0 +1,1 @@
+Jump if numbers are equal -> ZF=1

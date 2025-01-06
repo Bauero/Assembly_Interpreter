@@ -13,6 +13,7 @@ from assembly_instructions.logical_instrunctions import *
 from assembly_instructions.flow_control_instructions import *
 from assembly_instructions.jump_instructions import *
 from assembly_instructions.stack_instructions import *
+from assembly_instructions.data_movement_instructions import *
 from hardware_registers import HardwareRegisters
 from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
                     LabelNotRecognizedError
@@ -47,6 +48,8 @@ class Engine():
         self.HR = HardwareRegisters()
         self.FR = FlagRegister()
         self.ST = Stack()
+        self.variables = None
+        self.data = None
 
     def informAboutLabels(self, labels : list):
         self.labels = labels
