@@ -48,6 +48,8 @@ class Engine():
         self.HR = HardwareRegisters()
         self.FR = FlagRegister()
         self.ST = Stack()
+        self.variables = None
+        self.data = None
 
     def informAboutLabels(self, labels : list):
         self.labels = labels
