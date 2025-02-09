@@ -223,4 +223,4 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
 for fn_name in list(filter(lambda n: n.upper() == n, dir())):
     fn = locals()[fn_name]
     fn.params_range = [1]
-    fn.allowed_params_combination = [(8)]
+    fn.allowed_params_combination = [("value",)]

@@ -23,7 +23,7 @@ def MOV(HardwareRegister : HardwareRegisters,
     """This function perfoms movement of data from place to place"""
     
     final_size = kwargs['final_size']
-    v = kwargs['values'][1]
+    v = kwargs['args_values_raw'][1]
     output = list(convert_number_to_bit_list(v, final_size))
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
@@ -47,7 +47,7 @@ def XCHG(HardwareRegister : HardwareRegisters,
     final_size = kwargs['final_size']
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
     
@@ -77,12 +77,11 @@ def XCHG(HardwareRegister : HardwareRegisters,
 
 MOV.params_range = [2]
 MOV.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 XCHG.params_range = [2]
 XCHG.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "register"), ("register", "register"), ("register", "memory")
 ]

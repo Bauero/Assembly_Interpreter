@@ -8,7 +8,8 @@ from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
 from helper_functions import equal_no_of_0_1, sign_changed, convert_number_to_bit_list, \
-                             inverse_Twos_Compliment_Number, save_value_in_destination
+                             inverse_Twos_Compliment_Number, save_value_in_destination, \
+                             covert_number_to_bit_list
 
 """ 
 Allowed combinations, and it's numbers
@@ -38,8 +39,8 @@ def ADD(HardwareRegister : HardwareRegisters,
     # Convert both numbers to be in raw binary form -> 0111010110101101
     values_in_binary = []
     
-    for v in kwargs['values']:
-        output = convert_number_to_bit_list(v, final_size)
+    for v in kwargs['args_values_raw']:
+        output = covert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
     # Perform binary addition
@@ -102,7 +103,7 @@ def ADC(HardwareRegister : HardwareRegisters,
     # Convert both numbers to be in raw binary form -> 0111010110101101
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
@@ -165,7 +166,7 @@ def SUB(HardwareRegister : HardwareRegisters,
     final_size = kwargs['final_size']
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
 
@@ -230,7 +231,7 @@ def SBB(HardwareRegister : HardwareRegisters,
     final_size = kwargs['final_size']
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
 
@@ -304,7 +305,7 @@ def CMP(HardwareRegister : HardwareRegisters,
     final_size = kwargs['final_size']
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
 
@@ -363,7 +364,7 @@ def DEC(HardwareRegister : HardwareRegisters,
     final_size = kwargs['final_size']
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
 
@@ -428,7 +429,7 @@ def INC(HardwareRegister : HardwareRegisters,
     final_size = kwargs['final_size']
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
 
@@ -483,36 +484,36 @@ def INC(HardwareRegister : HardwareRegisters,
 
 ADD.params_range = [2]
 ADD.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 ADC.params_range = [2]
 ADC.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 SUB.params_range = [2]
 SUB.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 SBB.params_range = [2]
 SBB.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 CMP.params_range = [2]
 CMP.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 INC.params_range = [1]
-INC.allowed_params_combinations = [ (2,), (3,) ]
+INC.allowed_params_combinations = [ ("memory",), ("register",) ]
 
 DEC.params_range = [1]
-DEC.allowed_params_combinations = [ (2,), (3,) ]
+DEC.allowed_params_combinations = [ ("memory",), ("register",) ]

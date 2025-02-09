@@ -28,13 +28,43 @@ def PUSH(HardwareRegister : HardwareRegisters,
     
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write byte of data
-    3. If there are more bytes, go back to step 1 ; otherwise stop"""
+    3. If there are more bytes, go back to step 1 ; otherwise stop
+    
+    ## IMPORTANT
+
+    There is quite interesting behaviour implemented into NASM if we are operating
+    on values smaller than 16 bits - basically, value provided is stretched to fit
+    into 16 bits, and the stretching is done based on left-most bit:
+
+    -> If we push 8 bit value left-most bit is coppied into all places:
+    
+    _ _ _ _ _ _ _ _     1 0 0 0 0 0 0 0
+    
+    1 1 1 1 1 1 1 1     1 0 0 0 0 0 0 0     -> 255  128
+
+    ############################################################################
+
+    _ _ _ _ _ _ _ _     0 1 1 1 0 1 0 1
+    
+    0 0 0 0 0 0 0 0     0 1 1 1 0 1 0 1     -> 000  117
+
+    ## Raw example:
+
+    Val                 First Byte  Second Byte
+
+    - PUSH byte 127  -> 000         127
+    - PUSH word 127  -> 000         127
+    - PUSH byte 128  -> 255         128
+    - PUSH word 128  -> 000         128
+    - PUSH byte 260  -> 000         004
+    - PUSH word 260  -> 001         004
+    """
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP, 16)
+    SP_value = int(SP, base=2)
     SP_value_backup = SP_value
     
-    value = kwargs['values'][0]
+    value = kwargs['args_values_raw'][0]
     final_size = kwargs['final_size']
     converted_value = convert_number_to_bit_list(value, final_size)
     no_bytes_conv_value = len(converted_value) // 8
@@ -42,6 +72,7 @@ def PUSH(HardwareRegister : HardwareRegisters,
 
     Stack.write(SP_value, converted_value)
     SP_value -= no_bytes_conv_value
+    HardwareRegister.writeIntoRegister("SP", SP_value)
 
     output = {
         "stack" : [
@@ -74,15 +105,21 @@ def PUSHF(HardwareRegister : HardwareRegisters,
     3. Decrement SP by one (2 bytes in total)"""
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP, 16)
+    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
     SP_value_backup = SP_value
     SP_value -= 1
     
     value = list(FlagRegister.readFlags())
     backup_stack = Stack.read(SP_value - 2, 2)
+    tmp = []
+    for byte in backup_stack:
+        tmp.extend(list(byte))
+    backup_stack = tmp
 
     Stack.write(SP_value, value)
     SP_value -= 1
+
+    HardwareRegister.writeIntoRegister("SP", SP_value)
 
     output = {
         "stack" : [
@@ -129,7 +166,7 @@ def PUSHA(HardwareRegister : HardwareRegisters,
 
     for register in list_of_registers:
         reg_bits = HardwareRegister.readFromRegister(register)
-        reg_value = convert_number_to_int_with_binary_capacity(reg_bits, 16)
+        reg_value = convert_number_to_int_with_binary_capacity(reg_bits + "b", 16)
         reg_content.append(reg_content)
 
     SP_value = reg_content[4]
@@ -141,6 +178,7 @@ def PUSHA(HardwareRegister : HardwareRegisters,
         Stack.write(SP_value, value)
         SP_value += 1
 
+    HardwareRegister.writeIntoRegister("SP", SP_value)
     values_on_stack = reg_content[-1:]
 
     output = {
@@ -173,12 +211,24 @@ def POP(HardwareRegister : HardwareRegisters,
     2. Store this value in the destination
     3. Incremenet value of the SP, by the amount of bytes red - this instruction
     doesn't "DELETE" the data - those bits are still phisically on the stack, but they
-    are considered empty"""
+    are considered empty
+    
+    IMPORTANT
+
+    Based on my experience with NASM, when we are POP'ing value from stack we need to store
+    it in any place which would accept 16 bits - if we put in memory, in place where we
+    store 8 bit variable, pop would return and store 16 bit, effectively ovverrriting any
+    byte which is stored in memory after the initial byte. Doing so in this simulator, if
+    we push to 8 bit variable which is last in our data, would propably throw an error, as
+    (in terms of memory) program reserves only the space which is declared by variables, while
+    doing so in NASM for .COM program would *propably* just override any byte which is first
+    in segment !
+    """
 
     no_of_bytes = kwargs['final_size'] // 8
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP, 16)
+    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
     SP_value_backup = SP_value
 
     values = Stack.read(SP_value, no_of_bytes)
@@ -226,7 +276,7 @@ def POPF(HardwareRegister : HardwareRegisters,
     """This functins pops last to bits from stack, and stores it in flag register"""
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP, 16)
+    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
     SP_value_backup = SP_value
 
     values = Stack.read(SP_value, 2)
@@ -265,7 +315,7 @@ def POPA(HardwareRegister : HardwareRegisters,
     'DI', 'SI', 'BP', 'SP', 'BX', 'DX', 'CX', 'AX' """
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP, 16)
+    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
     SP_value_backup = SP_value
 
     #   Save values of all registers, and then reverse the order of the list
@@ -301,7 +351,7 @@ def POPA(HardwareRegister : HardwareRegisters,
 ################################################################################
 
 PUSH.params_range = [1]
-PUSH.allowed_params_combinations = [ (1,), (2,), (3,), (4,), (5,), (6,), (7,) ]
+PUSH.allowed_params_combinations = [ ("memory",), ("register",), ("value",)]
 
 PUSHF.params_range = [0]
 PUSHF.allowed_params_combinations = [()]
@@ -310,7 +360,7 @@ PUSHA.params_range = [0]
 PUSHA.allowed_params_combinations = [()]
 
 POP.params_range = [1]
-POP.allowed_params_combinations = [ (2,), (3,), (4,), (5,), (6,) ]
+POP.allowed_params_combinations = [ ("memory",), ("register",) ]
 
 POPF.params_range = [0]
 POPF.allowed_params_combinations = [()]
