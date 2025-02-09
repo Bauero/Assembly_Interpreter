@@ -217,6 +217,17 @@ def NOT(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
+def NOP(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """This function does nothing - just takes time"""
+
+    return {}
+
 AND.params_range = [2]
 AND.allowed_params_combinations = [
     ("memory", "value"), ("memory", "register"), ("register", "register"), 
@@ -237,3 +248,6 @@ XOR.allowed_params_combinations = [
 
 NOT.params_range = [1]
 NOT.allowed_params_combinations = [ ("memory",), ("register",) ]
+
+NOP.params_range = [0]
+NOP.allowed_params_combinations = [tuple()]
