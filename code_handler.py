@@ -174,6 +174,7 @@ class CodeHandler():
                     [next_line, lines_in_source_file]
             
             status = {"status" : 0, "highlight" : lines_in_source_file}
+            return status
 
         except ExecutionOfOperationInLineError as exc:
             org_exc = exc.source_exception()
@@ -185,6 +186,7 @@ class CodeHandler():
             if  org_exc.isinstance(DetailedException):
                 status['line'] = org_exc.line() if org_exc.line() else curr_line
                 status['message'] = org_exc.message()
+            return status
         
         except NotImplementedError as e:
             status = {
@@ -193,16 +195,14 @@ class CodeHandler():
                 "exception" : e,
                 "message" : "Instruction unrecognized"
             }
+            return status
 
         except Exception as e:
             """Handle undefined exceptions"""
-            
             status = {
                 "status" : -1,
                 "exception" : ""
             }
-        
-        finally:
             return status
 
     def _run_previous_instruction(self, **kwargs):

@@ -36,9 +36,9 @@ class Stack():
                                                 "format - allowed: 'str', 'int', 'list' - value format" +\
                                                 f" is {type(value)}"
         
-        converted_value = covert_number_to_bit_list(value, 16)
+        # converted_value = covert_number_to_bit_list(value, 16)
 
-        self._write_raw(start, converted_value)
+        self._write_raw(start, value)
 
     def read_stack(self):
         return_list = []
@@ -112,13 +112,15 @@ Little or bit endian?
 
                                                                                      {ADDRESS}  {VALUE}
 So for our AX example:                                                                            ...
-                                                                                        FFFD    00000000
-AX = 10100100 01010101 ->       AH = 10100100 -> ADDRES: FFFEh      ->      STACK:      FFFE    10100100
-                                AL = 01010101 -> ADDRES: FFFFh                          FFFF    01010101
+                                                                                        FFFB    00000000
+AX = 10100100 01010101 ->       AH = 10100100 -> ADDRES: FFFEh      ->      STACK:      FFFC    10100100
+                                AL = 01010101 -> ADDRES: FFFFh                          FFFD    01010101
+                                                                                        FFFE    00000000
+                                                                                        FFFF    00000000
                                                                 (end of segment)  __________________________
 
-Simplified example of how bits are pushed to the stack:
+Simplified example of how bits are pushed to the stack (each letter is one byte):
 
-Push ASDFGHJK  ->  { segment beginning -> | ... A S D F G H J K | <- segment end }
+Push ABCD  ->  { segment beginning -> | ... A B C D 0 0| <- segment end }
 """
     return definiiton

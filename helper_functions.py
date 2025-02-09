@@ -10,18 +10,26 @@ def return_if_base_16_value(element : str) -> None | str:
     """Returns value if is a base 16 number, otherwise None"""
     if re.search(r"\b(0[xX][0-9a-fA-F]+|[0-9a-fA-F]+h)\b", element):
         if element.endswith('h'):
-            element = "0x" + element[:-1] # "ADh" -> 0xAD
+            negative = element.startswith("-")
+            if negative:    element = element[1:]
+            sign = "-" if negative else ""
+            element = sign + "0x" + element[:-1]
         return element
     
 def return_if_base_10_value(element : str) -> None | str:    
     """Return value if is a base 10 number, otherwise None"""
     if re.search(r"\b(0|[1-9][0-9]*)\b", element):
         return element
+
+def return_if_base_8_value(element : str) -> None | str:    
+    """Return value if is a base 8 number, otherwise None"""
+    if re.search(r"\b(0|[1-9][0-9]*)\b", element):
+        return element
     
 def return_if_base_2_value(element : str) -> None | str:
     """Return value if is a base 2 number, otherwise None"""
     if re.search(r"\b[01]+[bB]\b", element):
-        element = element[:-1]
+        element = '0b' + element[:-1]
         return element
     
 def return_size_from_name(name : str):
@@ -159,31 +167,31 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variab
     modified = None
 
     match destination:
-        case 2:
+        case "register":
+            oryginal_val = HardwareRegister.readFromRegister(name)
+            modified = "register"
+            HardwareRegister.writeIntoRegister(name, value)
+        case "memory":
             name = name.split(" ")[-1][1:-1]
             start = Variables[name]['address']
             size = Variables[name]['size']
             oryginal_val = Data.get_data(start, size)
             modified = "variable"
             Data.modify_data(start, value)
-        case 3:
-            oryginal_val = HardwareRegister.readFromRegister(name)
-            modified = "register"
-            HardwareRegister.writeIntoRegister(name, value)
-        case 4:
-            size, address = name.split(" ")
-            address = HardwareRegister.readFromRegister(name)
-            address = convert_number_to_int_with_binary_capacity(address, 16)
-            Data.modify_data(address, value)
-        case 5:
-            size, address = name.split(" ")
-            size = return_size_from_name(size)
-            address = convert_number_to_int_with_binary_capacity(address, 16)
-            oryginal_val = Data.get_data(address, size)
-            Data.modify_data(address, value)
-        case 6:
-            # TODO
-            ...
+        # case 4:
+        #     size, address = name.split(" ")
+        #     address = HardwareRegister.readFromRegister(name)
+        #     address = convert_number_to_int_with_binary_capacity(address, 16)
+        #     Data.modify_data(address, value)
+        # case 5:
+        #     size, address = name.split(" ")
+        #     size = return_size_from_name(size)
+        #     address = convert_number_to_int_with_binary_capacity(address, 16)
+        #     oryginal_val = Data.get_data(address, size)
+        #     Data.modify_data(address, value)
+        # case 6:
+        #     # TODO
+        #     ...
 
     response = {
         "location" :        name,
@@ -224,3 +232,16 @@ def sign_changed(n1 : str, n2 : str, output : list):
     if n1b == n2b and n1b != int(output[0]):
         return True
     return False
+
+def is_white_char(char):            return char in [' ', '\t']
+def is_special(char):               return char in ['_', '@', '?']
+def is_special_first(char):         return char in ['_', '@']
+def is_rect_bracket(char):          return char in ['[', ']']
+def is_arithmetic(char):            return char in ['+', '-', '/', '*']
+def is_allowed_arithmetic(char):    return char in ['+', '*']
+
+def is_allowed_var_name(char, count):
+    if count == 0:
+        return char.isalpha() or is_special_first(char)
+    else:
+        return char.isalnum() or is_special(char)

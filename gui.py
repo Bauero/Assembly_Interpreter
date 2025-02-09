@@ -426,7 +426,12 @@ class MainWindow(QWidget):
             case -1: ...
 
             #   All instructions were executed - notify user about finishing program
-            case 'finish': ...
+            case 'finish':
+                self.code_field.setHighlight([])
+                self.nextLineButton.setEnabled(True)
+                self.startExecutionButton.setText( "Zatrzymaj program")
+                self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
+                self.program_running = False
 
             #################    SYSTEM INTERRUP HANDLING    ###################
 
