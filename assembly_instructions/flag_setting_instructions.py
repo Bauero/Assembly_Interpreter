@@ -31,6 +31,52 @@ def CLC(HardwareRegister : HardwareRegisters,
 
     return response
 
+def CLD(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """CLEAR DIRECTION FLAG - This instruction sets direction flag to 0"""
+
+    previous_state = FlagRegister.readFlags()
+    FlagRegister.setFlag("DF", 0)
+    new_state = FlagRegister.readFlags()
+
+    response = {
+        "action" :          "flags_changed",
+        "location" :        "DF",
+        "modified_type" :   "flag_register",
+        "oryginal_value" :  list(previous_state),
+        "new_value" :       list(new_state)
+    }
+
+    return response
+
+def CLI(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """CLEAR INTERRUPT FLAG - This instruction sets interrupt flag to 0"""
+
+    previous_state = FlagRegister.readFlags()
+    FlagRegister.setFlag("IF", 0)
+    new_state = FlagRegister.readFlags()
+
+    response = {
+        "action" :          "flags_changed",
+        "location" :        "IF",
+        "modified_type" :   "flag_register",
+        "oryginal_value" :  list(previous_state),
+        "new_value" :       list(new_state)
+    }
+
+    return response
+
 def CMC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Stack : Stack,
@@ -70,6 +116,52 @@ def STC(HardwareRegister : HardwareRegisters,
     response = {
         "action" :          "flags_changed",
         "location" :        "CF",
+        "modified_type" :   "flag_register",
+        "oryginal_value" :  list(previous_state),
+        "new_value" :       list(new_state)
+    }
+
+    return response
+
+def STD(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """SET DIRECTION FLAG - This instruction sets direction flag to 1"""
+
+    previous_state = FlagRegister.readFlags()
+    FlagRegister.setFlag("DF", 1)
+    new_state = FlagRegister.readFlags()
+    
+    response = {
+        "action" :          "flags_changed",
+        "location" :        "DF",
+        "modified_type" :   "flag_register",
+        "oryginal_value" :  list(previous_state),
+        "new_value" :       list(new_state)
+    }
+
+    return response
+
+def STI(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """SET INTERRUPT FLAG - This instruction sets interrupt flag to 1"""
+
+    previous_state = FlagRegister.readFlags()
+    FlagRegister.setFlag("IF", 1)
+    new_state = FlagRegister.readFlags()
+    
+    response = {
+        "action" :          "flags_changed",
+        "location" :        "IF",
         "modified_type" :   "flag_register",
         "oryginal_value" :  list(previous_state),
         "new_value" :       list(new_state)
