@@ -3,8 +3,6 @@ This module define class representing flag register - it allows to perform read 
 write operations to flag register, and holds definions for meaning of each flag
 """
 
-from extration_of_data import bitsToInt
-
 list_of_flags = ["MD", "NT", "IO"," PL", "OF", "DF", "IF", "TF", "SF", "ZF", "PF", "CF"]
 
 class FlagRegister():
@@ -85,7 +83,7 @@ class FlagRegister():
 	#	prints flag register
 	def printFlags(self):
 		result = self.readFlags()
-		dec = bitsToInt(result)
+		dec = int(result, 2)
 		print(f"FL :  {result}  =  {dec}")
 
 	#	print flag register specifically

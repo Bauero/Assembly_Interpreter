@@ -329,7 +329,7 @@ def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     # Case 2
     for n, line in enumerate(assembly_code['lines']):
         if line['section'] == '.code':
-            if line['content'].lower() in [".code", "seciton .code"]:
+            if line['content'].lower() in [".code", "section .code"]:
                 continue
             else:
                 return n, line['lines']

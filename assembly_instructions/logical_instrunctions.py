@@ -6,12 +6,9 @@ from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
-from helper_functions import save_value_in_destination, convert_number_to_bit_list, \
-                                equal_no_of_0_1
-
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
+from helper_functions import (save_value_in_destination,
+                              convert_number_to_bit_list,
+                              equal_no_of_0_1)
 
 def AND(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -219,10 +216,6 @@ def NOT(HardwareRegister : HardwareRegisters,
     }
 
     return all_changes
-
-################################################################################
-#   FUNCTION ATTRIBUTES
-################################################################################
 
 AND.params_range = [2]
 AND.allowed_params_combinations = [

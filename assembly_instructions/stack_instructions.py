@@ -13,10 +13,6 @@ from helper_functions import convert_number_to_int_with_binary_capacity, \
 
 list_of_registers = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
 
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
-
 def PUSH(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Stack : Stack,
@@ -135,7 +131,6 @@ def PUSHF(HardwareRegister : HardwareRegisters,
             "new_value" :       list(map(int, bin(SP_value)[2:]))
         }]
     }
-
     return output
 
 def PUSHA(HardwareRegister : HardwareRegisters, 
@@ -345,10 +340,6 @@ def POPA(HardwareRegister : HardwareRegisters,
         )
 
     return all_changes
-
-################################################################################
-#   FUNCTION ATTRIBUTES
-################################################################################
 
 PUSH.params_range = [1]
 PUSH.allowed_params_combinations = [ ("memory",), ("register",), ("value",)]

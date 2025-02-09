@@ -1,7 +1,9 @@
 # A single node of a singly linked list
 import re
-from errors import SegmentationFault, ValueIsNotANumber, \
-                    ModificationOutsideDataSection, DataNotByteMultipleError
+from errors import (SegmentationFault,
+                    ValueIsNotANumber,
+                    ModificationOutsideDataSection,
+                    DataNotByteMultipleError)
 
 class Node:
     
@@ -13,7 +15,8 @@ class Node:
     
     def printStr(self) -> str:
         return str(self.data)
-    
+
+
 class Variable:
 
     __variables = 0
@@ -30,6 +33,7 @@ class Variable:
     def getSize(self):
         if self.size == "dw": return 16
         elif self.size == "byte": return 8
+
 
 class Data:
     """

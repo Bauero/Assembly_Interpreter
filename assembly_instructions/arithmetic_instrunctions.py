@@ -2,7 +2,6 @@
 This file contains all operations which perform arithmetic operations
 """
 
-# from bit_operations import bitAddition
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
@@ -10,20 +9,6 @@ from datatypes import Data
 from helper_functions import equal_no_of_0_1, sign_changed, convert_number_to_bit_list, \
                              inverse_Twos_Compliment_Number, save_value_in_destination, \
                              covert_number_to_bit_list
-
-""" 
-Allowed combinations, and it's numbers
-    1. variable          (tmp1)
-    2. [variable]        ([tmp1])
-    3. register          (AX)
-    4. [address_in_reg]  (word [BX])
-    5. [address_value]   (word [20h])
-    6. [combo_address]   ([BX+20h])
-    7. value             (word 10h, or 20 or 10b)"""
-
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
 
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -478,36 +463,10 @@ def INC(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-################################################################################
-#   FUNCITON ATTRIBUTES
-################################################################################
-
-ADD.params_range = [2]
-ADD.allowed_params_combinations = [
-    ("memory", "value"), ("memory", "register"), ("register", "register"), 
-    ("register", "value"), ("register", "memory")
-]
-
-ADC.params_range = [2]
-ADC.allowed_params_combinations = [
-    ("memory", "value"), ("memory", "register"), ("register", "register"), 
-    ("register", "value"), ("register", "memory")
-]
-
-SUB.params_range = [2]
-SUB.allowed_params_combinations = [
-    ("memory", "value"), ("memory", "register"), ("register", "register"), 
-    ("register", "value"), ("register", "memory")
-]
-
-SBB.params_range = [2]
-SBB.allowed_params_combinations = [
-    ("memory", "value"), ("memory", "register"), ("register", "register"), 
-    ("register", "value"), ("register", "memory")
-]
-
-CMP.params_range = [2]
-CMP.allowed_params_combinations = [
+for fn in [ADD, ADC, SUB, SBB, CMP]:
+    """Assign all functions the same attributes"""
+    fn.params_range = [2]
+    fn.allowed_params_combinations = [
     ("memory", "value"), ("memory", "register"), ("register", "register"), 
     ("register", "value"), ("register", "memory")
 ]

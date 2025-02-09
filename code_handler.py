@@ -16,10 +16,6 @@ class CodeHandler():
     handles opened file and loades instruction for engine
     """
 
-    ############################################################################
-    #   PUBLIC FUNCTIONS
-    ############################################################################
-
     def __init__(self, engine):
         self.openFiles = []
         self.rawfiles = {}
@@ -104,10 +100,6 @@ class CodeHandler():
     
     def set_interactive_mode(self, value : bool):
         self.working_in_interactive_mode = value
-
-    ############################################################################
-    #   PRIVATE FUNCTIONS
-    ############################################################################
 
     def _get_current_line_instr(self):
         curr_line = self.currentlyExecutedLine[self.currentlyExecutedFile][0]

@@ -8,10 +8,6 @@ from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
 
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
-
 def CLC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Stack : Stack,
@@ -81,15 +77,8 @@ def STC(HardwareRegister : HardwareRegisters,
 
     return response
 
-################################################################################
-#   FUNCTION ATTRIBUTES
-################################################################################
-
-CLC.params_range = [0]
-CLC.allowed_params_combinations = [()]
-
-CMC.params_range = [0]
-CMC.allowed_params_combinations = [()]
-
-STC.params_range = [0]
-STC.allowed_params_combinations = [()]
+for fn_name in list(filter(lambda n: n.upper() == n, dir())):
+    """Assign all functions the same attributes"""
+    fn = locals()[fn_name]
+    fn.params_range = [0]
+    fn.allowed_params_combinations = [tuple()]

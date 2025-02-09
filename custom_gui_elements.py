@@ -4,7 +4,7 @@ file
 """
 
 from PyQt6.QtCore import Qt, QRect
-from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat, QValidator
+from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,8 +17,6 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit
 )
-from flag_register import FlagRegister as FR
-from random import randint
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -26,10 +24,6 @@ alg_top =       Qt.AlignmentFlag.AlignTop
 alg_jst =       Qt.AlignmentFlag.AlignJustify
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
-
-################################################################################
-#   Clasess with custom gui structures
-################################################################################
 
 class MultipurposeRegister(QWidget):
     """This class creates a widget for displaying multipurpose register, splited into
@@ -135,6 +129,7 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
+
 class FunctionalRegisters(QWidget):
     def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
@@ -206,6 +201,7 @@ class FunctionalRegisters(QWidget):
 
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
+
 
 class FlagRegister(QWidget):
     """
@@ -338,6 +334,7 @@ class FlagRegister(QWidget):
                 attr_value.setModifiable(value)
         self.register_content.setReadOnly(not value)
 
+
 class Terminal(QWidget):
     def __init__(self):
         super().__init__()
@@ -359,7 +356,8 @@ class Terminal(QWidget):
         main_frame.addRow(self.terminal)
 
         self.setLayout(main_frame)
-        
+
+
 class CustomQCheckBox(QCheckBox):
     """
     This code is based on code provided by user Luis E. on StackOverflow forum
@@ -384,6 +382,7 @@ class CustomQCheckBox(QCheckBox):
     def isModifiable(self):
         return self.is_modifiable
 
+
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
@@ -394,6 +393,7 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.myeditor.lineNumberAreaPaintEvent(event)
+
 
 class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
@@ -529,6 +529,7 @@ class CodeEditor(QPlainTextEdit):
     def setEditable(self, editable):
         self.setReadOnly(not editable)
 
+
 class StackEditor(QPlainTextEdit):
 
     def __init__(self, stack):
@@ -546,6 +547,7 @@ class StackEditor(QPlainTextEdit):
         if self.bits != fresh_stack:
             numbered_line_pairs = zip(range(2**16-1,-1,-1), fresh_stack)
             self.setPlainText("\n".join(map(format_line, numbered_line_pairs)))
+
 
 class VariableEditor(QPlainTextEdit):
 

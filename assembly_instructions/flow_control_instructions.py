@@ -7,12 +7,9 @@ from stack import Stack
 from datatypes import Data
 from flag_register import FlagRegister
 from hardware_registers import HardwareRegisters
-from helper_functions import save_value_in_destination, covert_number_to_bit_list, \
-                                convert_number_to_int_with_binary_capacity
-
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
+from helper_functions import (save_value_in_destination,
+                              covert_number_to_bit_list,
+                              convert_number_to_int_with_binary_capacity)
 
 def LOOP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -214,13 +211,8 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
         if CX_value > 0 and not ZF:
             return {m[0] : [ m[1] ] }
 
-
-################################################################################
-#   FUNCTION ATTRIBUTES
-################################################################################
-
-# Assign all functions the same attributes - avoid hidious duplication
 for fn_name in list(filter(lambda n: n.upper() == n, dir())):
+    """Assign all functions the same attributes"""
     fn = locals()[fn_name]
     fn.params_range = [1]
-    fn.allowed_params_combination = [("value",)]
+    fn.allowed_params_combinations = [("value",), ("label",)]

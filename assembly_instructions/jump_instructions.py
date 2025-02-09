@@ -8,10 +8,6 @@ from stack import Stack
 from datatypes import Data
 from helper_functions import convert_number_to_int_with_binary_capacity
 
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
-
 def JMP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Stack : Stack,
@@ -505,12 +501,8 @@ def JCXZ(HardwareRegister : HardwareRegisters,
     if cx_int != 0:
         return {"next_instruction" : label}
 
-################################################################################
-#   FUNCTION ATTRIBUTES
-################################################################################
-
-# Assign all functions the same attributes - avoid hidious duplication
 for fn_name in list(filter(lambda n: n.upper() == n, dir())):
+    """Assign all functions the same attributes"""
     fn = locals()[fn_name]
     fn.params_range = [1]
     fn.allowed_params_combinations = [("value",), ("label",)]

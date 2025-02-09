@@ -1,10 +1,26 @@
 import re
 import os
-# from stack import Stack
-# from datatypes import Data
 from hardware_registers import HardwareRegisters
-from errors import WrongNumberBase, IncorectValueInListOfBits, FileDoesntExist, \
-                    FileSizeMightBeTooBig, FileTypeNotAllowed
+from errors import (WrongNumberBase,
+                    IncorectValueInListOfBits,
+                    FileDoesntExist,
+                    FileSizeMightBeTooBig,
+                    FileTypeNotAllowed)
+
+allowed_file_types = ['.s','.asm']
+
+def is_white_char(char):            return char in [' ', '\t']
+def is_special(char):               return char in ['_', '@', '?']
+def is_special_first(char):         return char in ['_', '@']
+def is_rect_bracket(char):          return char in ['[', ']']
+def is_arithmetic(char):            return char in ['+', '-', '/', '*']
+def is_allowed_arithmetic(char):    return char in ['+', '*']
+
+def is_allowed_var_name(char, count):
+    if count == 0:
+        return char.isalpha() or is_special_first(char)
+    else:
+        return char.isalnum() or is_special(char)
 
 def return_if_base_16_value(element : str) -> None | str:
     """Returns value if is a base 16 number, otherwise None"""
@@ -113,8 +129,6 @@ def convert_number_to_int_with_binary_capacity(value : str | int | list, size = 
 
     return int(convert_number_to_bits_in_str(value, size), base = 2)
 
-allowed_file_types = ['.s','.asm']
-
 def loadFileFromPath(path_to_file : str, 
               ignore_size_limit : bool = False,
               ignore_file_type : bool = False) -> list | Exception:
@@ -178,20 +192,6 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variab
             oryginal_val = Data.get_data(start, size)
             modified = "variable"
             Data.modify_data(start, value)
-        # case 4:
-        #     size, address = name.split(" ")
-        #     address = HardwareRegister.readFromRegister(name)
-        #     address = convert_number_to_int_with_binary_capacity(address, 16)
-        #     Data.modify_data(address, value)
-        # case 5:
-        #     size, address = name.split(" ")
-        #     size = return_size_from_name(size)
-        #     address = convert_number_to_int_with_binary_capacity(address, 16)
-        #     oryginal_val = Data.get_data(address, size)
-        #     Data.modify_data(address, value)
-        # case 6:
-        #     # TODO
-        #     ...
 
     response = {
         "location" :        name,
@@ -218,7 +218,6 @@ def convert_number_to_bit_list(v : str, final_size : int) -> str:
 
     return prep_val.zfill(final_size)
 
-
 def equal_no_of_0_1(value : list | str):
     count_0 = 0
     count_1 = 0
@@ -232,16 +231,3 @@ def sign_changed(n1 : str, n2 : str, output : list):
     if n1b == n2b and n1b != int(output[0]):
         return True
     return False
-
-def is_white_char(char):            return char in [' ', '\t']
-def is_special(char):               return char in ['_', '@', '?']
-def is_special_first(char):         return char in ['_', '@']
-def is_rect_bracket(char):          return char in ['[', ']']
-def is_arithmetic(char):            return char in ['+', '-', '/', '*']
-def is_allowed_arithmetic(char):    return char in ['+', '*']
-
-def is_allowed_var_name(char, count):
-    if count == 0:
-        return char.isalpha() or is_special_first(char)
-    else:
-        return char.isalnum() or is_special(char)

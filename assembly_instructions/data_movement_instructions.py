@@ -9,10 +9,6 @@ from stack import Stack
 from datatypes import Data
 from helper_functions import convert_number_to_bit_list, save_value_in_destination
 
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
-
 def MOV(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Stack : Stack,
@@ -70,10 +66,6 @@ def XCHG(HardwareRegister : HardwareRegisters,
         } 
     
     return all_changes
-
-################################################################################
-#   FUNCITON ATTRIBUTES
-################################################################################
 
 MOV.params_range = [2]
 MOV.allowed_params_combinations = [

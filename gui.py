@@ -1,7 +1,7 @@
 """
 This file contains main funciton responsible for handling a gui app
 """
-from PyQt6.QtCore import Qt, QThread, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QWidget,
@@ -13,14 +13,17 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QHBoxLayout,
-    QTextEdit,
     QComboBox
 )
 from custom_gui_elements import *
-from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, \
-                   ImproperJumpMarker, ImproperDataDefiniton
+from errors import (FileDoesntExist,
+                    FileSizeMightBeTooBig,
+                    FileTypeNotAllowed,
+                    ImproperJumpMarker,
+                    ImproperDataDefiniton)
 from helper_functions import loadFileFromPath
 from color_pallete import *
+
 
 class MainWindow(QWidget):
     """

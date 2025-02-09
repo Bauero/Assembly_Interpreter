@@ -27,11 +27,6 @@ class History():
         record = self.history[self.current_instruction].values()
         exec_line, change, next_line = record
         return next_line, change
-        
-        # if self.current_instruction + 1 >= len(self.history):
-        #     return None
-        # self.current_instruction += 1
-        # return self.history[self.current_instruction]
 
     def load_previous_instruction_if_executed(self):
         """Load previous instruction if there are any done before the current"""
@@ -39,17 +34,10 @@ class History():
         #   We tried to load last executed instruction - we are at the end of history
         if self.current_instruction == -1:
             return None
-        # if self.current_instruction + 1 == len(self.history):
         record = self.history[self.current_instruction].values()
         exec_line, change, next_line = record
         self.current_instruction -= 1
         return exec_line, change
-        # else:
-        #     self.current_instruction -= 1
-        #     record = self.history[self.current_instruction]
-        #     exec_line, change, next_line = record
-        #     return exec_line, change
-
 
     def add_new_instruction(self, executed_line, change, next_line):
         

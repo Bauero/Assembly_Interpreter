@@ -1,12 +1,11 @@
-#########################	IMPORT NEEDED MODULES	  #########################
+"""This is main file, which lanuches the app. It's there to allow later support for adding
+CLI interface alongside GUI"""
 
 import sys
 from PyQt6.QtWidgets import QApplication
 from gui import MainWindow
 from engine import Engine
 from code_handler import CodeHandler
-
-#########################	  LAUNCH WINDOW APP		  #########################
 
 def processArgv():	...
 

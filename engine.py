@@ -16,24 +16,17 @@ from assembly_instructions.jump_instructions import *
 from assembly_instructions.stack_instructions import *
 from assembly_instructions.data_movement_instructions import *
 from hardware_registers import HardwareRegisters
-from errors import ArgumentNotExpected, NoExplicitSizeError, ExecutionOfOperationInLineError, \
-                    LabelNotRecognizedError, UnrecognizedArgumentInLineError, SizesDoesntMatchError, \
-                    NoExpliciteSizeDefinitionWhenRequiredError, KeywordNotImplementedError
 from code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
-
-
-################################################################################
-#   Constants
-################################################################################
-
+from errors import (ArgumentNotExpected,
+                    NoExplicitSizeError,
+                    ExecutionOfOperationInLineError,
+                    LabelNotRecognizedError,
+                    UnrecognizedArgumentInLineError,
+                    SizesDoesntMatchError,
+                    NoExpliciteSizeDefinitionWhenRequiredError,
+                    KeywordNotImplementedError)
 
 allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
-
-
-################################################################################
-#   Main Class
-################################################################################
-
 
 class Engine():
     """
@@ -41,10 +34,6 @@ class Engine():
     to virutal hardware, and given the instruction, it executes it, and modifies the registers
     and flags accordingly
     """
-
-    ############################################################################
-    #   Public Methods
-    ############################################################################
 
     def __init__(self):
         self._prepareFunctions()
@@ -151,10 +140,6 @@ class Engine():
                     for modification in changes:
                         start = modification["location"]
                         self.ST.write(start, modification[source])
-
-    ############################################################################
-    #   Private Methods
-    ############################################################################
 
     def _separate_keyword(self, line : str) -> tuple[str, int]:
         """Extracts keyword from line, and returns it in capital leters. Keyword is defined as:
@@ -572,121 +557,83 @@ class Engine():
                 
                 return reg_det_size
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def _define_element_type(self, element : str):
-        """Define in which catergory an element belongs - also checks if it's valid:
+    # def _define_element_type(self, element : str):
+    #     """Define in which catergory an element belongs - also checks if it's valid:
         
-        - keyword           (mov)
-        - variable          (tmp1)
-        - [variable]        ([tmp1])
-        - register          (AX)
-        - [address_in_reg]  ([BX])
-        - ***TODO*** procedure  (like MyProcedure PROC)
-        - [address_value]   ([20h])
-        - [combo_address]   ([BX+20h])
-        - value             (word 10h, or 20 or 10b)
-        - label             (l1, start etc.)
-        - undefined         (anything else, which doesn't match the filters)
-        """
+    #     - keyword           (mov)
+    #     - variable          (tmp1)
+    #     - [variable]        ([tmp1])
+    #     - register          (AX)
+    #     - [address_in_reg]  ([BX])
+    #     - ***TODO*** procedure  (like MyProcedure PROC)
+    #     - [address_value]   ([20h])
+    #     - [combo_address]   ([BX+20h])
+    #     - value             (word 10h, or 20 or 10b)
+    #     - label             (l1, start etc.)
+    #     - undefined         (anything else, which doesn't match the filters)
+    #     """
 
-        def _call_eff_add_in_reg(element : str):
-            """Is it call for effective address stored in register?"""
-            return element.startswith("[") and element.endswith("]") and \
-                    element[1:-1].upper() in self.HR.listRegisters()
+    #     def _call_eff_add_in_reg(element : str):
+    #         """Is it call for effective address stored in register?"""
+    #         return element.startswith("[") and element.endswith("]") and \
+    #                 element[1:-1].upper() in self.HR.listRegisters()
 
-        def _call_for_var_content(element : str):
-            """Is it call to get content stored under address defined by variable ?"""
+    #     def _call_for_var_content(element : str):
+    #         """Is it call to get content stored under address defined by variable ?"""
             
-            final_element = element
+    #         final_element = element
             
-            if " " in element:
-                if element.split(" ")[0].upper() in allowed_data_types:
-                    final_element = element.split(" ")[-1]
-                else:
-                    return False
+    #         if " " in element:
+    #             if element.split(" ")[0].upper() in allowed_data_types:
+    #                 final_element = element.split(" ")[-1]
+    #             else:
+    #                 return False
             
-            return final_element.startswith("[") and \
-                     final_element.endswith("]") and \
-                        final_element[1:-1] in list(self.variables)
+    #         return final_element.startswith("[") and \
+    #                  final_element.endswith("]") and \
+    #                     final_element[1:-1] in list(self.variables)
         
-        def _is_call_for_value_under_address(element : str):
-            """Return True if value is call to access memory stored under some address"""
-            if not (element.startswith("[") and element.endswith("]")): return False
-            if not "+" in element:  return False
+    #     def _is_call_for_value_under_address(element : str):
+    #         """Return True if value is call to access memory stored under some address"""
+    #         if not (element.startswith("[") and element.endswith("]")): return False
+    #         if not "+" in element:  return False
 
-            return True
+    #         return True
 
-        def _check_if_value_is_number(element : str):
+    #     def _check_if_value_is_number(element : str):
 
-            to_check_for_being_number = element
+    #         to_check_for_being_number = element
 
-            if " " in element:
-                if element.split(" ")[0].upper() in allowed_data_types:
-                    to_check_for_being_number = element.split(" ")[-1]
-                else:
-                    return False
+    #         if " " in element:
+    #             if element.split(" ")[0].upper() in allowed_data_types:
+    #                 to_check_for_being_number = element.split(" ")[-1]
+    #             else:
+    #                 return False
             
-            if return_if_base_16_value(to_check_for_being_number):
-                return True
-            elif return_if_base_10_value(to_check_for_being_number):
-                return True
-            elif return_if_base_2_value(to_check_for_being_number):
-                return True
+    #         if return_if_base_16_value(to_check_for_being_number):
+    #             return True
+    #         elif return_if_base_10_value(to_check_for_being_number):
+    #             return True
+    #         elif return_if_base_2_value(to_check_for_being_number):
+    #             return True
             
-            return False    
+    #         return False    
         
-        def _check_if_value_is_label(element : str):
-            return element.lower() in map(lambda x: x.lower(), self.labels)
+    #     def _check_if_value_is_label(element : str):
+    #         return element.lower() in map(lambda x: x.lower(), self.labels)
 
-        if element.upper() in self.funcList:                return "keyword"
-        elif element.upper() in self.HR.listRegisters():    return "register"
-        elif _call_eff_add_in_reg(element):                 return "[address_in_reg]"
-        elif element in list(self.variables):               return "variable"
-        elif _call_for_var_content(element):                return "[variable]"
-        #   TODO
-        # elif element in list(self.procedures):
-        #     return "procedure"
-        elif _is_call_for_value_under_address(element):     return "[combo_address]"
-        elif _check_if_value_is_number(element):            return "value"
-        elif _check_if_value_is_label(element):             return "label"
-        else:                                               return "undefined"
+    #     if element.upper() in self.funcList:                return "keyword"
+    #     elif element.upper() in self.HR.listRegisters():    return "register"
+    #     elif _call_eff_add_in_reg(element):                 return "[address_in_reg]"
+    #     elif element in list(self.variables):               return "variable"
+    #     elif _call_for_var_content(element):                return "[variable]"
+    #     #   TODO
+    #     # elif element in list(self.procedures):
+    #     #     return "procedure"
+    #     elif _is_call_for_value_under_address(element):     return "[combo_address]"
+    #     elif _check_if_value_is_number(element):            return "value"
+    #     elif _check_if_value_is_label(element):             return "label"
+    #     else:                                               return "undefined"
 
     def _check_if_operation_allowed(self, keyword : str, params):
         """This operation would ensure that function have the required
@@ -709,83 +656,83 @@ class Engine():
 
         return elements
 
-    def _get_value_or_address(self, elements : list, mapped_params : tuple):
-        """
-        This function is responsible for getting either address of value of the param
-        """
-        values = []
-        sizes = []
+    # def _get_value_or_address(self, elements : list, mapped_params : tuple):
+    #     """
+    #     This function is responsible for getting either address of value of the param
+    #     """
+    #     values = []
+    #     sizes = []
 
-        for id, elem_type in enumerate(mapped_params):
+    #     for id, elem_type in enumerate(mapped_params):
             
-            match elem_type:
-                case 1:
-                    var = self.variables[elements[id]]
-                    address, format = var['address'], var['format']
-                    values.append(address) ; sizes.append(format)
-                case 2:
-                    var = self.variables[elements[id][1:-1]]
-                    value, format = var['value'], var['format']
-                    values.append(value) ; sizes.append(format)
-                case 3:
-                    val = self.HR.readFromRegister(elements[id])
-                    size = len(val)
-                    values.append(val + "b") ; sizes.append(size)
-                case 4:
-                    try:
-                        size, register = elements[id].split(' ')
-                        if size.upper() not in allowed_data_types:
-                            raise ValueError
-                    except ValueError:
-                        raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
+    #         match elem_type:
+    #             case 1:
+    #                 var = self.variables[elements[id]]
+    #                 address, format = var['address'], var['format']
+    #                 values.append(address) ; sizes.append(format)
+    #             case 2:
+    #                 var = self.variables[elements[id][1:-1]]
+    #                 value, format = var['value'], var['format']
+    #                 values.append(value) ; sizes.append(format)
+    #             case 3:
+    #                 val = self.HR.readFromRegister(elements[id])
+    #                 size = len(val)
+    #                 values.append(val + "b") ; sizes.append(size)
+    #             case 4:
+    #                 try:
+    #                     size, register = elements[id].split(' ')
+    #                     if size.upper() not in allowed_data_types:
+    #                         raise ValueError
+    #                 except ValueError:
+    #                     raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
 
-                    starting_point = self.HR.readFromRegister(register[1:-1])
-                    starting_point = int(starting_point, base=2)
+    #                 starting_point = self.HR.readFromRegister(register[1:-1])
+    #                 starting_point = int(starting_point, base=2)
 
-                    sizes.append(size)
-                    size = return_size_from_name(size) // 8     # How many bytes to get
-                    values.append(self.data.get_data_as_str(starting_point, size))
-                case 5:
-                    try:
-                        size, register = elements[id].split(' ')
-                        if size.upper() not in allowed_data_types:
-                            raise ValueError
-                    except ValueError:
-                        raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
+    #                 sizes.append(size)
+    #                 size = return_size_from_name(size) // 8     # How many bytes to get
+    #                 values.append(self.data.get_data_as_str(starting_point, size))
+    #             case 5:
+    #                 try:
+    #                     size, register = elements[id].split(' ')
+    #                     if size.upper() not in allowed_data_types:
+    #                         raise ValueError
+    #                 except ValueError:
+    #                     raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
 
-                    address = convert_number_to_int_with_binary_capacity(register[1:-1], 16)
-                    sizes.append(size)
-                    size = return_size_from_name(size) // 8
-                    values.append(self.data.get_data_as_str(address, size))
-                case 6:
-                    #TODO
-                    values.append(None)
-                case 7:
-                    try:
-                        if ' ' in elements[id].strip():
-                            size, number = elements[id].split(' ')
-                            if size.upper() not in allowed_data_types:
-                                raise ValueError
-                        else:
-                            # Set size to match previous size or 16 bits by default
-                            if len(sizes) > 0:      size = sizes[0]
-                            else:                   size = 16
-                            number = elements[id].strip()
-                        sizes.append(size)
-                        values.append(convert_number_to_bits_in_str(number, size) + "b")
-                    except ValueError:
-                        raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
-                case 8:
-                    sizes.append(16)
-                    try:
-                        label_line = self.labels[elements[0]]
-                        values.append(label_line)
-                    except ValueError:
-                        raise LabelNotRecognizedError
+    #                 address = convert_number_to_int_with_binary_capacity(register[1:-1], 16)
+    #                 sizes.append(size)
+    #                 size = return_size_from_name(size) // 8
+    #                 values.append(self.data.get_data_as_str(address, size))
+    #             case 6:
+    #                 #TODO
+    #                 values.append(None)
+    #             case 7:
+    #                 try:
+    #                     if ' ' in elements[id].strip():
+    #                         size, number = elements[id].split(' ')
+    #                         if size.upper() not in allowed_data_types:
+    #                             raise ValueError
+    #                     else:
+    #                         # Set size to match previous size or 16 bits by default
+    #                         if len(sizes) > 0:      size = sizes[0]
+    #                         else:                   size = 16
+    #                         number = elements[id].strip()
+    #                     sizes.append(size)
+    #                     values.append(convert_number_to_bits_in_str(number, size) + "b")
+    #                 except ValueError:
+    #                     raise NoExplicitSizeError(f"No explicite size definition in '{elements[id]}'")
+    #             case 8:
+    #                 sizes.append(16)
+    #                 try:
+    #                     label_line = self.labels[elements[0]]
+    #                     values.append(label_line)
+    #                 except ValueError:
+    #                     raise LabelNotRecognizedError
 
-        return values, sizes
+    #     return values, sizes
 
-    #   Methods executed only at initialization
+    # #   Methods executed only at initialization
 
     def _prepareFunctions(self):
         """Is responsible for creating an addresable list of function since
