@@ -8,15 +8,8 @@ from datatypes import Data
 from helper_functions import return_size_from_name
 from errors import ImproperJumpMarker, ImproperDataDefiniton
 
-################################################################################
-#   Global variables
-################################################################################
 
 allowed_sections = ['code', 'stack', 'data', 'text']
-
-################################################################################
-#   Public functions
-################################################################################
 
 
 def loadMainFile(raw_file : list) -> tuple:
@@ -40,11 +33,6 @@ def loadMainFile(raw_file : list) -> tuple:
     start = _decideWhereExecutioinStarts(assembly_code)
 
     return start, assembly_code
-    
-
-################################################################################
-#   Private functions
-################################################################################
 
 
 def _initialLoadAndCleanup(file : list):
@@ -98,7 +86,7 @@ def _initialLoadAndCleanup(file : list):
         )
     
     return assembly_code
-        
+
 
 def _divideCodeToSection(assembly_code):
     """
@@ -133,7 +121,7 @@ def _divideCodeToSection(assembly_code):
 
     return assembly_code
 
-                
+
 def _replaceEquateValues(assembly_code):
     """
     This function looks for lines with 'EQU' macro, which allows for replacement of values
@@ -318,6 +306,7 @@ def _storeVariablesInData(assembly_code):
             }
 
     return assembly_code
+
 
 def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     """
