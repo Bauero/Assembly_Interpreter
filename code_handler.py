@@ -166,6 +166,8 @@ class CodeHandler():
                     [next_line, lines_in_source_file]
             
             status = {"status" : 0, "highlight" : lines_in_source_file}
+            if "write_char_to_terminal" in wtd:
+                status["write_char_to_terminal"] = wtd["write_char_to_terminal"]
             return status
 
         except ExecutionOfOperationInLineError as exc:

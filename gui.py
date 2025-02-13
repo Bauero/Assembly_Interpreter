@@ -438,7 +438,8 @@ class MainWindow(QWidget):
 
             #################    SYSTEM INTERRUP HANDLING    ###################
 
-            #   
+        if "write_char_to_terminal" in response:
+            self.terminal.write_char(response["write_char_to_terminal"])
 
     def _refresh(self):
         for element in self.left_section_elements:
