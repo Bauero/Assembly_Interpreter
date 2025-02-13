@@ -7,7 +7,6 @@
 ;_______________________________________________________________________________
 
 
-
 section .code
 
 ;###############################################################################
@@ -15,7 +14,6 @@ section .code
 ;###############################################################################
 
 org 100h                ;   Offset where code is written - mandatory for .COM program
-
 mov dx, 10              ;   write LF - line feed
 call showCharDl
 
@@ -36,7 +34,6 @@ add sp, 2           ; move from reading H/M to S/MS
 call showHighBits   ; Seconds
 call writeDot       ; .
 call showLowBits    ; Miliseconds
-
 call theEnd
 
 ;###############################################################################
@@ -48,7 +45,7 @@ showHighBits:
     mov bx, sp                      ; store sp address (value) in bx
     add bx, 2                       ; make bx point to number, not return address
     mov bx, [bx]                    ; store in bx value which is poited by adderss in bx
-    mov al, bh                      ; move upper bits to al, for furutre division
+    mov al, bh                      ; move upper bits to al, for future division
     call displayTwoDigitNumber
     ret
 
@@ -80,7 +77,6 @@ cleanRegisters:
     ret
 
 showCharDl:
-    ; Displays on the console character which is stored in dl
     pusha
     mov ah, 2
     int 21h

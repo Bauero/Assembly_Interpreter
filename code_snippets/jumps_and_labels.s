@@ -19,4 +19,6 @@ drugi:
 koniec:
     pushf
     pop cx
-    call wyswRej
+
+mov ax, 04c00h
+int 21h

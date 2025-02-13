@@ -1,12 +1,13 @@
 .data
 zmienna db  "Mamma mia"
 x db    40
+mmia db 17 dup(5)
+kys dw  3 times '?'
 
 .code
-mov ax, 10
-mov ax, 13
-mov ax, 14
-mov ax, 15
-mov ax, 16
-mov ax, 17
-mov ax, 18
+NOP
+
+
+
+mov ax, 04c00h
+int 21h
