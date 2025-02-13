@@ -1,7 +1,7 @@
 """
 This file contains main funciton responsible for handling a gui app
 """
-from PyQt6.QtCore import Qt, QThread, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QWidget,
@@ -13,14 +13,17 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QHBoxLayout,
-    QTextEdit,
     QComboBox
 )
 from custom_gui_elements import *
-from errors import FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, \
-                   ImproperJumpMarker, ImproperDataDefiniton
+from errors import (FileDoesntExist,
+                    FileSizeMightBeTooBig,
+                    FileTypeNotAllowed,
+                    ImproperJumpMarker,
+                    ImproperDataDefiniton)
 from helper_functions import loadFileFromPath
 from color_pallete import *
+
 
 class MainWindow(QWidget):
     """
@@ -426,11 +429,17 @@ class MainWindow(QWidget):
             case -1: ...
 
             #   All instructions were executed - notify user about finishing program
-            case 'finish': ...
+            case 'finish':
+                self.code_field.setHighlight([])
+                self.nextLineButton.setEnabled(True)
+                self.startExecutionButton.setText( "Zatrzymaj program")
+                self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
+                self.program_running = False
 
             #################    SYSTEM INTERRUP HANDLING    ###################
 
-            #   
+        if "write_char_to_terminal" in response:
+            self.terminal.write_char(response["write_char_to_terminal"])
 
     def _refresh(self):
         for element in self.left_section_elements:

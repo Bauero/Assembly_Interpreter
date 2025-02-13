@@ -198,6 +198,40 @@ class ExecutionOfOperationInLineError (Exception):
         return self.raised_exc
 
 
+class UnrecognizedArgumentInLineError(DetailedException):
+    """This exception occurs when parsing line program cannot recognize what argument is
+    passed in line. This can occur if user passes an incorrectly spelled label, var, improperly
+    defined address, or there is something else which shouldn't be there"""
+    
+    def __init__(self, line_num = None, error_message = ""):
+        self.error_message = error_message
+        self.line_num = line_num
+
+    def line(self):
+        return self.line_num
+    
+    def message(self):
+        return self.error_message
+
+
+class KeywordNotImplementedError (DetailedException):
+    """This error occurs if there is a keyword which is not recognized as one 
+    supported by interpreter. Therefore it's either incorrect (ex. spelling mistake)
+    or this interpreter simply doesn't know how to implement it"""
+    
+    def __init__(self, line_num = None, error_message = ""):
+        self.error_message = error_message
+        self.line_num = line_num
+
+    def line(self):
+        return self.line_num
+    
+    def message(self):
+        return self.error_message
+    
+
+
+
 ################################################################################
 ###     NUMBER ERROR
 ################################################################################
@@ -429,6 +463,79 @@ class DataNotByteMultipleError (DetailedException):
     This error is raised if, during saving data it is detected that value is stored
     in address which is not a multiple of 8 (doesn't fit in inter number of bytes). This
     is most likely a data storage error on the side of 
+    """
+
+    def __init__(self, message = "", line = None) -> None:
+        self._message = message
+        self._line = line
+
+    def line(self):
+        return self._line
+    
+    def message(self):
+        return self._message
+
+
+
+
+################################################################################
+###     MEMORY ERRORS
+################################################################################
+
+
+class ImproperIndirectAddressingError (DetailedException):
+    """
+    This exceptions occurs when user tries to address value improperly:
+
+    EX:
+
+    [BX - SI] -> substraction not allowed; only addition is allowed
+    """
+    
+    def __init__(self, message = "", line = None) -> None:
+        self._message = message
+        self._line = line
+
+    def line(self):
+        return self._line
+    
+    def message(self):
+        return self._message
+    
+class DoubleMemoryCallError (DetailedException):
+    """This exception occurs when in instruction there are two memory calls, which is
+    illegal in x86 processors"""
+
+
+################################################################################
+###     OTHER ERRORS
+################################################################################
+
+class SizesDoesntMatchError(DetailedException):
+    """This exception occurs when there is no match between sizes for variables as arguments
+    in line.
+    
+    EX:
+    
+    var1 db 10
+    
+    ADD [var1], word 100    <- word doesn't fit in byte variable !!!
+    """
+
+    def __init__(self, message = "", line = None) -> None:
+        self._message = message
+        self._line = line
+
+    def line(self):
+        return self._line
+    
+    def message(self):
+        return self._message
+
+class NoExpliciteSizeDefinitionWhenRequiredError(DetailedException):
+    """
+    This error occurs when user doesn't specify size explicitly, therefore leaving comiler
+    in state, when it doesn't know on how big range of memory it should operate.
     """
 
     def __init__(self, message = "", line = None) -> None:

@@ -8,15 +8,8 @@ from datatypes import Data
 from helper_functions import return_size_from_name
 from errors import ImproperJumpMarker, ImproperDataDefiniton
 
-################################################################################
-#   Global variables
-################################################################################
 
 allowed_sections = ['code', 'stack', 'data', 'text']
-
-################################################################################
-#   Public functions
-################################################################################
 
 
 def loadMainFile(raw_file : list) -> tuple:
@@ -40,11 +33,6 @@ def loadMainFile(raw_file : list) -> tuple:
     start = _decideWhereExecutioinStarts(assembly_code)
 
     return start, assembly_code
-    
-
-################################################################################
-#   Private functions
-################################################################################
 
 
 def _initialLoadAndCleanup(file : list):
@@ -71,6 +59,7 @@ def _initialLoadAndCleanup(file : list):
         #   Skip any 'seciton header' which will not be processed
         if line.startswith('.') and line[1:].split(" ")[0].lower() not in allowed_sections:
             continue
+        
 
         #   Detect indentifiers (points where code could jump to)
         if match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
@@ -87,7 +76,8 @@ def _initialLoadAndCleanup(file : list):
 
         #   Save results
         if marker_in_line:
-            assembly_code['labels'][marker_in_line] = len(assembly_code['lines']) + 1
+            assembly_code['labels'][marker_in_line] = len(assembly_code['lines'])
+            continue
         
         assembly_code['lines'].append(
             {
@@ -98,7 +88,7 @@ def _initialLoadAndCleanup(file : list):
         )
     
     return assembly_code
-        
+
 
 def _divideCodeToSection(assembly_code):
     """
@@ -133,7 +123,7 @@ def _divideCodeToSection(assembly_code):
 
     return assembly_code
 
-                
+
 def _replaceEquateValues(assembly_code):
     """
     This function looks for lines with 'EQU' macro, which allows for replacement of values
@@ -277,9 +267,8 @@ def _storeVariablesInData(assembly_code):
 
         #   If line starts with segment directive, check if there is anything else in that
         # line if we remove segment directive - if not skip it
-        if line.upper().startswith('.DATA'):
-            if not [l for l in line[5:].split(' ') if l]:
-                continue
+        if line.lower() in [".data", "section .data"]:
+            continue
 
         line_split = [a for a in line.split(" ") if a]  #   -> Divide, and remove spaces
         allowed_data_types = ['BYTE', 'DB', 'WORD', 'DW', 'DWORD', 'DD', 'QWORD', 'DQ']
@@ -319,6 +308,7 @@ def _storeVariablesInData(assembly_code):
 
     return assembly_code
 
+
 def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     """
     This function analyzes the code which is stored in variable assembly_code
@@ -340,7 +330,12 @@ def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     # Case 2
     for n, line in enumerate(assembly_code['lines']):
         if line['section'] == '.code':
-            return n, line['lines']
+            if line['content'].lower() in [".code", "section .code"]:
+                continue
+            elif line['content'].lower().split(" ")[0] == "org":
+                continue
+            else:
+                return n, line['lines']
         
     # No code to execute
     return -1, [-1]

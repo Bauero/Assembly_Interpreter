@@ -6,12 +6,9 @@ from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from stack import Stack
 from datatypes import Data
-from helper_functions import save_value_in_destination, convert_number_to_bit_list, \
-                                equal_no_of_0_1
-
-################################################################################
-#   FUNCTION DEFINITIONS
-################################################################################
+from helper_functions import (save_value_in_destination,
+                              convert_number_to_bit_list,
+                              equal_no_of_0_1)
 
 def AND(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -143,7 +140,7 @@ def XOR(HardwareRegister : HardwareRegisters,
     # Convert both numbers to be in raw binary form -> 0111010110101101
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
@@ -220,27 +217,37 @@ def NOT(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-################################################################################
-#   FUNCTION ATTRIBUTES
-################################################################################
+def NOP(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """This function does nothing - just takes time"""
+
+    return {}
 
 AND.params_range = [2]
 AND.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 OR.params_range = [2]
 OR.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 XOR.params_range = [2]
 XOR.allowed_params_combinations = [
-    (2, 3), (2, 7), (3, 2), (3, 3), (3, 4), (3, 5), (3, 6), (3, 7), (4, 3),
-    (4, 7), (5, 3), (5, 7), (6, 3), (6, 7)
+    ("memory", "value"), ("memory", "register"), ("register", "register"), 
+    ("register", "value"), ("register", "memory")
 ]
 
 NOT.params_range = [1]
-NOT.allowed_params_combinations = [ (2,), (3,), (4,), (5,), (6,) ]
+NOT.allowed_params_combinations = [ ("memory",), ("register",) ]
+
+NOP.params_range = [0]
+NOP.allowed_params_combinations = [tuple()]

@@ -1,7 +1,9 @@
 # A single node of a singly linked list
 import re
-from errors import SegmentationFault, ValueIsNotANumber, \
-                    ModificationOutsideDataSection, DataNotByteMultipleError
+from errors import (SegmentationFault,
+                    ValueIsNotANumber,
+                    ModificationOutsideDataSection,
+                    DataNotByteMultipleError)
 
 class Node:
     
@@ -13,23 +15,7 @@ class Node:
     
     def printStr(self) -> str:
         return str(self.data)
-    
-class Variable:
 
-    __variables = 0
-
-    def __init__(self, size,  data, name):
-        self.data = data
-        self.name = name
-        self.size = size
-        self.address = self.__variables
-
-        #   new variable has the number one grater than the previous one
-        Variable.__variables += 1
-
-    def getSize(self):
-        if self.size == "dw": return 16
-        elif self.size == "byte": return 8
 
 class Data:
     """
@@ -129,10 +115,14 @@ class Data:
 
         return starting_address//8, (self.size - starting_address) // 8
 
+    def fill_out_remaing(self, fill_zeros : bool):
+        self.data.extend([int(not fill_zeros) for _ in  range(2 ** 19 - len(self.data))])
+
     def modify_data(self, starting_bit = 0, list_of_new_bits : list = []):
         try:
-            for i, bit in enumerate(list_of_new_bits):
-                self.data[starting_bit + i] = int(bit)
+            for mem_byte, value_byte in enumerate(range(len(list_of_new_bits) // 8, 0, -1)):
+                for i, bit in enumerate(list_of_new_bits[ 8*(value_byte - 1) : 8 * value_byte ]):
+                    self.data[starting_bit + 8*mem_byte + i] = int(bit)
         except IndexError:
             raise ModificationOutsideDataSection
         except ValueError:

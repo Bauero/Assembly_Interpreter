@@ -1,7 +1,7 @@
 This function perfoms jump to the speciphied location if value in CX>0 and ZF=0;
 
 1. Substract 1 from CX
-2. Compare if CX > 0 and ZF=1
+2. Compare if CX > 0 and ZF=0
 3. If so, jump to label; if not, continue
 
 IMPORTANT:

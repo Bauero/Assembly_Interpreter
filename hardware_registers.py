@@ -47,6 +47,7 @@ class HardwareRegisters():
 
     #	inputs the restult into register r, bit by bit
     def writeIntoRegister(self, r, resutl):
+        r = r.upper()
         #	converstion of the number to list of binary (in str)
         listaDoWpisania = []
         if type(resutl) == int:
@@ -65,6 +66,7 @@ class HardwareRegisters():
 
     #	return value from the register as a string of bits
     def readFromRegister(self, r):
+        r = r.upper()
         result = ""
         for i in self._listOfRegisters[r]: 
             result += i.printStr()
@@ -105,3 +107,14 @@ class HardwareRegisters():
             case "P":   return 16
             case "H":   return 8
             case "L":   return 8
+
+    def getRegisterType(self, register : str):
+        register = register.upper()
+        if register in self.listRegisters():
+            last_letter = register[-1]
+            match last_letter:
+                case "X":   return "multipurpose"
+                case "I":   return "index"
+                case "P":   return "pointer"
+                case "H":   return "multipurpose"
+                case "L":   return "multipurpose"

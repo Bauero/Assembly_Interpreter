@@ -4,7 +4,7 @@ file
 """
 
 from PyQt6.QtCore import Qt, QRect
-from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat, QValidator
+from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,8 +17,6 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit
 )
-from flag_register import FlagRegister as FR
-from random import randint
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -26,10 +24,6 @@ alg_top =       Qt.AlignmentFlag.AlignTop
 alg_jst =       Qt.AlignmentFlag.AlignJustify
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
-
-################################################################################
-#   Clasess with custom gui structures
-################################################################################
 
 class MultipurposeRegister(QWidget):
     """This class creates a widget for displaying multipurpose register, splited into
@@ -135,6 +129,7 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
+
 class FunctionalRegisters(QWidget):
     def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
@@ -206,6 +201,7 @@ class FunctionalRegisters(QWidget):
 
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
+
 
 class FlagRegister(QWidget):
     """
@@ -338,6 +334,7 @@ class FlagRegister(QWidget):
                 attr_value.setModifiable(value)
         self.register_content.setReadOnly(not value)
 
+
 class Terminal(QWidget):
     def __init__(self):
         super().__init__()
@@ -359,7 +356,12 @@ class Terminal(QWidget):
         main_frame.addRow(self.terminal)
 
         self.setLayout(main_frame)
-        
+
+    def write_char(self, char : int):
+        text = self.terminal.toPlainText()
+        print(chr(char), end="", flush=True)
+        self.terminal.setPlainText(text + chr(char))
+
 class CustomQCheckBox(QCheckBox):
     """
     This code is based on code provided by user Luis E. on StackOverflow forum
@@ -384,6 +386,7 @@ class CustomQCheckBox(QCheckBox):
     def isModifiable(self):
         return self.is_modifiable
 
+
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
@@ -395,6 +398,7 @@ class LineNumberArea(QWidget):
     def paintEvent(self, event):
         self.myeditor.lineNumberAreaPaintEvent(event)
 
+
 class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
     custom text field, with numered lines, and option to highlight a certain line"""
@@ -403,13 +407,14 @@ class CodeEditor(QPlainTextEdit):
         super().__init__()
         self.lineNumberArea = LineNumberArea(self)
 
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)  # Wyłącz zawijanie linii
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)  # Pasek poziomy pojawi się w razie potrzeby
+
         self.blockCountChanged.connect(self.updateLine_number_area_width)
         self.updateRequest.connect(self.updateLineNumberArea)
-        # self.cursorPositionChanged.connect(self.highlightCurrentLine)
 
         self.updateLine_number_area_width(0)
-        self.textCursor().movePosition(QTextCursor.MoveOperation.Start)  # Przesuń kursor na początek
-        # self.highlightCurrentLine()
+        self.textCursor().movePosition(QTextCursor.MoveOperation.Start)
 
         self.highlighted_lines = []
 
@@ -464,70 +469,59 @@ class CodeEditor(QPlainTextEdit):
                  background_color=Qt.GlobalColor.blue, 
                  text_color=Qt.GlobalColor.white):
         """
-        Podświetla wybrane linie i przewija widok, aby podświetlona linia była na środku.
+        Podświetla wybrane linie i przewija widok, aby podświetlona linia była na ekranie.
 
         Args:
             line_numbers (list[int]): Lista numerów linii do podświetlenia (1-based).
             background_color (QColor): Kolor tła dla podświetlenia.
             text_color (QColor): Kolor tekstu w podświetlonych liniach.
         """
-        # Tworzymy listę podświetlonych obiektów
         extraSelections = []
 
-        # Przechodzimy po liniach do podświetlenia
         for line_number in line_numbers:
             if line_number <= 0:
                 continue
 
-            # Ustawiamy kursor na początku odpowiedniej linii
             cursor = QTextCursor(self.document().findBlockByLineNumber(line_number - 1))
             if not cursor.isNull():
                 selection = QTextEdit.ExtraSelection()
-
-                # Konfiguracja tła
                 selection.format.setBackground(QColor(background_color))
                 selection.format.setForeground(QColor(text_color))
                 selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
                 selection.cursor = cursor
                 selection.cursor.clearSelection()
 
-                # Dodajemy do listy podświetleń
                 extraSelections.append(selection)
 
-                # Przechowujemy informacje o podświetlonych liniach
-                self.highlighted_lines = line_numbers
-
-                # Aktualizacja podświetleń w edytorze
-                self.setExtraSelections(extraSelections)
-
-                # Automatyczne przewijanie
-                if line_numbers:
-                    # Wybieramy pierwszą linię z listy jako priorytet przewijania
-                    target_line = line_numbers[0]
-                    block = self.document().findBlockByLineNumber(target_line - 1)
-                    if block.isValid():
-                        block_top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-                        block_height = self.blockBoundingRect(block).height()
-                        
-                        # Obliczamy środek widoku
-                        viewport_height = self.viewport().height()
-                        target_center = block_top - (viewport_height // 2) + (block_height // 2)
-
-                        # Przewijamy, ustawiając linię na środku widoku
-                        vertical_scroll_bar = self.verticalScrollBar()
-                        vertical_scroll_bar.setValue(int(target_center))
-
-        # Przechowujemy informacje o podświetlonych liniach
         self.highlighted_lines = line_numbers
-
-        # Aktualizacja podświetleń w edytorze
         self.setExtraSelections(extraSelections)
+
+        # PRZEWIJANIE DO PODŚWIETLONEJ LINII
+        if line_numbers:
+            target_line = line_numbers[0]  # Wybieramy pierwszą podświetloną linię
+            block = self.document().findBlockByLineNumber(target_line - 1)
+            if block.isValid():
+                cursor = QTextCursor(block)
+                self.setTextCursor(cursor)  # Ustawiamy kursor na podświetloną linię
+                self.ensureCursorVisible()  # Upewniamy się, że linia jest widoczna
+
+                # Alternatywnie, możemy przewijać ręcznie
+                scroll_bar = self.verticalScrollBar()
+                scroll_position = line_number - 20 #int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top() - (self.viewport().height() // 2))
+                scroll_bar.setValue(scroll_position)
+
+            # Przechowujemy informacje o podświetlonych liniach
+            self.highlighted_lines = line_numbers
+
+            # Aktualizacja podświetleń w edytorze
+            self.setExtraSelections(extraSelections)
 
     def setText(self, text):
         self.setPlainText(text)
 
     def setEditable(self, editable):
         self.setReadOnly(not editable)
+
 
 class StackEditor(QPlainTextEdit):
 
@@ -546,6 +540,7 @@ class StackEditor(QPlainTextEdit):
         if self.bits != fresh_stack:
             numbered_line_pairs = zip(range(2**16-1,-1,-1), fresh_stack)
             self.setPlainText("\n".join(map(format_line, numbered_line_pairs)))
+
 
 class VariableEditor(QPlainTextEdit):
 
