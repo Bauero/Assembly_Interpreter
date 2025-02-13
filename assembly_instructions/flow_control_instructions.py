@@ -8,7 +8,8 @@ from datatypes import Data
 from flag_register import FlagRegister
 from hardware_registers import HardwareRegisters
 from helper_functions import (save_value_in_destination,
-                              covert_number_to_bit_list,
+                              convert_number_to_bit_list,
+                              convert_number_to_bit_list,
                               convert_number_to_int_with_binary_capacity)
 
 def LOOP(HardwareRegister : HardwareRegisters, 
@@ -44,12 +45,12 @@ def LOOP(HardwareRegister : HardwareRegisters,
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
-        CX_binary = covert_number_to_bit_list(CX_value, 16)
+        CX_binary = convert_number_to_bit_list(CX_value, 16)
         m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0:
-            return {m[0] : [ m[1] ] }
+            return { m[0] : [ m[1] ] }
 
 def LOOPZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -84,12 +85,12 @@ def LOOPZ(HardwareRegister : HardwareRegisters,
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
-        CX_binary = covert_number_to_bit_list(CX_value, 16)
+        CX_binary = convert_number_to_bit_list(CX_value, 16)
         m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and ZF:
-            return {m[0] : [ m[1] ] }
+            return { m[0] : [ m[1] ] }
 
 def LOOPE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -124,12 +125,12 @@ def LOOPE(HardwareRegister : HardwareRegisters,
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
-        CX_binary = covert_number_to_bit_list(CX_value, 16)
+        CX_binary = convert_number_to_bit_list(CX_value, 16)
         m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and ZF:
-            return {m[0] : [ m[1] ] }
+            return { m[0] : [ m[1] ] }
 
 def LOOPNZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -164,12 +165,12 @@ def LOOPNZ(HardwareRegister : HardwareRegisters,
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
-        CX_binary = covert_number_to_bit_list(CX_value, 16)
+        CX_binary = convert_number_to_bit_list(CX_value, 16)
         m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and not ZF:
-            return {m[0] : [ m[1] ] }
+            return { m[0] : [ m[1] ] }
 
 def LOOPNE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -204,15 +205,120 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
-        CX_binary = covert_number_to_bit_list(CX_value, 16)
+        CX_binary = convert_number_to_bit_list(CX_value, 16)
         m = save_value_in_destination(HardwareRegister, Data, Variables,
                                       CX_binary, 3, "CX")
         
         if CX_value > 0 and not ZF:
-            return {m[0] : [ m[1] ] }
+            return { m[0] : [ m[1] ] }
+
+def CALL(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    
+    """This instructions perfoms call, which is quite similar to unconditional jump
+    with push SP - instructions backups last line """
+
+    label = kwargs['args_values_int'][0]
+    label_in_bits = convert_number_to_bit_list(label, 16)
+
+    SP = HardwareRegister.readFromRegister("SP")
+    IP = HardwareRegister.readFromRegister("IP")
+    SP_value = int(SP, base=2)
+    IP_value = int(IP, base=2)
+    SP_value_backup = SP_value
+    
+    backup_stack = Stack.read(SP_value - 2, 2)
+    backup_stack = "".join(backup_stack)
+
+    Stack.write(SP_value - 1, IP)
+    SP_value -= 2
+    HardwareRegister.writeIntoRegister("SP", SP_value)
+    HardwareRegister.writeIntoRegister("IP", label)
+
+    output = {
+        "stack" : [
+            {
+                "location" : SP_value_backup,
+                "oryginal_value" :  list(map(int, backup_stack)),
+                "new_value" :       list(map(int, IP))
+            }
+        ],
+        "register" : 
+        [
+            {
+                "location" : "SP",
+                "oryginal_value" :  list(map(int, bin(SP_value_backup)[2:])),
+                "new_value" :       list(map(int, bin(SP_value)[2:]))
+            },
+            {
+                "location" : "IP",
+                "oryginal_value" :  list(map(int, IP)),
+                "new_value" :       list(map(int, label_in_bits))
+            }
+        ],
+        "next_instruction" : label
+    }
+
+    return output
+
+def RET(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """Performs jump to address which is defined in 16 bit value to which SP points to.
+    Equivalent to (although RET doesn't change any register except SP):
+    ```
+    POP AX
+    JMP AX
+    ```
+    """
+
+    no_of_bytes = 2
+    SP = HardwareRegister.readFromRegister("SP")
+    IP = HardwareRegister.readFromRegister("IP")
+    SP_value = int(SP, base=2)
+    SP_value_backup = SP_value
+
+    values = Stack.read(SP_value, no_of_bytes)
+    list_values = "".join(values)
+    int_values = int(list_values, 2) + 1
+    
+    SP_value += no_of_bytes
+    HardwareRegister.writeIntoRegister("SP", SP_value)
+    HardwareRegister.writeIntoRegister("IP", int_values)
+
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "SP",
+                "oryginal_value" :  list(map(int, bin(SP_value_backup)[2:])),
+                "new_value" :       list(map(int, bin(SP_value)[2:]))
+            },
+            {
+                "location" :        "IP",
+                "oryginal_value" :  list(map(int, IP)),
+                "new_value" :       list(map(int, list_values))
+            }
+        ],
+        "next_instruction" : int_values
+    }
+    
+    return all_changes
 
 for fn_name in list(filter(lambda n: n.upper() == n, dir())):
     """Assign all functions the same attributes"""
     fn = locals()[fn_name]
-    fn.params_range = [1]
-    fn.allowed_params_combinations = [("value",), ("label",)]
+    if fn_name != "RET":
+        fn.params_range = [1]
+        fn.allowed_params_combinations = [("value",), ("label",)]
+    else:
+        fn.params_range = [0]
+        fn.allowed_params_combinations = [tuple()]

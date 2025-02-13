@@ -15,6 +15,7 @@ from assembly_instructions.flow_control_instructions import *
 from assembly_instructions.jump_instructions import *
 from assembly_instructions.stack_instructions import *
 from assembly_instructions.data_movement_instructions import *
+from assembly_instructions.interrupt_instructions import *
 from hardware_registers import HardwareRegisters
 from code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
 from errors import (ArgumentNotExpected,
@@ -276,7 +277,7 @@ class Engine():
 
         if types.count("register") == 2:
             first_reg = elements[v1a := types.index("register")].upper()
-            second_reg = elements[types.index("register", v1a)].upper()
+            second_reg = elements[types.index("register", v1a + len(first_reg))].upper()
             
             if first_reg == second_reg: raise Exception()
             
@@ -415,7 +416,7 @@ class Engine():
                         else:
                             raise NoExplicitSizeError(f"No explicite size definition in '{arg}'")
                     final_sizes.append(size)
-                    data_in_mem = self.data.get_data(int(arg), size // 8)
+                    data_in_mem = self.data.get_data(simple_eval(arg), size // 8)
                     source_values.append(data_in_mem)
                     conv_data = convert_number_to_int_with_binary_capacity(data_in_mem, size)
                     converted_values.append(conv_data)

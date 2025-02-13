@@ -12,7 +12,7 @@ class Stack():
     """
 
     def __init__(self):
-        self.memory = array.array('b', (0 for _ in range(2**16)))
+        self.memory = array.array('B', (0 for _ in range(2**16)))
     
     def read(self, start : int, bytes : int):
         assert start >= 0, f"Tried to read stack from start = \"{start}\", which is incorrect"

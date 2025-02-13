@@ -66,7 +66,7 @@ def PUSH(HardwareRegister : HardwareRegisters,
     no_bytes_conv_value = len(converted_value) // 8
     backup_stack = Stack.read(SP_value - no_bytes_conv_value, no_bytes_conv_value)
 
-    Stack.write(SP_value, converted_value)
+    Stack.write(SP_value - 1, converted_value)
     SP_value -= no_bytes_conv_value
     HardwareRegister.writeIntoRegister("SP", SP_value)
 
@@ -101,12 +101,12 @@ def PUSHF(HardwareRegister : HardwareRegisters,
     3. Decrement SP by one (2 bytes in total)"""
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
+    SP_value = int(SP, base=2)
     SP_value_backup = SP_value
     SP_value -= 1
     
     value = list(FlagRegister.readFlags())
-    backup_stack = Stack.read(SP_value - 2, 2)
+    backup_stack = Stack.read(SP_value - 1, 2)
     tmp = []
     for byte in backup_stack:
         tmp.extend(list(byte))
@@ -161,27 +161,28 @@ def PUSHA(HardwareRegister : HardwareRegisters,
 
     for register in list_of_registers:
         reg_bits = HardwareRegister.readFromRegister(register)
-        reg_value = convert_number_to_int_with_binary_capacity(reg_bits + "b", 16)
-        reg_content.append(reg_content)
+        reg_content.append(reg_bits)
 
-    SP_value = reg_content[4]
+    SP = reg_content[4]
+    SP_value = int(SP, 2)
     SP_backup = SP_value
     backup_stack = Stack.read(SP_value-17, 16)
 
     for value in reg_content:
-        SP_value += 1
+        SP_value -= 1
         Stack.write(SP_value, value)
-        SP_value += 1
+        SP_value -= 1
 
     HardwareRegister.writeIntoRegister("SP", SP_value)
     values_on_stack = reg_content[-1:]
+    bits_on_stack = "".join(values_on_stack)
 
     output = {
         "stack" : [
             {
                 "location" : SP_backup,
                 "oryginal_value" :  list(map(int, backup_stack)),
-                "new_value" :       list(map(int, values_on_stack))
+                "new_value" :       list(map(int, bits_on_stack))
             }
         ],
         "register" : [{
@@ -220,15 +221,14 @@ def POP(HardwareRegister : HardwareRegisters,
     in segment !
     """
 
-    no_of_bytes = kwargs['final_size'] // 8
+    no_of_bytes = 2
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
+    SP_value = int(SP, base=2)
     SP_value_backup = SP_value
 
     values = Stack.read(SP_value, no_of_bytes)
     comb_value = list("".join(values))
-    assert len(comb_value) // 8 == no_of_bytes
     
     m = save_value_in_destination(HardwareRegister, Data, Variables, comb_value, 
                               kwargs['param_types'][0], kwargs['source_params'][0])
@@ -246,7 +246,6 @@ def POP(HardwareRegister : HardwareRegisters,
                 }      
             ]
         }
-
     else:
         all_changes = {
             m[0] : [ m[1] ],
@@ -271,7 +270,7 @@ def POPF(HardwareRegister : HardwareRegisters,
     """This functins pops last to bits from stack, and stores it in flag register"""
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
+    SP_value = int(SP, base=2)
     SP_value_backup = SP_value
 
     values = Stack.read(SP_value, 2)
@@ -310,7 +309,7 @@ def POPA(HardwareRegister : HardwareRegisters,
     'DI', 'SI', 'BP', 'SP', 'BX', 'DX', 'CX', 'AX' """
 
     SP = HardwareRegister.readFromRegister("SP")
-    SP_value = convert_number_to_int_with_binary_capacity(SP + "b", 16)
+    SP_value = int(SP, base=2)
     SP_value_backup = SP_value
 
     #   Save values of all registers, and then reverse the order of the list

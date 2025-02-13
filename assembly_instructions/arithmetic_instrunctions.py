@@ -8,7 +8,7 @@ from stack import Stack
 from datatypes import Data
 from helper_functions import equal_no_of_0_1, sign_changed, convert_number_to_bit_list, \
                              inverse_Twos_Compliment_Number, save_value_in_destination, \
-                             covert_number_to_bit_list
+                             convert_number_to_bit_list
 
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -25,7 +25,7 @@ def ADD(HardwareRegister : HardwareRegisters,
     values_in_binary = []
     
     for v in kwargs['args_values_raw']:
-        output = covert_number_to_bit_list(v, final_size)
+        output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
     # Perform binary addition

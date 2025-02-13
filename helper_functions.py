@@ -61,7 +61,12 @@ def return_size_from_name(name : str):
         case 'dq':      return 64
         case _:         return -1
 
-def covert_number_to_bit_list(value : str | int | list, size : int = 8):
+def convert_number_to_bit_list(value : str | int | list, size : int = 8):
+    """This function converts number to list of bits. It accepts either str, int or list
+    as an input, and ensures that whatever the format is, the output will be in form of:
+    
+    -> `['1', '1',  '1', '0', '0', '1', '1', '0']` (for size == 8)
+    """
     
     assert type(size) == int, f"Size of number to convert cannot have different type than int" 
     assert size > 0, f"Cannot convert number to size which is less or equal to 0"
@@ -114,11 +119,11 @@ def covert_number_to_bit_list(value : str | int | list, size : int = 8):
     
 def convert_number_to_bits_in_str(value : str | int | list, size = 8):
     """
-    This function is 'wrapper' for `covert_number_to_bit_list`, and return value as a str
+    This function is 'wrapper' for `convert_number_to_bit_list`, and return value as a str
     and not a list
     """
 
-    return "".join(covert_number_to_bit_list(value, size))
+    return "".join(convert_number_to_bit_list(value, size))
 
 def convert_number_to_int_with_binary_capacity(value : str | int | list, size = 8):
     """
@@ -200,23 +205,6 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variab
     }
 
     return modified, response
-
-def convert_number_to_bit_list(v : str, final_size : int) -> str:
-    """
-    This function automatically detects which type of number was passed, and unifies them
-    to string of 1 and 0 with the given length
-    """
-
-    if new_val := return_if_base_16_value(v):
-        prep_val = bin(int(new_val[2:], base=16))[2:]
-    elif new_val := return_if_base_10_value(v):
-        prep_val = bin(int(new_val))[2:]
-    elif new_val := return_if_base_2_value(v):
-        prep_val = new_val[:-1] if new_val.lower().endswith('b') else new_val
-    else:
-        raise WrongNumberBase(v)
-
-    return prep_val.zfill(final_size)
 
 def equal_no_of_0_1(value : list | str):
     count_0 = 0

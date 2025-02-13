@@ -59,6 +59,7 @@ def _initialLoadAndCleanup(file : list):
         #   Skip any 'seciton header' which will not be processed
         if line.startswith('.') and line[1:].split(" ")[0].lower() not in allowed_sections:
             continue
+        
 
         #   Detect indentifiers (points where code could jump to)
         if match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
@@ -75,7 +76,8 @@ def _initialLoadAndCleanup(file : list):
 
         #   Save results
         if marker_in_line:
-            assembly_code['labels'][marker_in_line] = len(assembly_code['lines']) + 1
+            assembly_code['labels'][marker_in_line] = len(assembly_code['lines'])
+            continue
         
         assembly_code['lines'].append(
             {
@@ -265,9 +267,8 @@ def _storeVariablesInData(assembly_code):
 
         #   If line starts with segment directive, check if there is anything else in that
         # line if we remove segment directive - if not skip it
-        if line.upper().startswith('.DATA'):
-            if not [l for l in line[5:].split(' ') if l]:
-                continue
+        if line.lower() in [".data", "section .data"]:
+            continue
 
         line_split = [a for a in line.split(" ") if a]  #   -> Divide, and remove spaces
         allowed_data_types = ['BYTE', 'DB', 'WORD', 'DW', 'DWORD', 'DD', 'QWORD', 'DQ']
@@ -330,6 +331,8 @@ def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     for n, line in enumerate(assembly_code['lines']):
         if line['section'] == '.code':
             if line['content'].lower() in [".code", "section .code"]:
+                continue
+            elif line['content'].lower().split(" ")[0] == "org":
                 continue
             else:
                 return n, line['lines']
