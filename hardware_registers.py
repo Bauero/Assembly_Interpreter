@@ -2,27 +2,34 @@
 This file initializes hardware registes, along with methods for it's initializaiton
 """
 
-from datatypes import Node
 from errors import RegisterNotImplemented
+
+class RegisterBit:
+    """This class holds singular bits, which are stored in registers, this way
+    it's easy to handle the same bits between whole registers and it's subparts:
+    AX = AH + AL etc."""
+    
+    def __init__(self, data = 0): 
+        self.data = data
 
 class HardwareRegisters():
         
     def __init__(self):
-        self._AX = [Node(0) for _ in range(16)]
+        self._AX = [RegisterBit(0) for _ in range(16)]
         self._AH, self._AL = self._AX[-16:-8], self._AX[-8:]
-        self._BX = [Node(0) for _ in range(16)]
+        self._BX = [RegisterBit(0) for _ in range(16)]
         self._BH, self._BL = self._BX[-16:-8], self._BX[-8:]
-        self._CX = [Node(0) for _ in range(16)]
+        self._CX = [RegisterBit(0) for _ in range(16)]
         self._CH, self._CL = self._CX[-16:-8], self._CX[-8:]
-        self._DX = [Node(0) for _ in range(16)]
+        self._DX = [RegisterBit(0) for _ in range(16)]
         self._DH, self._DL = self._DX[-16:-8], self._DX[-8:]
 
-        self._SI = [Node(0) for _ in range(16)]
-        self._DI = [Node(0) for _ in range(16)]
-        self._SP = [Node(0) for _ in range(16)]
-        self._BP = [Node(0) for _ in range(16)]
+        self._SI = [RegisterBit(0) for _ in range(16)]
+        self._DI = [RegisterBit(0) for _ in range(16)]
+        self._SP = [RegisterBit(0) for _ in range(16)]
+        self._BP = [RegisterBit(0) for _ in range(16)]
         
-        self._IP = [Node(0) for _ in range(16)]
+        self._IP = [RegisterBit(0) for _ in range(16)]
 
         self._listOfRegisters = {
             "AX"  : self._AX,  "AH"  : self._AH,  "AL"  : self._AL,
@@ -69,7 +76,7 @@ class HardwareRegisters():
         r = r.upper()
         result = ""
         for i in self._listOfRegisters[r]: 
-            result += i.printStr()
+            result += str(i.data)
         return result
 
     #	if register is capable of holding effective address

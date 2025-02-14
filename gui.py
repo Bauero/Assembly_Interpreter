@@ -118,12 +118,12 @@ class MainWindow(QWidget):
         self.rightSection = QWidget()
         rightSectionLayout = QFormLayout()
 
-        # Stack section
-        ST = self.code_handler.engine.ST
-        self.stackSection = StackEditor(ST)
+        # Stack (Data) section
+        DT = self.code_handler.engine.data
+        self.stackSection = StackEditor(DT)
         self.stackSection.update()
         self.stackColumn = QVBoxLayout()
-        stack_label = QLabel("Stack")
+        stack_label = QLabel("Stack (Raw Segment Data)")
         font = QFont() ; font.setBold(True) ; font.setPointSize(15)
         stack_label.setFont(font)
         self.stackColumn.addWidget(stack_label)

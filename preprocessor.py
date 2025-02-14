@@ -2,7 +2,7 @@
 This file contains functions which purpose is to read, and preprocess file to 
 allow for it's further use inside program.
 """
-import os
+
 from re import match, search, sub
 from datatypes import Data
 from helper_functions import return_size_from_name
@@ -12,7 +12,7 @@ from errors import ImproperJumpMarker, ImproperDataDefiniton
 allowed_sections = ['code', 'stack', 'data', 'text']
 
 
-def loadMainFile(raw_file : list) -> tuple:
+def loadMainFile(raw_file : list, data : Data) -> tuple:
     """
     This function tries to read and load file speciphied in the path - this is main funciton
     responsible for reading code - executing it with success, shoudl allow to run code from
@@ -21,7 +21,7 @@ def loadMainFile(raw_file : list) -> tuple:
 
     assert type(raw_file) == list
 
-    assembly_code = _initialLoadAndCleanup(raw_file)
+    assembly_code = _initialLoadAndCleanup(raw_file, data)
     assembly_code = _divideCodeToSection(assembly_code)
     assembly_code = _replaceEquateValues(assembly_code)
     assembly_code = _replaceDUPValues(assembly_code)
@@ -35,7 +35,7 @@ def loadMainFile(raw_file : list) -> tuple:
     return start, assembly_code
 
 
-def _initialLoadAndCleanup(file : list):
+def _initialLoadAndCleanup(file : list, data : Data):
     """
     Remove comments and empty lines - ignore directives and secitons
     """
@@ -44,7 +44,7 @@ def _initialLoadAndCleanup(file : list):
         'lines' : [],
         'labels' : {},
         'variables' : {},
-        'data' : Data()
+        'data' : data
     }
 
     for number, line in enumerate(file, 1):

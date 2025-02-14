@@ -5,12 +5,10 @@ procesor
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from stack import Stack
 from datatypes import Data
 
 def CLC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -33,7 +31,6 @@ def CLC(HardwareRegister : HardwareRegisters,
 
 def CLD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -56,7 +53,6 @@ def CLD(HardwareRegister : HardwareRegisters,
 
 def CLI(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -79,7 +75,6 @@ def CLI(HardwareRegister : HardwareRegisters,
 
 def CMC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -102,7 +97,6 @@ def CMC(HardwareRegister : HardwareRegisters,
 
 def STC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -125,7 +119,6 @@ def STC(HardwareRegister : HardwareRegisters,
 
 def STD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -148,7 +141,6 @@ def STD(HardwareRegister : HardwareRegisters,
 
 def STI(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,

@@ -4,7 +4,6 @@ This file contains all operations which perform arithmetic operations
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from stack import Stack
 from datatypes import Data
 from helper_functions import equal_no_of_0_1, sign_changed, convert_number_to_bit_list, \
                              inverse_Twos_Compliment_Number, save_value_in_destination, \
@@ -12,7 +11,6 @@ from helper_functions import equal_no_of_0_1, sign_changed, convert_number_to_bi
 
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -76,7 +74,6 @@ def ADD(HardwareRegister : HardwareRegisters,
 
 def ADC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -141,7 +138,6 @@ def ADC(HardwareRegister : HardwareRegisters,
 
 def SUB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -206,7 +202,6 @@ def SUB(HardwareRegister : HardwareRegisters,
 
 def SBB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -278,7 +273,6 @@ def SBB(HardwareRegister : HardwareRegisters,
 
 def CMP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -338,7 +332,6 @@ def CMP(HardwareRegister : HardwareRegisters,
 
 def DEC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -403,7 +396,6 @@ def DEC(HardwareRegister : HardwareRegisters,
 
 def INC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,

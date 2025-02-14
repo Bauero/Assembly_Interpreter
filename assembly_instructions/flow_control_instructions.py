@@ -3,7 +3,6 @@ This file contains instructions which modify flow of the program, but in contras
 they have it's own distinct function, and hence, deserve it's own file
 """
 
-from stack import Stack
 from datatypes import Data
 from flag_register import FlagRegister
 from hardware_registers import HardwareRegisters
@@ -14,7 +13,6 @@ from helper_functions import (save_value_in_destination,
 
 def LOOP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -54,7 +52,6 @@ def LOOP(HardwareRegister : HardwareRegisters,
 
 def LOOPZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -94,7 +91,6 @@ def LOOPZ(HardwareRegister : HardwareRegisters,
 
 def LOOPE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -134,7 +130,6 @@ def LOOPE(HardwareRegister : HardwareRegisters,
 
 def LOOPNZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -174,7 +169,6 @@ def LOOPNZ(HardwareRegister : HardwareRegisters,
 
 def LOOPNE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -214,7 +208,6 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
 
 def CALL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -229,14 +222,14 @@ def CALL(HardwareRegister : HardwareRegisters,
     SP = HardwareRegister.readFromRegister("SP")
     IP = HardwareRegister.readFromRegister("IP")
     SP_value = int(SP, base=2)
-    IP_value = int(IP, base=2)
     SP_value_backup = SP_value
-    
-    backup_stack = Stack.read(SP_value - 2, 2)
-    backup_stack = "".join(backup_stack)
-
-    Stack.write(SP_value - 1, IP)
     SP_value -= 2
+    
+    backup_stack = Data.get_data(SP_value, 2)
+    procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, backup_stack)))
+    backup_stack = "".join(procc)
+
+    Data.modify_data(SP_value, IP)
     HardwareRegister.writeIntoRegister("SP", SP_value)
     HardwareRegister.writeIntoRegister("IP", label)
 
@@ -268,7 +261,6 @@ def CALL(HardwareRegister : HardwareRegisters,
 
 def RET(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -287,8 +279,9 @@ def RET(HardwareRegister : HardwareRegisters,
     SP_value = int(SP, base=2)
     SP_value_backup = SP_value
 
-    values = Stack.read(SP_value, no_of_bytes)
-    list_values = "".join(values)
+    values = Data.get_data(SP_value, no_of_bytes)
+    procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, values)))
+    list_values = "".join(procc)
     int_values = int(list_values, 2) + 1
     
     SP_value += no_of_bytes

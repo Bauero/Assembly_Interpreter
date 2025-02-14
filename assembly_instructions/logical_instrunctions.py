@@ -4,7 +4,6 @@ This file contains operations which perform locical operations
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from stack import Stack
 from datatypes import Data
 from helper_functions import (save_value_in_destination,
                               convert_number_to_bit_list,
@@ -12,7 +11,6 @@ from helper_functions import (save_value_in_destination,
 
 def AND(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -70,7 +68,6 @@ def AND(HardwareRegister : HardwareRegisters,
 
 def OR(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -128,7 +125,6 @@ def OR(HardwareRegister : HardwareRegisters,
 
 def XOR(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -186,7 +182,6 @@ def XOR(HardwareRegister : HardwareRegisters,
 
 def NOT(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -219,7 +214,6 @@ def NOT(HardwareRegister : HardwareRegisters,
 
 def NOP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,

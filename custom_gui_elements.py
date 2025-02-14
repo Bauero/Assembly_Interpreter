@@ -3,6 +3,7 @@ This file containst gustom GUI structures which are then later used in main gui
 file
 """
 
+from datatypes import Data
 from PyQt6.QtCore import Qt, QRect
 from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat
 from PyQt6.QtWidgets import (
@@ -525,18 +526,19 @@ class CodeEditor(QPlainTextEdit):
 
 class StackEditor(QPlainTextEdit):
 
-    def __init__(self, stack):
+    def __init__(self, data : Data):
         super().__init__()
-        self.stack = stack
-        self.setFixedWidth(180)
+        self.data = data
+        self.setFixedWidth(210)
         self.bits = []
         
     def update(self):
 
         def format_line(line):
-            return f"{str(hex(line[0])[2:]).zfill(4)}\t{line[1]}"
+            return f"{str(hex(line[0])[2:]).zfill(4)})\t{bin(line[1])[2:].zfill(8)} = {line[1]}"
 
-        fresh_stack = self.stack.read_stack()
+        fresh_stack = self.data.data[:]
+        fresh_stack.reverse()
         if self.bits != fresh_stack:
             numbered_line_pairs = zip(range(2**16-1,-1,-1), fresh_stack)
             self.setPlainText("\n".join(map(format_line, numbered_line_pairs)))
