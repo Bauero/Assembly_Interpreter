@@ -5,13 +5,11 @@ change flags, nor perform any operations on stack
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from stack import Stack
 from datatypes import Data
 from helper_functions import convert_number_to_bit_list, save_value_in_destination
 
 def MOV(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -33,7 +31,6 @@ def MOV(HardwareRegister : HardwareRegisters,
 
 def XCHG(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,

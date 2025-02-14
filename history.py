@@ -52,7 +52,7 @@ class History():
     def history_length(self):
         return len(self.history)
     
-    def save_final_state(self, HR, FR, ST, data, variables):
+    def save_final_state(self, HR, FR, data, variables):
         """
         This instruction allows for saving state of additional elements, for
         storage. By default those elements are not saved, as the values are kept
@@ -61,7 +61,6 @@ class History():
         
         self.HR = HR
         self.FR = FR
-        self.ST  = ST
         self.data = data
         self.variables = variables
 
@@ -72,12 +71,11 @@ class History():
         history file
         """
 
-        return_all =  (self.HR, self.FR, self.ST, self.data, self.variables,
+        return_all =  (self.HR, self.FR, self.data, self.variables,
                         self.path_to_file, self.raw_file, self.preprocessed_instructions)
 
         del self.HR
         del self.FR
-        del self.ST
         del self.data
         del self.variables
 

@@ -5,12 +5,10 @@ This file contains all INT instructions which are possible to be Executed
 import time
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from stack import Stack
 from datatypes import Data
 
 def INT(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -23,7 +21,6 @@ def INT(HardwareRegister : HardwareRegisters,
 
     return globals()[interrupt](HardwareRegister,
                                 FlagRegister,
-                                Stack,
                                 Data,
                                 Variables,
                                 Labels,
@@ -31,7 +28,6 @@ def INT(HardwareRegister : HardwareRegisters,
 
 def _int_21h_2(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -43,7 +39,6 @@ def _int_21h_2(HardwareRegister : HardwareRegisters,
 
 def _int_21h_44(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
         Data : Data,
         Variables : dict,
         Labels : dict,
@@ -95,7 +90,15 @@ def _int_21h_44(HardwareRegister : HardwareRegisters,
 
 def _int_21h_0(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Stack : Stack,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    
+    return {"next_instruction" : -1}
+
+def _int_21h_19456(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
         Data : Data,
         Variables : dict,
         Labels : dict,

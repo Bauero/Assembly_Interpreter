@@ -33,7 +33,7 @@ class CodeHandler():
         #   Prepare data
         assert type(raw_file) == list
         self.rawfiles[path_to_file] = raw_file
-        start, preprocessed_instrucitons = loadMainFile(raw_file)
+        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.data)
         self.pass_variable_to_engine(preprocessed_instrucitons)
 
         #   Save variables inside Code Handler
@@ -76,7 +76,6 @@ class CodeHandler():
         self.engine.informAboutLabels(preprocessed_instrucitons['labels'])
         self.engine.informAboutVariables(
             preprocessed_instrucitons['variables'],
-            preprocessed_instrucitons['data']
         )
 
     def executeCommand(self, command, **kwargs):
@@ -135,6 +134,7 @@ class CodeHandler():
         
         try:
             next_instruction = self.history.load_next_instruction_if_executed()
+            wtd = None
 
             #   If next instruction is already executed, load it from history
             if next_instruction:
@@ -166,7 +166,7 @@ class CodeHandler():
                     [next_line, lines_in_source_file]
             
             status = {"status" : 0, "highlight" : lines_in_source_file}
-            if "write_char_to_terminal" in wtd:
+            if wtd and "write_char_to_terminal" in wtd:
                 status["write_char_to_terminal"] = wtd["write_char_to_terminal"]
             return status
 
@@ -234,11 +234,10 @@ class CodeHandler():
 
             HR = self.engine.HR
             FR = self.engine.FR
-            ST = self.engine.ST
             data = self.engine.data
             variables = self.engine.variables
 
-            self.history.save_final_state(HR, FR, ST, data, variables)
+            self.history.save_final_state(HR, FR, data, variables)
             pickle.dump(self.history, path)
 
             status = {"status" : 0}
@@ -256,7 +255,7 @@ class CodeHandler():
             self.history = pickle.load(path)
             output = self.history.return_saved_state()
 
-            HR, FR, ST, data, variables, path_to_file, raw_file, \
+            HR, FR, data, variables, path_to_file, raw_file, \
                 preprocessed_instructions = output
 
             self.pass_variable_to_engine(preprocessed_instructions)

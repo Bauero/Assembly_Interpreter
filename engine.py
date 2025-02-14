@@ -40,16 +40,14 @@ class Engine():
         self._prepareFunctions()
         self.HR = HardwareRegisters()
         self.FR = FlagRegister()
-        self.ST = Stack()
+        self.data = Data()
         self.variables = None
-        self.data = None
 
     def informAboutLabels(self, labels : list):
         self.labels = labels
 
-    def informAboutVariables(self, variables : list, data : Data):
+    def informAboutVariables(self, variables : list):
         self.variables = variables
-        self.data = data
 
     def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it cuts the line, extracting command
@@ -97,7 +95,6 @@ class Engine():
             output = self.funtionNameLink[ keyword ](
                 self.HR,
                 self.FR,
-                self.ST,
                 self.data,
                 self.variables,
                 self.labels,
@@ -116,7 +113,7 @@ class Engine():
     def load_new_state_after_change(self, change : dict, forward : bool):
         """
         The purpose of this method is to directly change state of the simulated
-        HR, FR, STACK or manipulate date, allowing to undo/redo instruction, and
+        HR, FR, DATA or manipulate date, allowing to undo/redo instruction, and
         ommit resource-intensive processing, when running already processed instructions
         """
 
@@ -137,10 +134,10 @@ class Engine():
                         self.data.modify_data(add, modification[source])
                 case "flags":
                     self.FR.setFlagRaw(changes[source])
-                case "stack":
+                case "data":
                     for modification in changes:
                         start = modification["location"]
-                        self.ST.write(start, modification[source])
+                        self.data.write(start, modification[source])
 
     def _separate_keyword(self, line : str) -> tuple[str, int]:
         """Extracts keyword from line, and returns it in capital leters. Keyword is defined as:
@@ -417,8 +414,10 @@ class Engine():
                             raise NoExplicitSizeError(f"No explicite size definition in '{arg}'")
                     final_sizes.append(size)
                     data_in_mem = self.data.get_data(simple_eval(arg), size // 8)
-                    source_values.append(data_in_mem)
-                    conv_data = convert_number_to_int_with_binary_capacity(data_in_mem, size)
+                    data_in_bits = (map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, data_in_mem))))
+                    data_in_bits_str = "".join(data_in_bits)
+                    source_values.append(data_in_bits_str + "b")
+                    conv_data = int(data_in_bits_str, 2)
                     converted_values.append(conv_data)
 
         return source_values, converted_values, final_sizes
