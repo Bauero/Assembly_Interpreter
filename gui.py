@@ -397,14 +397,14 @@ class MainWindow(QWidget):
                 #   TODO connect automatic code executioin
             case 'next_instruction':
                 response = self.code_handler.executeCommand('next_instruction')
-                self._act_on_response(response)
                 self._refresh()
+                self._act_on_response(response)
                 self.stackSection.update()
                 self.variableSection.update()
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
-                self._act_on_response(response)
                 self._refresh()
+                self._act_on_response(response)
                 self.stackSection.update()
                 self.variableSection.update()
 

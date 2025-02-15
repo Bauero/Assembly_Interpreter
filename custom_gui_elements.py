@@ -360,7 +360,6 @@ class Terminal(QWidget):
 
     def write_char(self, char : int):
         text = self.terminal.toPlainText()
-        print(chr(char), end="", flush=True)
         self.terminal.setPlainText(text + chr(char))
 
 class CustomQCheckBox(QCheckBox):
