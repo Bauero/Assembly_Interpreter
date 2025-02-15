@@ -16,6 +16,7 @@ from assembly_instructions.jump_instructions import *
 from assembly_instructions.stack_instructions import *
 from assembly_instructions.data_movement_instructions import *
 from assembly_instructions.interrupt_instructions import *
+from assembly_instructions.bit_movement_instructions import *
 from hardware_registers import HardwareRegisters
 from code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
 from errors import (ArgumentNotExpected,

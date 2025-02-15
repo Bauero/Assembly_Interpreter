@@ -39,7 +39,7 @@ def LOOP(HardwareRegister : HardwareRegisters,
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
     current_line = kwargs['line']
-    destination_line = kwargs['values'][0]
+    destination_line = kwargs['args_values_raw'][0]
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
@@ -78,7 +78,7 @@ def LOOPZ(HardwareRegister : HardwareRegisters,
     ZF = FlagRegister.readFlag("ZF")
 
     current_line = kwargs['line']
-    destination_line = kwargs['values'][0]
+    destination_line = kwargs['args_values_raw'][0]
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
@@ -117,7 +117,7 @@ def LOOPE(HardwareRegister : HardwareRegisters,
     ZF = FlagRegister.readFlag("ZF")
 
     current_line = kwargs['line']
-    destination_line = kwargs['values'][0]
+    destination_line = kwargs['args_values_raw'][0]
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
@@ -156,7 +156,7 @@ def LOOPNZ(HardwareRegister : HardwareRegisters,
     ZF = FlagRegister.readFlag("ZF")
 
     current_line = kwargs['line']
-    destination_line = kwargs['values'][0]
+    destination_line = kwargs['args_values_raw'][0]
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1
@@ -195,7 +195,7 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
     ZF = FlagRegister.readFlag("ZF")
 
     current_line = kwargs['line']
-    destination_line = kwargs['values'][0]
+    destination_line = kwargs['args_values_raw'][0]
 
     if current_line - destination_line <= 128 and current_line - destination_line >= -127:
         CX_value -= 1

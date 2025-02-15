@@ -206,13 +206,8 @@ def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variab
 
     return modified, response
 
-def equal_no_of_0_1(value : list | str):
-    count_0 = 0
-    count_1 = 0
-    for b in value:
-        if b == "0":    count_0 += 1
-        else:           count_1 += 1
-    return count_0 == count_1
+def eval_no_of_1(value : list | str):
+    return not bool(list(value[-8:]).count("1") % 2)
 
 def sign_changed(n1 : str, n2 : str, output : list):
     n1b, n2b = int(n1[0]), int(n2[0])
