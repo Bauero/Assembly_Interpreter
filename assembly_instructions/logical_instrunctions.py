@@ -7,7 +7,7 @@ from flag_register import FlagRegister
 from datatypes import Data
 from helper_functions import (save_value_in_destination,
                               convert_number_to_bit_list,
-                              equal_no_of_0_1)
+                              eval_no_of_1)
 
 def AND(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
@@ -22,7 +22,7 @@ def AND(HardwareRegister : HardwareRegisters,
     # Convert both numbers to be in raw binary form -> 0111010110101101
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
@@ -47,8 +47,7 @@ def AND(HardwareRegister : HardwareRegisters,
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
     FlagRegister.setFlag("SF", output[0] == "1")
     FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", equal_no_of_0_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
+    FlagRegister.setFlag("PF", eval_no_of_1(output))
     FlagRegister.setFlag("OF", 0)
     
     new_flags = list(FlagRegister.readFlags())
@@ -79,7 +78,7 @@ def OR(HardwareRegister : HardwareRegisters,
     # Convert both numbers to be in raw binary form -> 0111010110101101
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
@@ -104,8 +103,7 @@ def OR(HardwareRegister : HardwareRegisters,
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
     FlagRegister.setFlag("SF", output[0] == "1")
     FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", equal_no_of_0_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
+    FlagRegister.setFlag("PF", eval_no_of_1(output))
     FlagRegister.setFlag("OF", 0)
     
     new_flags = list(FlagRegister.readFlags())
@@ -161,8 +159,7 @@ def XOR(HardwareRegister : HardwareRegisters,
     FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
     FlagRegister.setFlag("SF", output[0] == "1")
     FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", equal_no_of_0_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
+    FlagRegister.setFlag("PF", eval_no_of_1(output))
     FlagRegister.setFlag("OF", 0)
     
     new_flags = list(FlagRegister.readFlags())
@@ -193,7 +190,7 @@ def NOT(HardwareRegister : HardwareRegisters,
     # Convert both numbers to be in raw binary form -> 0111010110101101
     values_in_binary = []
     
-    for v in kwargs['values']:
+    for v in kwargs['args_values_raw']:
         output = convert_number_to_bit_list(v, final_size)
         values_in_binary.append(output)
         
