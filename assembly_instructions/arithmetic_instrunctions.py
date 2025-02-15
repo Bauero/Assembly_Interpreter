@@ -748,6 +748,71 @@ def IDIV(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
+def NEG(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """This instruction saves up negated value of argument passed in destination"""
+
+    final_size = kwargs['final_size']
+
+    values_in_binary = [['1' for _ in range(final_size)]]
+
+    output = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
+    output = inverse_Twos_Compliment_Number(output)
+    values_in_binary.append(output)
+
+    output = []
+    carry = 0
+    auxiliary_carry = 0
+    for bit in range(-1, - final_size -1, -1):
+        b1 = int(values_in_binary[0][bit])
+        b2 = int(values_in_binary[1][bit])
+        sum = b1 + b2 + carry
+        carry = sum > 1
+        output.insert(0, str(sum % 2))
+        if abs(bit) == 4:
+            auxiliary_carry = carry
+    
+    values_in_binary = [output, convert_number_to_bit_list(1, final_size)]
+
+    output = []
+    for bit in range(-1, - final_size -1, -1):
+        b1 = int(values_in_binary[0][bit])
+        b2 = int(values_in_binary[1][bit])
+        sum = b1 + b2 + carry
+        carry = sum > 1
+        output.insert(0, str(sum % 2))
+        if abs(bit) == 4:
+            auxiliary_carry = carry
+
+    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+    
+    previous_flags = list(FlagRegister.readFlags())
+
+    # Set appriopriate flags
+    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
+    FlagRegister.setFlag("SF", output[0] == "1")
+    FlagRegister.setFlag("CF", 0)
+    FlagRegister.setFlag("AF", auxiliary_carry)
+    FlagRegister.setFlag("PF", eval_no_of_1(output))
+    FlagRegister.setFlag("OF", 0)
+
+    new_flags = list(FlagRegister.readFlags())
+
+    all_changes = {
+        m[0] : [m[1]],
+        "flags" : {
+            "oryginal_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
 for fn in [ADD, ADC, SUB, SBB, CMP]:
     """Assign all functions the same attributes"""
     fn.params_range = [2]
@@ -756,7 +821,7 @@ for fn in [ADD, ADC, SUB, SBB, CMP]:
     ("register", "value"), ("register", "memory")
 ]
 
-for fn in [INC, DEC, MUL, IMUL, DIV, IDIV]:
+for fn in [INC, DEC, MUL, IMUL, DIV, IDIV, NEG]:
     """Assign all functions the same attributes"""
     fn.params_range = [1]
     fn.allowed_params_combinations = [ ("memory",), ("register",) ]
