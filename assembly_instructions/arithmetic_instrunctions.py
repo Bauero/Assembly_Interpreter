@@ -137,6 +137,90 @@ def AAS(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
+def DAS(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """DECIMAL ADJUST FOR SUBSTRACTION
+    
+    TLDR:
+    if (AL ^ 0Fh) > 9 or AF == 1 do the following:
+        1. AL = AL - 6;
+        2. AF = 1
+        
+        if AL > 9Fh or CF = 1
+            3.1. AL = AL - 60h
+            3.2. CF = 1
+    """
+
+    all_changes = None
+    
+    AL_source = HardwareRegister.readFromRegister("AL")
+    AF = FlagRegister.readFlag("AF")
+    al_int = int("".join(AL_source), 2)
+
+    if (al_int ^ 15) > 9 or AF:
+        backup_flags = FlagRegister.readFlags()
+        six_in_binary = convert_number_to_bit_list(6, 8)
+        minus_six_in_binary = inverse_Twos_Compliment_Number(six_in_binary)
+
+        output = []
+        carry = 0
+        auxiliary_carry = 0
+        for bit in range(-1, - 8 -1, -1):
+            b1 = int(AL_source[0][bit])
+            b2 = int(minus_six_in_binary[1][bit])
+            sum = b1 + b2 + carry
+            carry = sum > 1
+            output.insert(0, str(sum % 2))
+            if abs(bit) == 4:
+                auxiliary_carry = carry
+
+        AL_after_add = output
+        al_int = convert_number_to_int_with_binary_capacity(output, 8)
+        FlagRegister.setFlag("AF", 1)
+
+        if carry or al_int > 159:
+            ninety_six_in_binary = convert_number_to_bit_list(96, 8)
+            minus_ninety_six_in_binary = inverse_Twos_Compliment_Number(ninety_six_in_binary)
+
+            output = []
+            for bit in range(-1, - 8 -1, -1):
+                b1 = int(AL_after_add[0][bit])
+                b2 = int(minus_ninety_six_in_binary[1][bit])
+                sum = b1 + b2 + carry
+                carry = sum > 1
+                output.insert(0, str(sum % 2))
+                if abs(bit) == 4:
+                    auxiliary_carry = carry
+
+            FlagRegister.setFlag("CF", 1)
+
+        FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
+        FlagRegister.setFlag("SF", output[0] == "1")
+        FlagRegister.setFlag("PF", eval_no_of_1(output))
+        FlagRegister.setFlag("AF", auxiliary_carry)
+
+        new_flags = FlagRegister.readFlags()
+
+        all_changes = {
+            "register" : [
+                {
+                    "location" :        "AL",
+                    "oryginal_value" :  list(map(int, AL_source)),
+                    "new_value" :       list(map(int, output))
+                }
+            ],
+            "flags" : {
+                "oryginal_value" :  backup_flags,
+                "new_value" :       new_flags
+            }
+        }
+
+        return all_changes
+
 def DAA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Data : Data,
@@ -147,12 +231,12 @@ def DAA(HardwareRegister : HardwareRegisters,
     
     TLDR:
     if (AL ^ 0Fh) > 9 or AF == 1 do the following:
-    1. AL = AL + 6;
-    2. AF = 1
-    
-    if AL > 9Fh or CF = 1
-        3.1. AL = AL + 60h
-        3.2. CF = 1
+        1. AL = AL + 6;
+        2. AF = 1
+        
+        if AL > 9Fh or CF = 1
+            3.1. AL = AL + 60h
+            3.2. CF = 1
     """
 
     all_changes = None
