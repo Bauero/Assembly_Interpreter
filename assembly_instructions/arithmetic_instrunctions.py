@@ -304,6 +304,67 @@ def DAA(HardwareRegister : HardwareRegisters,
 
         return all_changes
 
+def AAM(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """ADJUST FOR MULTIPLY
+    
+    TLDR;
+    AH = AL / 10
+    AL = AL mod 10
+    Sets flags SF, ZF, PF according to AL value at the beginning of the operation
+    """
+
+    AL = HardwareRegister.readFromRegister("AL")
+    AH = HardwareRegister.readFromRegister("AH")
+
+    divider = convert_number_to_int_with_binary_capacity(AL, 8)
+    divisor = 10
+
+    quotient = divider // divisor
+    reminder = divider % divisor
+
+    converted_quotient = convert_number_to_int_with_binary_capacity(quotient, 8)
+    converted_reminder = convert_number_to_int_with_binary_capacity(reminder, 8)
+
+    ready_quotient = bin(converted_quotient)[2:].zfill(8)
+    ready_reminder = bin(converted_reminder)[2:].zfill(8)
+
+    HardwareRegister.writeIntoRegister("AH", converted_quotient)
+    HardwareRegister.writeIntoRegister("AL", converted_reminder)
+
+    backup_flags = list(FlagRegister.readFlags())
+
+    FlagRegister.setFlag("ZF", not "1" in AL)   # if any "1", ZF if OFF
+    FlagRegister.setFlag("SF", AL[0] == "1")
+    FlagRegister.setFlag("PF", eval_no_of_1(AL))
+
+    new_flags = list(FlagRegister.readFlags())
+
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "AH",
+                "oryginal_value" :  list(map(int, AH)),
+                "new_value" :       list(map(int, ready_quotient))
+            },
+            {
+                "location" :        "AL",
+                "oryginal_value" :  list(map(int, AL)),
+                "new_value" :       list(map(int, ready_reminder))
+            }
+        ],
+        "flags" : {
+            "oryginal_value" :  backup_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Data : Data,
