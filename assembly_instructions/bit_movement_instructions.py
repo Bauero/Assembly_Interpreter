@@ -177,7 +177,7 @@ def SAR(HardwareRegister : HardwareRegisters,
     sign = first_bit
     
     for shift in range(rotation_counter):
-        value_to_shift.append(1, value_to_shift[0])
+        value_to_shift.insert(1, value_to_shift[0])
         carry = value_to_shift[-1]
         value_to_shift = value_to_shift[:-1]
 
@@ -208,7 +208,59 @@ def SAR(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-for fn in [SAL, SAR, SHL, SHR]:
+def ROL(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """ROTATE LEFT
+    
+    EX.
+    - ROL AL, 3 (AL = 10010000):
+        1. 00100001 CL = 1  OF = 1
+        2. 01000010 CL = 0  OF = 0
+        3. 10000100 CL = 0  OF = 1
+    - ROL AL, 1 (AL = 10101101):
+        1. 01011011 CL = 1  OF = 1
+    """
+
+    final_size = kwargs['final_size']
+
+    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
+    rotation_counter = kwargs['args_values_int'][1] % final_size
+
+    carry = "0"
+    
+    for shift in range(rotation_counter):
+        value_to_shift.append(value_to_shift[0])
+        carry = value_to_shift[0]
+        overfolow = value_to_shift[0] != value_to_shift[1]
+        value_to_shift = value_to_shift[1:]
+
+    backup_flags = FlagRegister.readFlags()
+
+    FlagRegister.setFlag("OF", overfolow)
+    FlagRegister.setFlag("CF", carry == "1")
+
+    new_flags = FlagRegister.readFlags()
+
+    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+
+    all_changes = {
+        m[0] : [
+            m[1]
+        ],
+        "flags" : {
+            "oryginal_value" :  backup_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
+for fn in [SAL, SAR, SHL, SHR, ROL]:
     """Assign all functions the same attributes"""
     fn.params_range = [2]
     fn.allowed_params_combinations = [ ("memory", "value"), ("register", "value")]
