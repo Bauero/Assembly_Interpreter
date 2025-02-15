@@ -7,8 +7,7 @@ from flag_register import FlagRegister
 from datatypes import Data
 from helper_functions import (save_value_in_destination,
                               convert_number_to_bit_list,
-                              eval_no_of_1,
-                              inverse_Twos_Compliment_Number)
+                              eval_no_of_1)
 
 def AND(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
