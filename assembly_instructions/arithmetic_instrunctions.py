@@ -365,6 +365,73 @@ def AAM(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
+def AAD(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """ADJUST FOR DIVISION
+    
+    TLDR:
+    AL = AL + AH * 10
+    AH = 0
+    Sets SF, ZF and PF accoring to final value in AL
+    """
+
+    AH = HardwareRegister.readFromRegister("AH")
+    AL = HardwareRegister.readFromRegister("AL")
+
+    ah_int = int("".join(AH),) * 10
+    ah_bits = convert_number_to_bit_list(ah_int, 8)
+
+    output = []
+    carry = 0
+    auxiliary_carry = 0
+    for bit in range(-1, -9, -1):
+        b1 = int(AL[0][bit])
+        b2 = int(ah_bits[1][bit])
+        sum = b1 + b2 + carry
+        carry = sum > 1
+        output.insert(0, str(sum % 2))
+        if abs(bit) == 4:
+            auxiliary_carry = carry
+
+    new_al = output
+    new_ah = ['0' for _ in range(8)]
+
+    HardwareRegister.writeIntoRegister("AH", new_ah)
+    HardwareRegister.writeIntoRegister("AL", new_al)
+    
+    backup_flags = list(FlagRegister.readFlags())
+    
+    FlagRegister.setFlag("ZF", not "1" in new_al)   # if any "1", ZF if OFF
+    FlagRegister.setFlag("SF", new_al[0] == "1")
+    FlagRegister.setFlag("PF", eval_no_of_1(new_al))
+
+    new_flags = list(FlagRegister.readFlags())
+
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "AH",
+                "oryginal_value" :  list(map(int, AH)),
+                "new_value" :       list(map(int, new_ah))
+            },
+            {
+                "location" :        "AL",
+                "oryginal_value" :  list(map(int, AL)),
+                "new_value" :       list(map(int, new_al))
+            }
+        ],
+        "flags" : {
+            "oryginal_value" :  backup_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Data : Data,
@@ -1182,7 +1249,7 @@ for fn in [INC, DEC, MUL, IMUL, DIV, IDIV, NEG]:
     fn.params_range = [1]
     fn.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-for fn in [AAA, AAS, DAA, DAS]:
+for fn in [AAA, AAS, DAA, DAS, AAM, AAD]:
     """Assign all functions the same attributes"""
     fn.params_range = [0]
     fn.allowed_params_combinations = [ tuple() ]
