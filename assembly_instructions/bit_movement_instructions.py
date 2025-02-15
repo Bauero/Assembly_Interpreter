@@ -321,6 +321,17 @@ def RCL(HardwareRegister : HardwareRegisters,
     """ROTATE THROUGH CARRY LEFT
 
     Perform rotation as if carry flag was an additional, most significant bit of number
+
+    CF   +    f e d c b a 9 8 7 6 5 4 3 2 1 0
+
+    0    +    0 0 0 0 0 0 0 1 1 1 0 1 0 1 1 1
+
+    After one rotation bit form last position is moved into CF, previous value of CF is moved
+    into 'f' and each other bit is shifte one right
+
+    CF   +    f e d c b a 9 8 7 6 5 4 3 2 1 0
+
+    1    +    0 0 0 0 0 0 0 0 1 1 1 0 1 0 1 1
     
     EX.
     - RCL AL, 3 (AL = 00011111 , CL = 1):
@@ -366,7 +377,72 @@ def RCL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-for fn in [SAL, SAR, SHL, SHR, ROL, ROR, RCL]:
+def RCR(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """ROTATE THROUGH CARRY RIGH
+
+    Perform rotation as if carry flag was an additional, least significant bit of number
+    
+    f e d c b a 9 8 7 6 5 4 3 2 1 0   +   CF
+
+    1 0 1 0 1 1 1 0 1 0 1 0 1 0 1 0   +   1
+
+    after one rotation bit from 'f' is moved into 'e', bit from '0' to CF, and previous value
+    of 'CF' is moved into 'f'
+
+    f e d c b a 9 8 7 6 5 4 3 2 1 0   +   CF
+    
+    1 1 0 1 0 1 1 1 0 1 0 1 0 1 0 1   +   0
+    
+    EX.
+    - RCR AL, 3 (AL = 00011111 , CL = 1):
+        1. 10001111 CL = 1  OF = 1
+        2. 11000111 CL = 1  OF = 0
+        3. 11100011 CL = 1  OF = 0
+    - RCL AL, 1 (AL = 11111111, CL = 0):
+        1. 01111111 CL = 1  OF = 1
+    """
+
+    final_size = kwargs['final_size']
+
+    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
+    rotation_counter = kwargs['args_values_int'][1] % final_size
+
+    carry = HardwareRegister.readFromRegister("CF")
+    
+    for shift in range(rotation_counter):
+        value_to_shift.insert(0, carry)
+        carry = value_to_shift[-1]
+        overfolow = value_to_shift[0] != value_to_shift[1]
+        value_to_shift = value_to_shift[:-1]
+
+    backup_flags = FlagRegister.readFlags()
+
+    FlagRegister.setFlag("OF", overfolow)
+    FlagRegister.setFlag("CF", carry == "1")
+
+    new_flags = FlagRegister.readFlags()
+
+    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+
+    all_changes = {
+        m[0] : [
+            m[1]
+        ],
+        "flags" : {
+            "oryginal_value" :  backup_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
+for fn in [SAL, SAR, SHL, SHR, ROL, ROR, RCL, RCR]:
     """Assign all functions the same attributes"""
     fn.params_range = [2]
     fn.allowed_params_combinations = [ ("memory", "value"), ("register", "value")]
