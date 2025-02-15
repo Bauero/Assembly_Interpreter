@@ -9,6 +9,70 @@ from helper_functions import eval_no_of_1, sign_changed, convert_number_to_bit_l
                              inverse_Twos_Compliment_Number, save_value_in_destination, \
                              convert_number_to_bit_list,convert_number_to_int_with_binary_capacity
 
+def AAA(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """Adjust after addition. This function is designed to ajdust score after addition on
+    number stored in BCD code.
+    
+    TLDR:
+    if (AL ^ 0Fh) > 9 or AF == 1 do the following:
+    1. AL = AL + 6;
+    2. AH = AH + 1;
+    3. AF = 1
+    4. CF = 1
+    5. AL = AL ^ 0Fh
+    """
+
+    all_changes = None
+    
+    AL_source = HardwareRegister.readFromRegister("AL")
+    AF = FlagRegister.readFlag("AF")
+    al_int = int("".join(AL_source), 2)
+
+    if (al_int ^ 15) > 9 or AF:
+        al_int += 6
+        al_int ^= 15
+        AL_new = convert_number_to_bit_list(al_int, 8)
+        HardwareRegister.writeIntoRegister(AL_new)
+        
+        AH_source = HardwareRegister.readFromRegister("AH")
+        ah_int = int("".join(AH_source), 2)
+        ah_int += 1
+        AH_new = convert_number_to_bit_list(ah_int, 8)
+        HardwareRegister.writeIntoRegister(AH_new)
+        
+        backup_flags = FlagRegister.readFlags()
+        
+        FlagRegister.setFlag("AF", 1)
+        FlagRegister.setFlag("CF", 1)
+
+        new_flags = FlagRegister.readFlags()
+
+        all_changes = {
+            "register" : [
+                {
+                    "location" :        "AL",
+                    "oryginal_value" :  list(map(int, AL_source)),
+                    "new_value" :       list(map(int, AL_new))
+                },
+                {
+                    "location" :        "AH",
+                    "oryginal_value" :  list(map(int, AH_source)),
+                    "new_value" :       list(map(int, AH_new))
+                }
+            ],
+            "flags" : {
+                "oryginal_value" :  backup_flags,
+                "new_value" :       new_flags
+            }
+        }
+
+    return all_changes
+
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Data : Data,
