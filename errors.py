@@ -230,7 +230,23 @@ class KeywordNotImplementedError (DetailedException):
         return self.error_message
     
 
+class IncorrectParamForBitMovError (DetailedException):
+    """This error occurs if for one of the instruction: 
+    
+    SAL, SAR, SHL, SHR, ROL, ROR, RCL, RCR
+    
+    it is detected, that second argument is not allowed. FYI, if second argument
+    is register it MUST BE 'cl' register"""
 
+    def __init__(self, line_num = None, error_message = ""):
+        self.error_message = error_message
+        self.line_num = line_num
+
+    def line(self):
+        return self.line_num
+    
+    def message(self):
+        return self.error_message
 
 ################################################################################
 ###     NUMBER ERROR

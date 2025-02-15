@@ -5,6 +5,7 @@ This file contains operations which perform locical operations
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
 from datatypes import Data
+from errors import ExecutionOfOperationInLineError, IncorrectParamForBitMovError
 from helper_functions import (convert_number_to_bit_list,
                               save_value_in_destination,
                               eval_no_of_1)
@@ -16,6 +17,11 @@ def SHL(HardwareRegister : HardwareRegisters,
         Labels : dict,
         **kwargs):
     """SHIFT LOGICAL LEFT"""
+
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
 
     final_size = kwargs['final_size']
 
@@ -67,6 +73,11 @@ def SHR(HardwareRegister : HardwareRegisters,
         **kwargs):
     """SHIFT LOGICAL RIGHT"""
 
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
+
     final_size = kwargs['final_size']
 
     value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
@@ -117,6 +128,11 @@ def SAL(HardwareRegister : HardwareRegisters,
         **kwargs):
     """SHIFT ARITHMETIC LEFT"""
 
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
+
     final_size = kwargs['final_size']
 
     value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
@@ -166,6 +182,11 @@ def SAR(HardwareRegister : HardwareRegisters,
         Labels : dict,
         **kwargs):
     """SHIFT ARITHMETIC RIGHT"""
+
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
 
     final_size = kwargs['final_size']
 
@@ -225,6 +246,11 @@ def ROL(HardwareRegister : HardwareRegisters,
         1. 01011011 CL = 1  OF = 1
     """
 
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
+
     final_size = kwargs['final_size']
 
     value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
@@ -276,6 +302,11 @@ def ROR(HardwareRegister : HardwareRegisters,
     - ROR AL, 1 (AL = 10101101):
         1. 11010110 CL = 1  OF = 0
     """
+
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
 
     final_size = kwargs['final_size']
 
@@ -342,6 +373,11 @@ def RCL(HardwareRegister : HardwareRegisters,
         1. 01011010 CL = 1  OF = 1
     """
 
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
+
     final_size = kwargs['final_size']
 
     value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
@@ -407,6 +443,11 @@ def RCR(HardwareRegister : HardwareRegisters,
         1. 01111111 CL = 1  OF = 1
     """
 
+    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+        raise ExecutionOfOperationInLineError(
+            IncorrectParamForBitMovError()
+        )
+
     final_size = kwargs['final_size']
 
     value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
@@ -445,4 +486,6 @@ def RCR(HardwareRegister : HardwareRegisters,
 for fn in [SAL, SAR, SHL, SHR, ROL, ROR, RCL, RCR]:
     """Assign all functions the same attributes"""
     fn.params_range = [2]
-    fn.allowed_params_combinations = [ ("memory", "value"), ("register", "value")]
+    fn.allowed_params_combinations = [
+        ("memory", "value"), ("memory", "register"), ("register", "value"), 
+        ("register", "register") ]
