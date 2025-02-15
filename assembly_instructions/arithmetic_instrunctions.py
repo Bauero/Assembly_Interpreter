@@ -1121,7 +1121,7 @@ for fn in [INC, DEC, MUL, IMUL, DIV, IDIV, NEG]:
     fn.params_range = [1]
     fn.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-for fn in [AAA, DAA]:
+for fn in [AAA, AAS, DAA, DAS]:
     """Assign all functions the same attributes"""
     fn.params_range = [0]
     fn.allowed_params_combinations = [ tuple() ]
