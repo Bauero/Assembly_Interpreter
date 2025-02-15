@@ -761,7 +761,9 @@ def CBW(HardwareRegister : HardwareRegisters,
         **kwargs):
     """CONVERT BYTE WORD
     
-    Extends bit on position 7 in AL to AH. EX:
+    Extends bit on position 7 in AL to AH.
+    
+    EX:
     
     - AL = 01101010 -> AL [0] == 0 -> AH = 00000000
     - AL = 10011101 -> AL [0] == 1 -> AH = 11111111
@@ -781,6 +783,42 @@ def CBW(HardwareRegister : HardwareRegisters,
                 "location" :        "AH",
                 "oryginal_value" :  list(map(int, AH)),
                 "new_value" :       list(map(int, new_ah))
+            },
+        ]
+    }
+
+    return all_changes
+
+def CWD(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """CONVERT WORD DOUBLEWORD
+    
+    Extends bit on position 15 in AX to DX.
+    
+    EX:
+    
+    - AX = 0110101010110010 -> AX [0] == 0 -> DX = 0000000000000000
+    - AX = 1001110110100111 -> AX [0] == 1 -> DX = 1111111111111111
+    """
+
+    AX = HardwareRegister.readFromRegister("AX")
+    DX = HardwareRegister.readFromRegister("DX")
+
+    if AX[0] == "0":
+        new_dx = ["0" for _ in range(16)]
+    else:
+        new_dx = ["1" for _ in range(16)]
+
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "DX",
+                "oryginal_value" :  list(map(int, DX)),
+                "new_value" :       list(map(int, new_dx))
             },
         ]
     }
@@ -1283,7 +1321,7 @@ for fn in [INC, DEC, MUL, IMUL, DIV, IDIV, NEG]:
     fn.params_range = [1]
     fn.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-for fn in [AAA, AAS, DAA, DAS, AAM, AAD, CBW]:
+for fn in [AAA, AAS, DAA, DAS, AAM, AAD, CBW, CWD]:
     """Assign all functions the same attributes"""
     fn.params_range = [0]
     fn.allowed_params_combinations = [ tuple() ]
