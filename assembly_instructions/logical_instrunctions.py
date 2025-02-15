@@ -219,6 +219,44 @@ def NOP(HardwareRegister : HardwareRegisters,
 
     return {}
 
+def NEG(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """This instruction saves up negated value of argument passed in destination"""
+
+    final_size = kwargs['final_size']
+
+    value_in_bits = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
+
+    negated = ['0' if bit == '1' else '1' for bit in value_in_bits]
+
+    m = save_value_in_destination(HardwareRegister, Data, Variables, negated,
+                             kwargs['param_types'][0], kwargs['source_params'][0])
+    
+    previous_flags = list(FlagRegister.readFlags())
+
+    # Set appriopriate flags
+    FlagRegister.setFlag("ZF", not "1" in negated)   # if any "1", ZF if OFF
+    FlagRegister.setFlag("SF", negated[0] == "1")
+    FlagRegister.setFlag("CF", 0)
+    FlagRegister.setFlag("PF", eval_no_of_1(negated))
+    FlagRegister.setFlag("OF", 0)
+
+    new_flags = list(FlagRegister.readFlags())
+
+    all_changes = {
+        m[0] : [m[1]],
+        "flags" : {
+            "oryginal_value" :  previous_flags,
+            "new_value" :       new_flags
+        }
+    }
+
+    return all_changes
+
 AND.params_range = [2]
 AND.allowed_params_combinations = [
     ("memory", "value"), ("memory", "register"), ("register", "register"), 
@@ -242,3 +280,6 @@ NOT.allowed_params_combinations = [ ("memory",), ("register",) ]
 
 NOP.params_range = [0]
 NOP.allowed_params_combinations = [tuple()]
+
+NEG.params_range = [1]
+NEG.allowed_params_combinations = [ ("memory",), ("register",) ]
