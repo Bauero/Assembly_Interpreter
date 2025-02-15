@@ -753,6 +753,40 @@ def CMP(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
+def CBW(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : Data,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+    """CONVERT BYTE WORD
+    
+    Extends bit on position 7 in AL to AH. EX:
+    
+    - AL = 01101010 -> AL [0] == 0 -> AH = 00000000
+    - AL = 10011101 -> AL [0] == 1 -> AH = 11111111
+    """
+
+    AL = HardwareRegister.readFromRegister("AL")
+    AH = HardwareRegister.readFromRegister("AH")
+
+    if AL[0] == "0":
+        new_ah = ["0" for _ in range(8)]
+    else:
+        new_ah = ["1" for _ in range(8)]
+
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "AH",
+                "oryginal_value" :  list(map(int, AH)),
+                "new_value" :       list(map(int, new_ah))
+            },
+        ]
+    }
+
+    return all_changes
+
 def DEC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Data : Data,
@@ -1249,7 +1283,7 @@ for fn in [INC, DEC, MUL, IMUL, DIV, IDIV, NEG]:
     fn.params_range = [1]
     fn.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-for fn in [AAA, AAS, DAA, DAS, AAM, AAD]:
+for fn in [AAA, AAS, DAA, DAS, AAM, AAD, CBW]:
     """Assign all functions the same attributes"""
     fn.params_range = [0]
     fn.allowed_params_combinations = [ tuple() ]
