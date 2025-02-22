@@ -97,7 +97,7 @@ def _int_21h_0(HardwareRegister : HardwareRegisters,
     
     return {"next_instruction" : -1}
 
-def _int_21h_19456(HardwareRegister : HardwareRegisters, 
+def _int_21h_76(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
         Data : Data,
         Variables : dict,

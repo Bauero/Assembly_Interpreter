@@ -69,11 +69,11 @@ def PUSH(HardwareRegister : HardwareRegisters,
     HardwareRegister.writeIntoRegister("SP", SP_value)
 
     output = {
-        "stack" : [
+        "memory" : [
             {
-                "location" : SP_value_backup,
-                "oryginal_value" :  list(map(int, backup_stack)),
-                "new_value" :       list(map(int, converted_value))
+                "location" :        SP_value,
+                "oryginal_value" :  backup_stack,
+                "new_value" :       converted_value
             }
         ],
         "register" : [{
@@ -108,16 +108,18 @@ def PUSHF(HardwareRegister : HardwareRegisters,
     for b in backup_stack:
         tmp.extend(list(bin(b)[2:]))
 
-    Data.modify_data(SP_value, value)
+    procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, backup_stack)))
+    backup_stack = "".join(procc)
 
+    Data.modify_data(SP_value, value)
     HardwareRegister.writeIntoRegister("SP", SP_value)
 
     output = {
-        "stack" : [
+        "memory" : [
             {
-                "location" : SP_value_backup,
-                "oryginal_value" :  list(map(int, backup_stack)),
-                "new_value" :       list(map(int, value))
+                "location" :        SP_value,
+                "oryginal_value" :  backup_stack,
+                "new_value" :       value
             }
         ],
         "register" : [{
@@ -161,21 +163,23 @@ def PUSHA(HardwareRegister : HardwareRegisters,
     SP_value = int(SP, 2)
     SP_backup = SP_value
     backup_stack = Data.get_data(SP_value-16, 16)
+    procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, backup_stack)))
+    backup_stack = "".join(procc)
 
     for value in reg_content:
         SP_value -= 2
         Data.modify_data(SP_value, value)
 
     HardwareRegister.writeIntoRegister("SP", SP_value)
-    values_on_stack = reg_content[-1:]
+    values_on_stack = reg_content[-1::-1]
     bits_on_stack = "".join(values_on_stack)
 
     output = {
-        "stack" : [
+        "memory" : [
             {
-                "location" : SP_backup,
-                "oryginal_value" :  list(map(int, backup_stack)),
-                "new_value" :       list(map(int, bits_on_stack))
+                "location" :        SP_value,
+                "oryginal_value" :  backup_stack,
+                "new_value" :       bits_on_stack
             }
         ],
         "register" : [{
@@ -224,7 +228,7 @@ def POP(HardwareRegister : HardwareRegisters,
     comb_value = list("".join(procc))
     
     m = save_value_in_destination(HardwareRegister, Data, Variables, comb_value, 
-                              kwargs['param_types'][0], kwargs['source_params'][0])
+                              kwargs['param_types'][0], kwargs['destination'])
     
     SP_value += no_of_bytes
     HardwareRegister.writeIntoRegister("SP", SP_value)

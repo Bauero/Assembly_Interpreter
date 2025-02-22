@@ -234,11 +234,11 @@ def CALL(HardwareRegister : HardwareRegisters,
     HardwareRegister.writeIntoRegister("IP", label)
 
     output = {
-        "stack" : [
+        "memory" : [
             {
-                "location" : SP_value_backup,
-                "oryginal_value" :  list(map(int, backup_stack)),
-                "new_value" :       list(map(int, IP))
+                "location" : SP_value,
+                "oryginal_value" :  backup_stack,
+                "new_value" :       IP
             }
         ],
         "register" : 

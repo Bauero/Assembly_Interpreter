@@ -3,21 +3,20 @@ This file containst gustom GUI structures which are then later used in main gui
 file
 """
 
+from engine import Engine
+from array import array
 from datatypes import Data
-from PyQt6.QtCore import Qt, QRect
-from PyQt6.QtGui import QFont, QTextCursor, QPainter, QColor, QTextFormat
+from color_pallete import c_green
+from helper_functions import return_name_from_size
+from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
+from PyQt6.QtGui import (
+    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence,QPalette
+    )
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QFormLayout,
-    QLabel,
-    QHBoxLayout,
-    QLineEdit,
-    QTextEdit,
-    QCheckBox,
-    QMessageBox,
-    QPlainTextEdit
-)
+    QWidget, QVBoxLayout, QFormLayout, QLabel, QHBoxLayout, QLineEdit, QTextEdit,
+    QMessageBox, QPlainTextEdit, QTableWidget, QHeaderView, QTableWidgetItem, 
+    QAbstractItemView,QApplication
+    )
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -130,7 +129,6 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
-
 class FunctionalRegisters(QWidget):
     def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
@@ -203,7 +201,6 @@ class FunctionalRegisters(QWidget):
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
 
-
 class FlagRegister(QWidget):
     """
     This class is responsible for display of flag register = it containts a text
@@ -213,9 +210,7 @@ class FlagRegister(QWidget):
 
     def __init__(self, FR):
         super().__init__()
-
         self.FR = FR
-
         wrapper = QHBoxLayout()
         body = QFormLayout()
         firts_row = QHBoxLayout()
@@ -231,32 +226,24 @@ class FlagRegister(QWidget):
         self.register_content.setFixedWidth(200)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
+        self.register_content.returnPressed.connect(self._validate_register_content)
         firts_row.addWidget(self.register_content)
 
         self.flag_indicators_row_1 = QHBoxLayout()
         self.flag_indicators_row_2 = QHBoxLayout()
         self.flag_indicators_row_3 = QHBoxLayout()
 
-        #   Define all flags, in order they should be displayed
-        self.overflow_flag          = CustomQCheckBox('Overflow')
-        self.direction_flag         = CustomQCheckBox('Direction')
-        self.interrupt_flag         = CustomQCheckBox('Interrrupt')
-        self.trap_flag              = CustomQCheckBox('Trap')
-        self.sign_flag              = CustomQCheckBox('Sign')
-        self.zero_flag              = CustomQCheckBox('Zero')
-        self.auxiliary_carry_flag   = CustomQCheckBox('Auxiliary carry')
-        self.parity_flag            = CustomQCheckBox('Parity')
-        self.carry_flag             = CustomQCheckBox('Carry')
+        flags = ['Overflow', 'Direction', 'Interrupt',
+                 'Trap', 'Sign', 'Zero',
+                 'Auxiliary carry', 'Parity', 'Carry']
 
-        #   Automatically assign all flags it's definitions defined in FlagRegister file,
-        # so that it will be displeyd when user hovers cousor over the checkbox
-        for attr_name in dir(self):
-            if attr_name.endswith('_flag'):
-                attr_value = getattr(self, attr_name)
-                definition = getattr(FR, f"def_{attr_name}")
-                attr_value.setToolTip(f'{definition()}')
-                attr_value.setModifiable(False)
-                # self.flag_indicators_row_1.addWidget(attr_value)
+        for f in flags:
+            attr_name = f"{f.lower().replace(' ', '_')}_flag"
+            def_name = f"def_{attr_name}"
+            setattr(self, attr_name, CustomIndicator(f))
+            obj = getattr(self, attr_name)
+            obj.setToolTip(str(getattr(self.FR, def_name)))
+            obj.stateChanged.connect(lambda _, flag=f: self._flag_indicator_clicked(flag))
 
         self.flag_indicators_row_1.addWidget(self.overflow_flag)
         self.flag_indicators_row_1.insertSpacing(1,30)
@@ -282,14 +269,31 @@ class FlagRegister(QWidget):
         body.addRow(self.flag_indicators_row_1)
         body.addRow(self.flag_indicators_row_2)
         body.addRow(self.flag_indicators_row_3)
-        # firts_row.setStretch(0, 1)  # Stretch the layout for register label
-        # firts_row.setStretch(1, 2)  # Stretch the layout for register content field
 
-        wrapper.addLayout(body)   
-        # wrapper.setStretch(1,1)     
-
+        wrapper.addLayout(body)
         self.setLayout(wrapper)
         self.update()
+
+    def _flag_indicator_clicked(self, flag_name : str):
+        flag_position = None
+
+        match flag_name:
+            case 'Overflow':            flag_position = -12
+            case 'Direction':           flag_position = -11
+            case 'Interrrupt':          flag_position = -10
+            case 'Trap':                flag_position = -9
+            case 'Sign':                flag_position = -8
+            case 'Zero':                flag_position = -7
+            case 'Auxiliary carry':     flag_position = -5
+            case 'Parity':              flag_position = -3
+            case 'Carry':               flag_position = -1
+        
+        value = self.register_content.text()[flag_position]
+        new_value = "0" if value == "1" else "1"
+        content = list(self.register_content.text())
+        content[flag_position] = new_value
+        self.FR.setFlagRaw(content)
+        self.register_content.setText("".join(content))
 
     def _setRegisterValue(self, value : int | list | str):
         """This method sets value as bits in register"""
@@ -335,6 +339,19 @@ class FlagRegister(QWidget):
                 attr_value.setModifiable(value)
         self.register_content.setReadOnly(not value)
 
+    def _validate_register_content(self):
+        text = self.register_content.text()
+        if not set(text).issubset(('1','0')):
+            self.showErrorMessage("Improper value", "Only text containing 1's and 0's can be put in this field!")
+        adjusted_text =text.zfill(16)[-16:]
+        self._setRegisterValue(adjusted_text)
+
+    def showErrorMessage(self, title : str, message : str):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText(message)
+        msg.setWindowTitle(title)
+        msg.exec()
 
 class Terminal(QWidget):
     def __init__(self):
@@ -362,30 +379,47 @@ class Terminal(QWidget):
         text = self.terminal.toPlainText()
         self.terminal.setPlainText(text + chr(char))
 
-class CustomQCheckBox(QCheckBox):
-    """
-    This code is based on code provided by user Luis E. on StackOverflow forum
-    Date of access: 11.11.2024
-    Link to source: https://stackoverflow.com/questions/11472284/how-to-set-a-read-only-checkbox-in-pyside-pyqt
-    """
+class CustomIndicator(QLabel):
+    # Signal to notify FlagRegister on toggle (emits new state: True/False)
+    stateChanged = pyqtSignal(bool)
 
-    def __init__(self, *args):
-        QCheckBox.__init__(self, *args)        
-        self.is_modifiable = True
-        self.clicked.connect( self.modify_on_click )
+    def __init__(self, text, *args):
+        super().__init__(text)
+        self.labelText = text
+        self.turnedOnState = False
+        self.modifiable = True
+        self.setOff()
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-    def modify_on_click(self): 
-        if self.isChecked():
-            self.setChecked(self.is_modifiable)
+    def setOn(self):
+        self.setText(f"🟢 {self.labelText}")
+        self.turnedOnState = True
+
+    def setOff(self):
+        self.setText(f"🔴 {self.labelText}")
+        self.turnedOnState = False
+
+    def toggleState(self):
+        if self.turnedOnState:
+            self.setOff()
         else:
-            self.setChecked(not self.is_modifiable)            
+            self.setOn()
+        # Emit signal with new state
+        self.stateChanged.emit(self.turnedOnState)
 
-    def setModifiable(self, flag):
-        self.is_modifiable = flag            
+    def setChecked(self, state):
+        if bool(state):
+            self.setOn()
+        else:
+            self.setOff()
 
-    def isModifiable(self):
-        return self.is_modifiable
+    def setModifiable(self, option):
+        self.modifiable = bool(option)
 
+    def mousePressEvent(self, event):
+        if self.modifiable and event.button() == Qt.MouseButton.LeftButton:
+            self.toggleState()
+        super().mousePressEvent(event)
 
 class LineNumberArea(QWidget):
     def __init__(self, editor):
@@ -396,8 +430,7 @@ class LineNumberArea(QWidget):
         return self.myeditor.line_number_area_width(), 0
 
     def paintEvent(self, event):
-        self.myeditor.lineNumberAreaPaintEvent(event)
-
+        self.myeditor._lineNumberAreaPaintEvent(event)
 
 class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
@@ -445,7 +478,7 @@ class CodeEditor(QPlainTextEdit):
         cr = self.contentsRect()
         self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
 
-    def lineNumberAreaPaintEvent(self, event):
+    def _lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
 
         block = self.firstVisibleBlock()
@@ -522,57 +555,404 @@ class CodeEditor(QPlainTextEdit):
     def setEditable(self, editable):
         self.setReadOnly(not editable)
 
-
-class StackEditor(QPlainTextEdit):
-
-    def __init__(self, data : Data):
+class StackTable(QTableWidget):
+    """This class allows to display Stack as a table with option to easily change
+    content"""
+    def __init__(self, data: Data):
         super().__init__()
+        self.no_of_rows = 65536
         self.data = data
-        self.setFixedWidth(210)
-        self.bits = []
+        self.data_copy = None
+        self.font = QFont()
+        self.font.setBold(True)
+        self.font.setPointSize(13)
+        self.font.setItalic(True)
+
+        # Initialize table properties
+        self.setRowCount(self.no_of_rows)
+        self.setColumnCount(3)
+        self.setHorizontalHeaderLabels(["Addr.", "Value", "In dec."])
+        self.setColumnWidth(2, 50)
+
+        # Hide row numbers
+        self.verticalHeader().setVisible(False)
+
+        # Set grid visibility
+        self.setShowGrid(True)
+        self.setGridStyle(Qt.PenStyle.SolidLine)
+        self.setStyleSheet("QTableWidget {gridline-color: #606060; \
+                           letter-spacing: 1px; font-size: 13px}")
+
+        # Enable editability
+        self.cellChanged.connect(self.onCellChanged)
+
+    def set_allow_change_content(self, allow = True):
+        self.allow_change = allow
+        if allow:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
+        else:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
+    def generate_table(self):
+        """Refresh table contents"""
+        fresh_data = self.data.data
+        self.data_copy = fresh_data[:]
+
+        self.cellChanged.disconnect()
+
+        for row, address in enumerate(range(self.no_of_rows-1, -1, -1)):
+            address_hex = hex(address)[2:].upper()
+            value_int = self.data_copy[address]
+            value_bin = bin(value_int)[2:].zfill(8)
+            
+            row_no = QTableWidgetItem(address_hex)
+            row_no.setFont(self.font)
+
+            self.setItem(row, 0, row_no)
+            self.setItem(row, 1, QTableWidgetItem(value_bin))
+            self.setItem(row, 2, QTableWidgetItem(str(value_int)))
         
-    def update(self):
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.cellChanged.connect(self.onCellChanged)
 
-        def format_line(line):
-            return f"{str(hex(line[0])[2:]).zfill(4)})\t{bin(line[1])[2:].zfill(8)} = {line[1]}"
+    def refresh_table(self):
+        fresh_data = self.data.data
+        self.cellChanged.disconnect()
 
-        fresh_stack = self.data.data[:]
-        fresh_stack.reverse()
-        if self.bits != fresh_stack:
-            numbered_line_pairs = zip(range(2**16-1,-1,-1), fresh_stack)
-            self.setPlainText("\n".join(map(format_line, numbered_line_pairs)))
+        if self.data_copy != fresh_data:
+            for row, address in enumerate(range(self.no_of_rows-1, -1, -1)):
+                if self.data_copy[address] != fresh_data[address]:
+                    value_int = fresh_data[address]
+                    value_bin = bin(value_int)[2:].zfill(8)
+                    self.setItem(row, 1, QTableWidgetItem(value_bin))
+                    self.setItem(row, 2, QTableWidgetItem(str(value_int)))
+                    self.data_copy[address] = fresh_data[address]
+                    self.highlightChange(row, 1, QColor(255, 255, 0, 83))
+                    self.highlightChange(row, 2, QColor(255, 255, 0, 83))
 
+        self.cellChanged.connect(self.onCellChanged)
 
-class VariableEditor(QPlainTextEdit):
+    def onCellChanged(self, row, column):
+        """Handle cell edits and enforce binary/decimal rules"""
 
-    def __init__(self, engine):
-        super().__init__()
-        self.engine = engine
-        self.setMinimumWidth(300)
-        self.bits = []
+        self.blockSignals(True)
+        item = self.item(row, column)
+        value = item.text().strip()
         
-    def update(self):
-
-        variables = self.engine.variables
-        data = self.engine.data
-
-        end_text = f"#\tsize\t{'name':10}\taddres\tcontent\n\n"
-        
-        if variables == None:
-            self.setPlainText(end_text)
+        if not self.allow_change or not value:
+            self.restorePreviousValue(row)
+            self.blockSignals(False)
             return
 
-        def format_line(pair):
-            line, variable = pair
-            address, size, format = variables[variable].values()
-            content = data.get_data(address, size)
-            divided_content = []
-            for i in range(0, len(content)-1, 8):
-                raw_content_part = [str(b) for b in content[i : i+8]]
-                divided_content.append("".join(raw_content_part))
-            formatted_content = " ".join(divided_content)
-            return f"{line}\t{size}\t{variable:10}\t{address}\t{formatted_content}"
+        match column:
+            case 0:
+                self.showErrorMessage("Operation forbidden!",
+                    "It's not possible to edit memory address!")
+                self.restorePreviousValue(row)
+                self.blockSignals(False)
+            case 1:
+                if not all(c in '01' for c in value):
+                    self.showErrorMessage("Invalid binary number",
+                        "Enter valid binary number - only 1's and 0's")
+                    self.restorePreviousValue(row)
+                else:
+                    decimal_value = int(value, 2)
+                    if decimal_value > 255:
+                        self.showErrorMessage("Incorrect value",
+                            "Value too big - value have to be between 0 and 255")
+                        self.restorePreviousValue(row)
+                        return
+                    self.setItem(row, 1, QTableWidgetItem(value.zfill(8)))
+                    self.setItem(row, 2, QTableWidgetItem(str(decimal_value)))
+                    self.highlightChange(row, 1)
+                    self.highlightChange(row, 2)
+            case 2:
+                if not value.isdigit():
+                    self.showErrorMessage("Incorrect decimal value",
+                        "Enter valid decimal value!")
+                    self.restorePreviousValue(row)
+                else:
+                    decimal_value = int(value)
+                    if decimal_value > 255 or decimal_value < 0:
+                        self.showErrorMessage("Incorrect value",
+                            "Value too big - value have to be between 0 and 255")
+                        self.restorePreviousValue(row)
+                        return
+                    binary_value = bin(decimal_value)[2:].zfill(8)
+                    self.setItem(row, 1, QTableWidgetItem(binary_value))
+                    self.highlightChange(row, 1)
+                    self.highlightChange(row, 2)
 
-        end_text += "\n".join(map(format_line, enumerate(variables)))
+        self.blockSignals(False)  # Re-enable signals
 
-        self.setPlainText(end_text)
+    def showErrorMessage(self, title : str, message : str):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText(message)
+        msg.setWindowTitle(title)
+        msg.exec()
+
+    def restorePreviousValue(self, row):
+        """Restore the original value before it was edited"""
+        value_int = self.data_copy[self.no_of_rows - row]
+        value_bin = bin(value_int)[2:].zfill(8)
+
+        address = hex(self.no_of_rows - 1 - row)[2:].upper()
+        row_no = QTableWidgetItem(address)
+        row_no.setFont(self.font)
+
+        self.setItem(row, 0, row_no)
+        self.setItem(row, 1, QTableWidgetItem(str(value_bin)))
+        self.setItem(row, 2, QTableWidgetItem(str(value_int)))
+
+    def copySelectionToClipboard(self):
+        selected_ranges = self.selectedRanges()
+        if not selected_ranges:
+            return
+
+        copied_text = []
+        
+        for selection in selected_ranges:
+            rows = []
+            for row in range(selection.topRow(), selection.bottomRow() + 1):
+                cols = []
+                for col in range(selection.leftColumn(), selection.rightColumn() + 1):
+                    item = self.item(row, col)
+                    cols.append(item.text() if item else "")  # Get text or empty string if None
+                rows.append("\t".join(cols))  # Separate columns by tab (Excel format)
+            copied_text.append("\n".join(rows))  # Separate rows by new line
+
+        clipboard = QApplication.clipboard()
+        clipboard.setText("\n".join(copied_text))  # Copy formatted text to clipboard
+
+    def keyPressEvent(self, event):
+        if event.matches(QKeySequence.StandardKey.Copy):
+            self.copySelectionToClipboard()
+        else:
+            super().keyPressEvent(event)
+
+    def highlightChange(self, row, column, color):
+        item = self.item(row, column)
+        if not item:
+            return
+
+        # Get the original background color (handles dark/light mode properly)
+        default_color = self.palette().color(QPalette.ColorRole.Base)
+        
+        # If item already has a custom background, use it
+        original_color = item.background().color()
+        if not original_color.isValid() or original_color == QColor(0, 0, 0):  
+            original_color = default_color  
+
+        item.setBackground(color)
+        QTimer.singleShot(500, lambda: self.resetCellColor(row, column, original_color))
+
+    def resetCellColor(self, row, column, color):
+        self.blockSignals(True)
+        item = self.item(row, column)
+        if item:
+            item.setBackground(color)
+        self.blockSignals(False)
+
+class VariableTable(QTableWidget):
+    """This class allows to display Stack as a table with option to easily change
+    content"""
+    def __init__(self, engine : Engine):
+        super().__init__()
+        self.data = engine.data
+        self.data_copy = []
+        self.engine = engine
+        self.allow_change = False
+        self.font = QFont()
+        self.font.setBold(True)
+        self.font.setPointSize(13)
+        self.font.setItalic(True)
+
+        # Initialize table properties
+        columns = ["Name","Addr.", "Size", "Format", "Content"]
+        self.setColumnCount(len(columns))
+        self.setHorizontalHeaderLabels(columns)
+
+        # Hide row numbers
+        self.verticalHeader().setVisible(False)
+
+        # Set grid visibility
+        self.setShowGrid(True)
+        self.setGridStyle(Qt.PenStyle.SolidLine)
+        self.setStyleSheet("QTableWidget {gridline-color: #606060;}")
+
+        # Enable editability
+        self.cellChanged.connect(self.onCellChanged)
+
+    def set_allow_change_content(self, allow = True):
+        self.allow_change = allow
+        if allow:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
+        else:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
+    def generate_table(self):
+        """Refresh table contents"""
+
+        self.cellChanged.disconnect()
+        self.variables = self.engine.variables
+        self.setRowCount(len(self.variables))
+
+        for row, var in enumerate(self.variables):
+            variable = self.variables[var]
+            address = variable['address']
+            size = variable['size']
+            format_str = return_name_from_size(variable['format'])
+            content = self.data.get_data(address, size)
+            binary_content = " ".join([bin(c)[2:].zfill(8) for c in content])
+
+            var_name = QTableWidgetItem(var)
+            var_name.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            item_address = QTableWidgetItem(str(address))
+            item_address.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            item_size = QTableWidgetItem(str(size))
+            item_size.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            item_format =  QTableWidgetItem(format_str)
+            item_format.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+
+            self.setItem(row, 0, var_name)
+            self.setItem(row, 1, item_address)
+            self.setItem(row, 2, item_size)
+            self.setItem(row, 3, item_format)
+            self.setItem(row, 4, QTableWidgetItem(binary_content))
+
+            self.data_copy.append(content)
+        
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.cellChanged.connect(self.onCellChanged)
+
+    def refresh_table(self):
+        
+        self.cellChanged.disconnect()
+
+        for row, var in enumerate(self.variables):
+            variable = self.variables[var]
+            address = variable['address']
+            size = variable['size']
+            content = self.data.get_data(address, size)
+
+            if self.data_copy[row] != content:
+                binary_content = " ".join([bin(c)[2:].zfill(8) for c in content])
+                self.setItem(row, 4, QTableWidgetItem(binary_content))
+                self.highlightChange(row, 4, QColor(255, 255, 0, 83))
+                self.data_copy[row] = content
+
+        self.cellChanged.connect(self.onCellChanged)
+
+    def onCellChanged(self, row, column):
+        """Handle cell edits and enforce binary/decimal rules"""
+
+        self.blockSignals(True)
+        item = self.item(row, column)
+        value = item.text().strip()
+        
+        if not self.allow_change or not value:
+            self.restorePreviousValue(row)
+            self.blockSignals(False)
+            return
+
+        match column:
+            case 0:
+                self.showErrorMessage("Operation forbidden!",
+                    "It's not possible to edit variable name!")
+                self.restorePreviousValue(row)
+                self.blockSignals(False)
+            case 1:
+                self.showErrorMessage("Operation forbidden!",
+                    "It's not possible to edit variable address!")
+                self.restorePreviousValue(row)
+                self.blockSignals(False)
+            case 2:
+                self.showErrorMessage("Operation forbidden!",
+                    "It's not possible to edit variable size!")
+                self.restorePreviousValue(row)
+                self.blockSignals(False)
+            case 3:
+                self.showErrorMessage("Operation forbidden!",
+                    "It's not possible to edit variable format!")
+                self.restorePreviousValue(row)
+                self.blockSignals(False)
+            case 4:
+                if not all(c in '01' for c in value):
+                    self.showErrorMessage("Invalid binary number",
+                        "Enter valid binary number - only 1's and 0's")
+                    self.restorePreviousValue(row)
+                else:
+                    length = (len(value)//8 + 1) * 8 if len(value)//8 < len(value)/8 else len(value)//8
+                    self.setItem(row, 4, QTableWidgetItem(value.zfill(length)))
+                    self.highlightChange(row, 4)
+
+        self.blockSignals(False)  # Re-enable signals
+
+    def showErrorMessage(self, title : str, message : str):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.setText(message)
+        msg.setWindowTitle(title)
+        msg.exec()
+
+    def restorePreviousValue(self, row):
+        """Restore the original value before it was edited"""
+        content = self.data_copy[row]
+        binary_content = " ".join([bin(c)[2:].zfill(8) for c in content])
+        self.setItem(row, 4, QTableWidgetItem(binary_content))
+
+    def copySelectionToClipboard(self):
+        selected_ranges = self.selectedRanges()
+        if not selected_ranges:
+            return
+
+        copied_text = []
+        
+        for selection in selected_ranges:
+            rows = []
+            for row in range(selection.topRow(), selection.bottomRow() + 1):
+                cols = []
+                for col in range(selection.leftColumn(), selection.rightColumn() + 1):
+                    item = self.item(row, col)
+                    cols.append(item.text() if item else "")  # Get text or empty string if None
+                rows.append("\t".join(cols))  # Separate columns by tab (Excel format)
+            copied_text.append("\n".join(rows))  # Separate rows by new line
+
+        clipboard = QApplication.clipboard()
+        clipboard.setText("\n".join(copied_text))  # Copy formatted text to clipboard
+
+    def keyPressEvent(self, event):
+        if event.matches(QKeySequence.StandardKey.Copy):
+            self.copySelectionToClipboard()
+        else:
+            super().keyPressEvent(event)
+
+    def highlightChange(self, row, column, color):
+        item = self.item(row, column)
+        if not item:
+            return
+
+        # Get the original background color (handles dark/light mode properly)
+        default_color = self.palette().color(QPalette.ColorRole.Base)
+        
+        # If item already has a custom background, use it
+        original_color = item.background().color()
+        if not original_color.isValid() or original_color == QColor(0, 0, 0):  
+            original_color = default_color  
+
+        item.setBackground(color)
+
+        # Restore original color after 500ms
+        QTimer.singleShot(500, lambda: self.resetCellColor(row, column, original_color))
+
+    def resetCellColor(self, row, column, color):
+        self.blockSignals(True)
+        item = self.item(row, column)
+        if item:
+            item.setBackground(color)
+        self.blockSignals(False)

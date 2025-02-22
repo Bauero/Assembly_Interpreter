@@ -38,6 +38,7 @@ class MainWindow(QWidget):
         self._createUserInterface()
         self.instructionCounter = 10
         self.program_running = False
+        self.showMaximized() 
 
     def _createUserInterface(self):
         """This funciton creates whole UI interface"""
@@ -102,67 +103,59 @@ class MainWindow(QWidget):
         programLayout = QVBoxLayout()
         self.programScreen.setLayout(programLayout)
 
-        # Central container with registers and code
+        # Central container with registers, code, stack & variables
         self.centerSection = QWidget()
         centralLayout = QHBoxLayout()
         self.centerSection.setLayout(centralLayout)
 
-        # Left column of the page
-        self.leftSection = QWidget()
-        # self.leftSection.setFixedWidth(400)
-        leftSectionLayout = QFormLayout()
-        leftSectionLayout.setAlignment(alg_top)
-        # leftSectionLayout 
-
-        # Right column of the page
-        self.rightSection = QWidget()
-        rightSectionLayout = QFormLayout()
-
-        # Stack (Data) section
-        DT = self.code_handler.engine.data
-        self.stackSection = StackEditor(DT)
-        self.stackSection.update()
-        self.stackColumn = QVBoxLayout()
-        stack_label = QLabel("Stack (Raw Segment Data)")
         font = QFont() ; font.setBold(True) ; font.setPointSize(15)
-        stack_label.setFont(font)
-        self.stackColumn.addWidget(stack_label)
-        self.stackColumn.addWidget(self.stackSection)
         
-        # Variable section
-        engine = self.code_handler.engine
-        self.variableSection = VariableEditor(engine)
-        self.variableSection.update()
-        self.variableColumn = QVBoxLayout()
-        variables_label = QLabel("Variables")
-        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
-        variables_label.setFont(font)
-        self.variableColumn.addWidget(variables_label)
-        self.variableColumn.addWidget(self.variableSection)
+        #
+        #   Registers Section
+        #
 
-        # Add widgets to the left section
+        self.registersSection = QWidget()
+        registersSectionLayout = QFormLayout()
+        registersSectionLayout.setAlignment(alg_top)
+
+        registers_label = QLabel("Registers")
+        registers_label.setFont(font)
+        registersSectionLayout.addRow(registers_label)
+        registersSectionLayout.setSpacing(10)
+        
         HR = self.code_handler.engine.HR
         FR = self.code_handler.engine.FR
-        self.left_section_elements = [
-            MultipurposeRegister(HR, "AX", "#3099FF", 'Arithmetic & general purpose'),
-            MultipurposeRegister(HR, "BX", "#3099FF", 'Used for memory & general purpose'),
-            MultipurposeRegister(HR, "CX", "#3099FF", 'Counter & general purpose register'),
-            MultipurposeRegister(HR, "DX", "#3099FF", 'Usef for memory, and buffor for some instrucitons like div'),
+        self.register_section_elements = [
+            MultipurposeRegister(HR, "AX", neon_blue, 'Arithmetic & general purpose'),
+            MultipurposeRegister(HR, "BX", neon_blue, 'Used for memory & general purpose'),
+            MultipurposeRegister(HR, "CX", neon_blue, 'Counter & general purpose register'),
+            MultipurposeRegister(HR, "DX", neon_blue, 'Usef for memory, and buffor for some instrucitons like div'),
             FunctionalRegisters(HR, "SI", 'orange', "Source Index Register"),
             FunctionalRegisters(HR, "DI", 'orange', "Destination Index Register"),
             FunctionalRegisters(HR, "SP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'),
             FunctionalRegisters(HR, "BP", 'orange', 'Points to the base of stack'),
-            FunctionalRegisters(HR, "IP", "#CC3F0C", "Instruction Pointer Register"),
+            FunctionalRegisters(HR, "IP", deep_red, "Instruction Pointer Register"),
             FlagRegister(FR)
         ]
         
         self._set_interactive_mode()
 
-        for element in self.left_section_elements:
-            leftSectionLayout.addWidget(element)
+        for element in self.register_section_elements:
+            registersSectionLayout.addWidget(element)
 
-        self.leftSection.setLayout(leftSectionLayout)
-        centralLayout.addWidget(self.leftSection)
+        self.registersSection.setLayout(registersSectionLayout)
+
+        #
+        #   Code and navigation buttons
+        #
+
+        # Right column of the page
+        self.codeSection = QWidget()
+        codeSectionLayout = QFormLayout()
+        code_label = QLabel("Code")
+        code_label.setFont(font)
+        self.code_field = CodeEditor()
+        self.code_field.setMinimumWidth(400)
 
         # Create all buttons for right section 
         self.nextLineButton         = QPushButton('Wykonaj instrukcję')
@@ -212,25 +205,61 @@ class MainWindow(QWidget):
         row_3.addWidget(self.executionFrequencyList)
 
         # Add widgets to the right section
-        self.code_field = CodeEditor()
-        self.code_field.setMinimumWidth(400)
-        rightSectionLayout.addRow(self.code_field)
-        rightSectionLayout.addRow(row_1)
-        rightSectionLayout.addRow(row_2)
-        rightSectionLayout.addRow(row_3)
-        self.rightSection.setLayout(rightSectionLayout)
-        centralLayout.addWidget(self.rightSection)
-        centralLayout.addLayout(self.stackColumn)
-        centralLayout.addLayout(self.variableColumn)
+        codeSectionLayout.addRow(code_label)
+        codeSectionLayout.setSpacing(10)
+        codeSectionLayout.addRow(self.code_field)
+        codeSectionLayout.addRow(row_1)
+        codeSectionLayout.addRow(row_2)
+        codeSectionLayout.addRow(row_3)
+        self.codeSection.setLayout(codeSectionLayout)
 
-        # Add the central section to the main layout
-        programLayout.addWidget(self.centerSection)
+        #
+        #   Stack Section
+        #
 
-        # Add the terminal at the bottom of the main layout
+        self.stackColumn = QVBoxLayout()
+        stack_label = QLabel("Stack")
+        stack_label.setFont(font)
+        DT = self.code_handler.engine.data
+        self.stackSection = StackTable(DT)
+        self.stackSection.setFixedWidth(205)
+        self.stackSection.set_allow_change_content(False)
+        self.stackSection.generate_table()
+        self.stackColumn.addWidget(stack_label)
+        self.stackColumn.addSpacing(10)
+        self.stackColumn.addWidget(self.stackSection)
+        
+        #
+        #   Variable section
+        #
+
+        self.variableColumn = QVBoxLayout()
+        variables_label = QLabel("Variables")
+        variables_label.setFont(font)
+        engine = self.code_handler.engine
+        self.variableSection = VariableTable(engine)
+        # self.variableSection.update()
+        # self.variableSection.generate_table()
+        self.variableColumn.addWidget(variables_label)
+        self.variableColumn.addSpacing(10)
+        self.variableColumn.addWidget(self.variableSection)
+
+        #
+        #   Terminal
+        #
+
         self.terminal = Terminal()
-        programLayout.addWidget(self.terminal)  # Add terminal directly to programLayout
 
-        # Add the program screen to the page stack
+        #
+        #   Organizing layout
+
+        # Add widgets with equal stretch factors
+        centralLayout.addWidget(self.registersSection, 1)  # Smaller width
+        centralLayout.addWidget(self.codeSection, 3)       # Wider code section
+        centralLayout.addLayout(self.stackColumn, 2)
+        centralLayout.addLayout(self.variableColumn, 2)
+        programLayout.addWidget(self.centerSection)
+        programLayout.addWidget(self.terminal)
         self.pagesStack.addWidget(self.programScreen)
         
     ############################################################################
@@ -238,13 +267,11 @@ class MainWindow(QWidget):
     ############################################################################
 
     def _set_interactive_mode(self, interactive_active : bool = False):
-        for element in self.left_section_elements:
+        for element in self.register_section_elements:
             setattr(self, element.get_name(), element)
             element.set_interactive(interactive_active)
-        self.stackSection.setHidden(False)
 
     def on_frequency_change(self, index):
-        # Perform the action you want when the selection changes
         selected_value = self.executionFrequencyList.itemText(index)
         self._executeCommand(selected_value)
 
@@ -359,7 +386,7 @@ class MainWindow(QWidget):
             break
 
         self.pagesStack.setCurrentIndex(1)
-        self.variableSection.update()
+        self.variableSection.generate_table()
         
     @pyqtSlot()
     def _open_interactive_mode(self):
@@ -391,22 +418,22 @@ class MainWindow(QWidget):
                     self.nextLineButton.setEnabled(True)
                     if self.instructionCounter > 0:
                         self.previousLineButton.setEnabled(True)
-                    self.startExecutionButton.setText( "Zatrzymaj program")
-                    self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
+                    self.startExecutionButton.setText( "Wstrzymaj program")
+                    self.startExecutionButton.setStyleSheet(f"color: {darker_yellow};")
                 self.program_running = not self.program_running
                 #   TODO connect automatic code executioin
             case 'next_instruction':
                 response = self.code_handler.executeCommand('next_instruction')
                 self._refresh()
                 self._act_on_response(response)
-                self.stackSection.update()
-                self.variableSection.update()
+                self.stackSection.refresh_table()
+                self.variableSection.refresh_table()
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
                 self._refresh()
                 self._act_on_response(response)
-                self.stackSection.update()
-                self.variableSection.update()
+                self.stackSection.refresh_table()
+                self.variableSection.refresh_table()
 
     def _act_on_response(self, response : dict):
         """
@@ -432,8 +459,8 @@ class MainWindow(QWidget):
             case 'finish':
                 self.code_field.setHighlight([])
                 self.nextLineButton.setEnabled(True)
-                self.startExecutionButton.setText( "Zatrzymaj program")
-                self.startExecutionButton.setStyleSheet(f"color: {bloody_red_color};")
+                self.startExecutionButton.setText( "Wstrzymaj program")
+                self.startExecutionButton.setStyleSheet(f"color: {darker_yellow};")
                 self.program_running = False
 
             #################    SYSTEM INTERRUP HANDLING    ###################
@@ -442,11 +469,11 @@ class MainWindow(QWidget):
             self.terminal.write_char(response["write_char_to_terminal"])
 
     def _refresh(self):
-        for element in self.left_section_elements:
+        for element in self.register_section_elements:
             element.update()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":#
     import sys
     from PyQt6.QtWidgets import QApplication
     from engine import Engine

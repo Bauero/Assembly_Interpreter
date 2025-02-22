@@ -47,7 +47,7 @@ def return_if_base_2_value(element : str) -> None | str:
     if re.search(r"\b[01]+[bB]\b", element):
         element = '0b' + element[:-1]
         return element
-    
+
 def return_size_from_name(name : str):
 
     match name.lower():
@@ -60,6 +60,15 @@ def return_size_from_name(name : str):
         case "qword":   return 64
         case 'dq':      return 64
         case _:         return -1
+
+def return_name_from_size(size : int) -> str:
+
+    match size:
+        case 8:     return "byte"
+        case 16:    return "word"
+        case 32:    return "dword"
+        case 64:    return "qword"
+        case _:     return ""
 
 def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     """This function converts number to list of bits. It accepts either str, int or list
@@ -76,11 +85,11 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
 
     def _convert_str(value):
         if new_value := return_if_base_16_value(value):
-            conv_value = list(bin(int(new_value, base=16))[2:])
+            conv_value = bin(int(new_value, base=16))[2:]
         elif return_if_base_10_value(value):
-            conv_value = list(bin(int(value))[2:])
+            conv_value = bin(int(value))[2:]
         elif  new_value := return_if_base_2_value(value):
-            conv_value = list(new_value)
+            conv_value = new_value[2:]
         else:
             raise WrongNumberBase(f"Number '{value}' seems to not belong to binary," +\
                                 " decimal or hexadecimal numbers")
@@ -96,7 +105,7 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     elif type(value) == int:
         if value < 0:   negative_value = True
         value = abs(value)
-        converted_value = list(bin(value)[2:])
+        converted_value = bin(value)[2:]
     elif type(value) == list:
         value = [str(e) for e in value] # ensure all elemetns in value are str
         for bit in value:
@@ -105,15 +114,11 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
         converted_value = value
     
     #   Fill list with '0' if it's length is smaller than size
-    while len(converted_value) < size:  converted_value.insert(0, '0')
-
-    #   Get {size} bits from the end - cut any bits which woulnd't fit in specified size
-    adjusted_number = converted_value[-size:]
+    adjusted_number = converted_value.zfill(size)[-size:]
 
     if negative_value:
         adjusted_number_str = "".join(adjusted_number)
         return list(inverse_Twos_Compliment_Number(adjusted_number_str))
-    
     else:
         return adjusted_number
     
@@ -180,31 +185,26 @@ def inverse_Twos_Compliment_Number(value : str):
     return output
 
 def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variables : dict,
-                              value : list, destination : int, name : str = ""):
+                              value : list, destination_type : str, destination_value : str = ""):
 
     oryginal_val : list | str = []
-    modified = None
 
-    match destination:
+    match destination_type:
         case "register":
-            oryginal_val = HardwareRegister.readFromRegister(name)
-            modified = "register"
-            HardwareRegister.writeIntoRegister(name, value)
+            oryginal_val = HardwareRegister.readFromRegister(destination_value)
+            HardwareRegister.writeIntoRegister(destination_value, value)
         case "memory":
-            name = name.split(" ")[-1][1:-1]
-            start = Variables[name]['address']
-            size = Variables[name]['size']
-            oryginal_val = Data.get_data(start, size)
-            modified = "variable"
-            Data.modify_data(start, value)
+            size = len(value) // 8
+            oryginal_val = Data.get_data(destination_value, size)
+            Data.modify_data(destination_value, value)
 
     response = {
-        "location" :        name,
-        "oryginal_value" :  list(map(int, oryginal_val)),
-        "new_value" :       list(map(int, value))
+        "location" :        destination_value,
+        "oryginal_value" :  list(oryginal_val),
+        "new_value" :       list(value)
     }
 
-    return modified, response
+    return destination_type, response
 
 def eval_no_of_1(value : list | str):
     return not bool(list(value[-8:]).count("1") % 2)

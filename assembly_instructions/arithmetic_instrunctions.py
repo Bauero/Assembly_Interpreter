@@ -481,7 +481,7 @@ def ADD(HardwareRegister : HardwareRegisters,
 
     # Save value in the destination, and returned what have changed for history bilding
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -545,7 +545,7 @@ def ADC(HardwareRegister : HardwareRegisters,
 
     # Save value in the destination
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -609,7 +609,7 @@ def SUB(HardwareRegister : HardwareRegisters,
 
     # Save value in the destination, and returned what have changed for history bilding
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
     
     all_changes = {
         m[0] : [
@@ -680,7 +680,7 @@ def SBB(HardwareRegister : HardwareRegisters,
 
     # Save value in the destination, and returned what have changed for history bilding
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -877,7 +877,7 @@ def DEC(HardwareRegister : HardwareRegisters,
     new_flags = list(FlagRegister.readFlags())
     
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [ m[1] ],
@@ -938,7 +938,7 @@ def INC(HardwareRegister : HardwareRegisters,
     new_flags = list(FlagRegister.readFlags())
     
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [ m[1] ],
@@ -1284,7 +1284,7 @@ def NEG(HardwareRegister : HardwareRegisters,
             auxiliary_carry = carry
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
     
     previous_flags = list(FlagRegister.readFlags())
 

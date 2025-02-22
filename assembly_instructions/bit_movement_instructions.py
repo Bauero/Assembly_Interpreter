@@ -51,7 +51,7 @@ def SHL(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -106,7 +106,7 @@ def SHR(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -161,7 +161,7 @@ def SAL(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -215,7 +215,7 @@ def SAR(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -272,7 +272,7 @@ def ROL(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -329,7 +329,7 @@ def ROR(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -399,7 +399,7 @@ def RCL(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
@@ -469,7 +469,7 @@ def RCR(HardwareRegister : HardwareRegisters,
     new_flags = FlagRegister.readFlags()
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     all_changes = {
         m[0] : [
