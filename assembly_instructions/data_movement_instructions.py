@@ -21,7 +21,7 @@ def MOV(HardwareRegister : HardwareRegisters,
     output = list(convert_number_to_bit_list(v, final_size))
 
     m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
     
     all_changes = {
         m[0] : [ m[1] ]
@@ -47,10 +47,10 @@ def XCHG(HardwareRegister : HardwareRegisters,
     save_in_des, save_in_sour = list(values_in_binary[1]), list(values_in_binary[0])
 
     m1 = save_value_in_destination(HardwareRegister, Data, Variables, save_in_des,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
 
     m2 = save_value_in_destination(HardwareRegister, Data, Variables, save_in_sour,
-                             kwargs['param_types'][0], kwargs['source_params'][0])
+                             kwargs['param_types'][0], kwargs['destination'])
     
     if m1[0] == m2[0]:
         all_changes = {

@@ -42,7 +42,7 @@ class Engine():
         self.HR = HardwareRegisters()
         self.FR = FlagRegister()
         self.data = Data()
-        self.variables = None
+        self.variables = []
 
     def informAboutLabels(self, labels : list):
         self.labels = labels
@@ -77,7 +77,7 @@ class Engine():
         args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, args_types)
 
         extracted = self._extract_argument_value_and_size(args_checked, args_types, explicite_sizes)
-        args_values_raw, args_values_int, final_sizes = extracted
+        args_values_raw, args_values_int, final_sizes, destination = extracted
         
         for i, arg in enumerate(args_types):
             if arg == "complex value":
@@ -90,6 +90,8 @@ class Engine():
                                                                           explicite_sizes,
                                                                           args_values_int)
 
+        # destination = self._extract_destination()
+
         self._check_if_operation_allowed(keyword, args_types)
 
         try:
@@ -99,6 +101,7 @@ class Engine():
                 self.data,
                 self.variables,
                 self.labels,
+                destination = destination,
                 source_params = elements_in_line[1:],
                 param_types = args_types,
                 final_size = final_standardized_sizes,
@@ -128,17 +131,12 @@ class Engine():
                     for modification in changes:
                         reg = modification['location']
                         self.HR.writeIntoRegister(reg, modification[source])
-                case "variable":
-                    for modification in changes:
-                        var = modification['location']
-                        add = self.variables[var]['address']
-                        self.data.modify_data(add, modification[source])
                 case "flags":
                     self.FR.setFlagRaw(changes[source])
-                case "data":
+                case "memory":
                     for modification in changes:
                         start = modification["location"]
-                        self.data.write(start, modification[source])
+                        self.data.modify_data(start, modification[source])
 
     def _separate_keyword(self, line : str) -> tuple[str, int]:
         """Extracts keyword from line, and returns it in capital leters. Keyword is defined as:
@@ -372,6 +370,7 @@ class Engine():
         source_values = []
         converted_values = []
         final_sizes = []
+        destination = None
 
         for arg, atype, size in zip(args, args_types, sizes):
             match atype:
@@ -412,7 +411,7 @@ class Engine():
                         if len(final_sizes) == 1:
                             size = final_sizes[0]
                         else:
-                            raise NoExplicitSizeError(f"No explicite size definition in '{arg}'")
+                            size = 8
                     final_sizes.append(size)
                     data_in_mem = self.data.get_data(simple_eval(arg), size // 8)
                     data_in_bits = (map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, data_in_mem))))
@@ -420,8 +419,12 @@ class Engine():
                     source_values.append(data_in_bits_str + "b")
                     conv_data = int(data_in_bits_str, 2)
                     converted_values.append(conv_data)
+            if len(source_values) == 1:
+                destination = arg
+                if atype == "memory call":
+                    destination = simple_eval(arg)
 
-        return source_values, converted_values, final_sizes
+        return source_values, converted_values, final_sizes, destination
 
     def _standardise_sizes_check_if_legal(self, arg_types : list, sizes : list, expli_sizes : list,
                                           args_values_int : list) -> list:
@@ -452,13 +455,14 @@ class Engine():
 
         match arg_types:
             case ["memory", "value"]:
-                if expli_sizes[0] == None:
-                    raise ExecutionOfOperationInLineError(NoExplicitSizeError())
-                S1 = sizes[0] if expli_sizes[0] == None else expli_sizes[0]
-                S2 = sizes[1]
-                if S1 >= S2:    return S1
-                else:
+                size = None
+                if all(expli_sizes) and expli_sizes[0] != expli_sizes[1]:
                     raise ExecutionOfOperationInLineError(SizesDoesntMatchError())
+                if expli_sizes[0]:      size = expli_sizes[0]
+                elif expli_sizes[1]:    size = expli_sizes[1]
+                else:
+                    raise ExecutionOfOperationInLineError(NoExplicitSizeError())
+                return size
                 
             case ['memory', 'register']:
                 mem_exp_size = expli_sizes[0]
@@ -470,7 +474,7 @@ class Engine():
                         ExpliciteSizeOperandIgnoredWarning(),
                         self.curr_line)
                 
-                final_reg_size = max(reg_exp_size, reg_det_size)
+                final_reg_size = max(reg_exp_size, reg_det_size) if reg_exp_size else reg_det_size
 
                 if mem_exp_size and mem_exp_size < final_reg_size:
                     raise ExecutionOfOperationInLineError(SizesDoesntMatchError)
