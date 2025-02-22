@@ -5,3 +5,8 @@ crutial from functional perspective, but gives easy color modification option fo
 
 light_green_color =     "#78DB01"
 bloody_red_color =      "#DB0101"
+neon_blue =             "#3099FF"
+deep_red =              "#CC3F0C"
+darker_yellow =         "#F1CA17"
+
+def c_green(text):  return '\033[92m' + text + '\033[0m'
