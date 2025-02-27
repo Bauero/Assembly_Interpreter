@@ -2,26 +2,25 @@ LEGEND
 
 ✅ DONE
 🅾️ SKIPPED
-❌ NOT DONE (TODO)
 
 KEYWORDS
 
-❌ AAA:     ASCII Adjust After Addition
-❌ AAD:     ASCII Adjust AX Before Division
-❌ AAS:     ASCII Adjust AL After Subtraction
+🅾️ AAA:     ASCII Adjust After Addition
+🅾️ AAD:     ASCII Adjust AX Before Division
+🅾️ AAS:     ASCII Adjust AL After Subtraction
 ✅ ADC:     Add with Carry
 ✅ ADD:     Add
 ✅ AND:     Logical AND
 ✅ CALL:    Call Procedure
-❌ CBW:     Convert Byte to Word (sign-extend AL into AX)
+🅾️ CBW:     Convert Byte to Word (sign-extend AL into AX)
 🅾️ CWDE:    Convert Word to Doubleword (sign-extend AX into EAX)
 ✅ CMC:     Compliment Carry Flag
 ✅ CLC:     Clear Carry Flag
 ✅ CLD:     Clear Direction Flag
 ✅ CLI:     Clear Interrupt Flag
-❌ INT:     Interrupt
-❌ INTO:    Interrupt on Overflow
-❌ IRET:    Interrupt Return
+✅ DIV:     Unsigned divide
+🅾️ INTO:    Interrupt on Overflow
+🅾️ IRET:    Interrupt Return
 🅾️ IRETD:   Interrupt Return (with 32-bit operand size)
 
 ✅ JA:      Jump if Above (CF=0 and ZF=0)
@@ -55,70 +54,73 @@ KEYWORDS
 ✅ JS:      Jump if Sign (SF=1)
 ✅ JZ:      Jump if Zero (ZF=1)
 
-❌ LAHF:    Load AH with Flags
+🅾️ LAHF:    Load AH with Flags
 🅾️ LDS:     Load pointer using DS
 🅾️ LES:     Load pointer using ES
 🅾️ LFS:     Load pointer using FS
 🅾️ LGS:     Load pointer using GS
 🅾️ LSS:     Load pointer using SS
 ✅ LOOP     Loop to label if CX > 0
-✅ LOOPE     Loop to label if CX > 0 and ZF=1
-✅ LOOPZ     Loop to label if CX > 0 and ZF=1
-✅ LOOPNE     Loop to label if CX > 0 and ZF=0
-✅ LOOPNZ     Loop to label if CX > 0 and ZF=0
-❌ LODS:    Load string
-❌ LODSB:   Load string byte
-❌ LODSW:   Load string word
-❌ LODSD:   Load string doubleword
+✅ LOOPE    Loop to label if CX > 0 and ZF=1
+✅ LOOPZ    Loop to label if CX > 0 and ZF=1
+✅ LOOPNE   Loop to label if CX > 0 and ZF=0
+✅ LOOPNZ   Loop to label if CX > 0 and ZF=0
+🅾️ LODS:    Load string
+🅾️ LODSB:   Load string byte
+🅾️ LODSW:   Load string word
+🅾️ LODSD:   Load string doubleword
 
 ✅ MOV:     Move data between operands
-❌ MOVS:    Move string
-❌ MOVSB:   Move string byte
-❌ MOVSW:   Move string word
+🅾️ MOVS:    Move string
+🅾️ MOVSB:   Move string byte
+🅾️ MOVSW:   Move string word
 🅾️ MOVSD:   Move string doubleword
+✅ MUL:     Unsigned multiply
 
-❌ MUL:     Unsigned multiply
-❌ NEG:     Two's complement negation
+✅ NEG:     Two's complement negation
+✅ IDIV:    Signed divide
 ✅ NOP:     No operation
 ✅ NOT:     One's complement negation
+✅ IMUL:    Signed multiply
+✅ INT:     Interrupt
 ✅ OR:      Logical OR
-❌ OUT:     Output to port
+🅾️ OUT:     Output to port
 ✅ POP:     Pop from stack
 ✅ PUSH:    Push onto stack
-❌ RCL:     Rotate through carry left
-❌ RCR:     Rotate through carry right
-❌ ROL:     Rotate left
-❌ ROR:     Rotate right
+✅ RCL:     Rotate through carry left
+✅ RCR:     Rotate through carry right
+✅ ROL:     Rotate left
+✅ ROR:     Rotate right
 
-❌ REP:     Repeat string operation
-❌ REPE:    Repeat string operation while equal
-❌ REPZ:    Repeat string operation while zero
-❌ REPNE:   Repeat string operation while not equal
-❌ REPNZ:   Repeat string operation while not zero
+🅾️ REP:     Repeat string operation
+🅾️ REPE:    Repeat string operation while equal
+🅾️ REPZ:    Repeat string operation while zero
+🅾️ REPNE:   Repeat string operation while not equal
+🅾️ REPNZ:   Repeat string operation while not zero
 
-❌ RET:     Return from procedure
-❌ SAHF:    Store AH into flags
+✅ RET:     Return from procedure
+🅾️ SAHF:    Store AH into flags
 
-❌ SAL:     Shift arithmetic left
-❌ SAR:     Shift arithmetic right
-❌ SHL:     Shift logical left
-❌ SHR:     Shift logical right
+✅ SAL:     Shift arithmetic left
+✅ SAR:     Shift arithmetic right
+✅ SHL:     Shift logical left
+✅ SHR:     Shift logical right
 
 ✅ SBB:     Integer subtraction with borrow
 
-❌ SCAS:    Scan string
-❌ SCASB:   Scan string byte
-❌ SCASW:   Scan string word
-❌ SCASD:   Scan string doubleword
+🅾️ SCAS:    Scan string
+🅾️ SCASB:   Scan string byte
+🅾️ SCASW:   Scan string word
+🅾️ SCASD:   Scan string doubleword
 
 ✅ STC:     Set carry flag
 ✅ STD:     Set direction flag
 ✅ STI:     Set interrupt flag
 ✅ SUB:     Subtract
-❌ TEST:    Logical compare
+🅾️ TEST:    Logical compare
 🅾️ WAIT:    Wait for CPU
 🅾️ FWAIT:   Wait for FPU
 ✅ XCHG:    Exchange
-❌ XLAT:    Translate byte in lookup table using AL
-❌ XLATB:   Translate byte in lookup table using AL
+🅾️ XLAT:    Translate byte in lookup table using AL
+🅾️ XLATB:   Translate byte in lookup table using AL
 ✅ XOR:     Logical exclusive OR
