@@ -458,6 +458,7 @@ class Engine():
                 reg_det_size = sizes[1]
 
                 if reg_exp_size and reg_exp_size < reg_det_size:
+                    
                     raise ExecutionOfOperationInLineWarning(
                         ExpliciteSizeOperandIgnoredWarning(),
                         self.curr_line)

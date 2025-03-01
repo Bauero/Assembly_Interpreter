@@ -906,7 +906,7 @@ def INC(HardwareRegister : HardwareRegisters,
         values_in_binary.append(output)
 
     #   Add binary numer, represeting 1 in binary, the size of final_size
-    values_in_binary.append("0" * final_size-1 + "1")
+    values_in_binary.append(f"{1:016}")
 
     # Perform binary addition
     output = []

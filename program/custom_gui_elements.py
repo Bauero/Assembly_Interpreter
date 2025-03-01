@@ -5,20 +5,15 @@ file
 
 from .engine import Engine
 from .hardware_memory import DataSegment
-from .color_pallete import c_green
 from .helper_functions import return_name_from_size
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
 from PyQt6.QtGui import (
-    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence,QPalette
-    )
+    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette,
+    QKeyEvent)
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QLabel, QHBoxLayout, QLineEdit, QTextEdit,
     QMessageBox, QPlainTextEdit, QTableWidget, QHeaderView, QTableWidgetItem, 
-    QAbstractItemView,QApplication
-    )
-
-from PyQt6.QtGui import QKeyEvent
-
+    QAbstractItemView,QApplication)
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -135,6 +130,7 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
+
 class FunctionalRegisters(QWidget):
     def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
         super().__init__()
@@ -208,6 +204,7 @@ class FunctionalRegisters(QWidget):
 
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
+
 
 class FlagRegister(QWidget):
     """
@@ -362,6 +359,7 @@ class FlagRegister(QWidget):
         msg.setWindowTitle(title)
         msg.exec()
 
+
 class LimitedInputTextEdit(QTextEdit):
     inputFinished = pyqtSignal(str)  # Signal emitted when input is done
 
@@ -398,6 +396,7 @@ class LimitedInputTextEdit(QTextEdit):
             pass
 
     def reset_char_limit(self):     self.char_limit = 1000
+
 
 class LimitedInputTextEdit(QTextEdit):
     inputFinished = pyqtSignal(str)
@@ -485,14 +484,6 @@ class Terminal(QWidget):
 #         self.terminal.setPlainText(text + chr(char))
 
 
-
-
-
-
-
-
-
-
 class CustomIndicator(QLabel):
     # Signal to notify FlagRegister on toggle (emits new state: True/False)
     stateChanged = pyqtSignal(bool)
@@ -535,6 +526,7 @@ class CustomIndicator(QLabel):
             self.toggleState()
         super().mousePressEvent(event)
 
+
 class LineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
@@ -545,6 +537,7 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         self.myeditor._lineNumberAreaPaintEvent(event)
+
 
 class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
@@ -668,6 +661,7 @@ class CodeEditor(QPlainTextEdit):
 
     def setEditable(self, editable):
         self.setReadOnly(not editable)
+
 
 class StackTable(QTableWidget):
     """This class allows to display Stack as a table with option to easily change
@@ -870,6 +864,7 @@ class StackTable(QTableWidget):
         if item:
             item.setBackground(color)
         self.blockSignals(False)
+
 
 class VariableTable(QTableWidget):
     """This class allows to display Stack as a table with option to easily change

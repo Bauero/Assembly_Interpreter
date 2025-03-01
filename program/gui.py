@@ -5,7 +5,6 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QWidget,
-    QStackedLayout,
     QVBoxLayout,
     QFormLayout,
     QLabel,
@@ -15,8 +14,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QComboBox,
     QCheckBox,
-    QSizePolicy,
-    QLayout
+    QSizePolicy
 )
 from .custom_gui_elements import *
 from .errors import (FileDoesntExist,
@@ -26,6 +24,7 @@ from .errors import (FileDoesntExist,
                     ImproperDataDefiniton)
 from .helper_functions import loadFileFromPath
 from .color_pallete import *
+from .custom_message_boxes import *
 from screeninfo import get_monitors
 
 
@@ -43,6 +42,10 @@ class MainWindow(QWidget):
         self._set_interactive_mode()
         self.program_running = False
         self.welcomeScreen.show()
+        self.internal_timer = QTimer()
+        self.timer_interval = 1000
+        self.internal_timer.setInterval(self.timer_interval)
+        self.internal_timer.stop()
         self.instructionCounter = 0
 
     def _createUserInterface(self):
@@ -171,6 +174,8 @@ class MainWindow(QWidget):
         self.previousLineButton.    setEnabled(self.interactive_mode)
         self.saveStateButton.       setEnabled(self.interactive_mode)
         self.startAutoExecButton.   setEnabled(True)
+        self.startAutoExecButton.   setChecked(False)
+        self.startAutoExecButton.   stateChanged.connect(lambda: self._run_next_instruction_or_stop())
 
         self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
@@ -181,14 +186,13 @@ class MainWindow(QWidget):
         comboBoxLabel = QLabel('Opóźnienie')
         comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
-        for t in ['0.1s', '0.5s', '1s', '2s', '5s']:
+        for t in ['0.25s', '0.5s', '1s', '2s', '5s']:
             self.executionFrequencyList.addItem(t)
         self.executionFrequencyList.setCurrentIndex(2)
         self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
         
         box = QWidget()
         frequencyBox = QHBoxLayout()
-        # frequencyBox.
         frequencyBox.addWidget(comboBoxLabel)
         frequencyBox.addWidget(self.executionFrequencyList)
         box.setLayout(frequencyBox)
@@ -223,7 +227,7 @@ class MainWindow(QWidget):
         stack_label.setFont(font)
         DT = self.code_handler.engine.data
         self.stackSection = StackTable(DT)
-        self.stackSection.setFixedWidth(185)
+        self.stackSection.setFixedWidth(190)
         self.stackSection.set_allow_change_content(False)
         self.stackSection.generate_table()
         self.stackColumn.addWidget(stack_label)
@@ -247,21 +251,20 @@ class MainWindow(QWidget):
         #   Terminal
         #
 
-        self.terminal = QWidget()
-        self.terminal_layout = QFormLayout()
+        self.terminal_widget = QWidget()
+        self.terminal_layout = QVBoxLayout()
 
-        # Label setup
         self.terminal_label = QLabel('Terminal')
         font = QFont()
         font.setBold(True)
         font.setPointSize(15)
         self.terminal_label.setFont(font)
-        self.terminal_layout.addRow(self.terminal_label)
 
-        self.terminal_widget = Terminal()
-        self.terminal_layout.addRow(self.terminal_widget)
-        self.terminal.setLayout(self.terminal_layout)
-        self.terminal.setMaximumHeight(280)
+        self.terminal = Terminal()
+        self.terminal_layout.addWidget(self.terminal_label)
+        self.terminal_layout.addWidget(self.terminal)
+        self.terminal_widget.setLayout(self.terminal_layout)
+        self.terminal_widget.setMaximumHeight(300)
 
         #
         #   Add elements to central layout
@@ -272,13 +275,14 @@ class MainWindow(QWidget):
         centralLayout.addLayout(self.stackColumn, 2)
         centralLayout.addLayout(self.variableColumn, 2)
         programLayout.addWidget(self.centerSection)
-        programLayout.addWidget(self.terminal)
+        programLayout.addWidget(self.terminal_widget)
         programLayout.setSpacing(0)
 
     ############################################################################
     #   Functions which will be called as an action of buttons
     ############################################################################
 
+    @pyqtSlot()
     def _set_active_state(self, state = False):
         self.code_field.setDisabled(not state)
         self.stackSection.setDisabled(not state)
@@ -292,15 +296,27 @@ class MainWindow(QWidget):
         self.registers_label.setDisabled(False)
         self.terminal_label.setDisabled(False)
         self.registers_label.setDisabled(False)
+        self.terminal_label.setVisible(True)
+        self.terminal_label.setEnabled(True)
 
+    @pyqtSlot()
     def _set_interactive_mode(self, interactive_active : bool = False):
         for element in self.register_section_elements:
             setattr(self, element.get_name(), element)
             element.set_interactive(interactive_active)
 
-    def on_frequency_change(self, index):
-        selected_value = self.executionFrequencyList.itemText(index)
-        self._executeCommand(selected_value)
+    @pyqtSlot()
+    def on_frequency_change(self):
+        selected_value = self.executionFrequencyList.currentIndex()
+        interval = 0
+        match selected_value:
+            case 0:     interval = 250
+            case 1:     interval = 500
+            case 2:     interval = 1000
+            case 3:     interval = 2000
+            case 4:     interval = 5000
+        self.internal_timer.setInterval(interval)
+        self.timer_interval = interval
 
     @pyqtSlot()
     def _select_file_to_open_dialog(self):
@@ -313,12 +329,9 @@ class MainWindow(QWidget):
         while True:
             if not file_path:
                 file_path = QFileDialog.getOpenFileName(
-                    self,
-                    "Open File",
-                    "${HOME}",
+                    self, "Open File", "${HOME}",
                     "All Files (*);; Python Files (*.py);; PNG Files (*.png)",
                 )[0]
-
                 if not file_path: return
 
             try:
@@ -327,59 +340,26 @@ class MainWindow(QWidget):
                 self.code_field.setHighlight(lines)
                 self.code_field.setEditable(False)
             except FileDoesntExist:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setWindowTitle("File doesn't exist!")
-                msg.setText("No file selected or file doesn't exist! 😵\nWant to try again?")
-                msg.setStandardButtons(ok_button | cancel_button)
-                ans = msg.exec()
+                ans = file_doesnt_exist_popup()
                 if ans == cancel_button.value:  return
                 file_path = ''
                 continue
             except FileSizeMightBeTooBig:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setWindowTitle("File size might be too big")
-                msg.setText("It seems you are trying to open file above 1MB in size! \nWhat do you want to do?")
-                msg.addButton("Disable warning and select new file", QMessageBox.ButtonRole.YesRole)  # returns 2
-                msg.addButton("Continue with this file", QMessageBox.ButtonRole.NoRole) # returns 3
-                msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
-                ans = msg.exec()
+                ans = file_size_too_big()
                 match ans:
-                    case 2:
-                        ignore_size_limit = True
-                        file_path = ''
-                    case 3:
-                        ignore_size_limit = True
-                    case 4:
-                        return
+                    case 2: ignore_size_limit = True ; file_path = ''
+                    case 3: ignore_size_limit = True
+                    case 4: return
                 continue
             except FileTypeNotAllowed:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setWindowTitle("File doesn't exist!")
-                msg.setText("File type is not within allowed file typed (.s, .asm) \nWant do you want to do?")
-                msg.addButton("Disable warning and select new file", QMessageBox.ButtonRole.YesRole)  # returns 2
-                msg.addButton("Continue with this file", QMessageBox.ButtonRole.NoRole) # returns 3
-                msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
-                ans = msg.exec()
+                ans = improper_file_type()
                 match ans:
-                    case 2:
-                        ignore_file_type = True
-                        file_path = ''
-                    case 3:
-                        ignore_file_type = True
-                    case 4:
-                        return
+                    case 2: ignore_size_limit = True ; file_path = ''
+                    case 3: ignore_size_limit = True
+                    case 4: return
                 continue
             except ImproperDataDefiniton as e:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setWindowTitle("Preprocessing error")
-                msg.setText(f"Wrong data definition:\nLine {e.line()}\nMessage: \"{e.message()}\"")
-                msg.addButton("Load file in interactive mode", QMessageBox.ButtonRole.YesRole)  # returns 2
-                msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
-                ans = msg.exec()
+                ans = preparation_error(e)
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
                     assert type(raw_file) == str
@@ -388,13 +368,7 @@ class MainWindow(QWidget):
                     self._open_interactive_mode()
                 return
             except ImproperJumpMarker as e:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setWindowTitle("Preprocessing error")
-                msg.setText(f"Improper line marker definition:\nLine {e.line()}\nMessage: \"{e.message()}\"")
-                msg.addButton("Load file in interactive mode", QMessageBox.ButtonRole.YesRole)  # returns 2
-                msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
-                ans = msg.exec()
+                ans = preprocessing_error()
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
                     assert type(raw_file) == str
@@ -403,40 +377,33 @@ class MainWindow(QWidget):
                     self._open_interactive_mode()
                 return
             except Exception as e:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Icon.Critical)
-                msg.setWindowTitle("File doesn't exist!")
-                msg.setText(f"{e}")
-                ans = msg.exec()
+                unrecognized_error_popup(e)
                 return
-            
             break
 
         self.welcomeScreen.close()
         self.programScreen.show()
         self.variableSection.generate_table()
-        
         self._set_active_state(False)
-        self.nextLineButton.setFocus()
         self.programScreen.showMaximized()
+        self.nextLineButton.setFocus()
 
     @pyqtSlot()
     def _open_interactive_mode(self):
-        # msg = QMessageBox()
-        # msg.setIcon(QMessageBox.Icon.Critical)
-        # msg.setWindowTitle("Opcja niedostępna")
-        # msg.setText("Ta funkcjonalność jeszcze nie została dodana")
-        # msg.setStandardButtons(ok_button)
-        # ans = msg.exec()
-
         self._set_interactive_mode(True)
         self.pagesStack.setCurrentIndex(1)
 
-    # @pyqtSlot()s
+    @pyqtSlot()
     def _toggle_automatic_execution(self):
         self.automatic_execution = self.startAutoExecButton.isChecked()
+    
+    @pyqtSlot()
+    def _run_next_instruction_or_stop(self):
+        if self.program_running and self.startAutoExecButton.isChecked():
+            self._executeCommand("next_instruction")
+            self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
 
-    # @pyqtSlot()
+    @pyqtSlot()
     def _executeCommand(self, command):
     
         match command:
@@ -455,7 +422,8 @@ class MainWindow(QWidget):
                     self.startExecutionButton.setText( "Wstrzymaj program")
                     self.startExecutionButton.setStyleSheet(f"color: {darker_yellow};")
                 self.program_running = not self.program_running
-                #   TODO connect automatic code executioin
+                if self.startAutoExecButton.isChecked():
+                    self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
             case 'next_instruction':
                 response = self.code_handler.executeCommand('next_instruction')
                 self.instructionCounter += 1
@@ -473,6 +441,7 @@ class MainWindow(QWidget):
                 self.variableSection.refresh_table()
                 if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
 
+    @pyqtSlot()
     def _act_on_response(self, response : dict):
         """
         This funciton is suppose to handle answers from CodeHandler - when we request to
@@ -495,9 +464,11 @@ class MainWindow(QWidget):
 
             #   All instructions were executed - notify user about finishing program
             case 'finish':
+                self.internal_timer.stop()
                 self.code_field.setHighlight([])
                 self.nextLineButton.setEnabled(True)
-                self.startExecutionButton.setText( "Wstrzymaj program")
+                self.nextLineButton.setDisabled(True)
+                self.startExecutionButton.setText("Wstrzymaj program")
                 self.startExecutionButton.setStyleSheet(f"color: {darker_yellow};")
                 self.program_running = False
 
@@ -508,6 +479,7 @@ class MainWindow(QWidget):
         if "action_for_terminal" in response:
             self.terminal.perform_action(response["action_for_terminal"])
 
+    @pyqtSlot()
     def _refresh(self):
         for element in self.register_section_elements:
             element.update()

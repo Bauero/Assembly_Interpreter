@@ -290,9 +290,6 @@ def _storeVariablesInData(assembly_code):
 
         storage_size = return_size_from_name(dtt)   # 8, 16, 32 etc. bits
 
-        #   Write data, and receive it's size in data section
-        start_add, size = assembly_code['data'].add_data(storage_size, var_content)
-
         starting_address = byte_counter
         elements = []
         tmp = ''
