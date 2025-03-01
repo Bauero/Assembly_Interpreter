@@ -2,10 +2,10 @@
 This file contains all operations which perform arithmetic operations
 """
 
-from hardware_registers import HardwareRegisters
-from flag_register import FlagRegister
-from hardware_memory import DataSegment
-from helper_functions import eval_no_of_1, sign_changed, convert_number_to_bit_list, \
+from program.hardware_registers import HardwareRegisters
+from program.flag_register import FlagRegister
+from program.hardware_memory import DataSegment
+from program.helper_functions import eval_no_of_1, sign_changed, convert_number_to_bit_list, \
                              inverse_Twos_Compliment_Number, save_value_in_destination, \
                              convert_number_to_bit_list,convert_number_to_int_with_binary_capacity
 

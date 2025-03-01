@@ -2,11 +2,11 @@
 This file contains operations which perform locical operations
 """
 
-from hardware_registers import HardwareRegisters
-from flag_register import FlagRegister
-from hardware_memory import DataSegment
-from errors import ExecutionOfOperationInLineError, IncorrectParamForBitMovError
-from helper_functions import (convert_number_to_bit_list,
+from program.hardware_registers import HardwareRegisters
+from program.flag_register import FlagRegister
+from program.hardware_memory import DataSegment
+from program.errors import ExecutionOfOperationInLineError, IncorrectParamForBitMovError
+from program.helper_functions import (convert_number_to_bit_list,
                               save_value_in_destination,
                               eval_no_of_1)
 

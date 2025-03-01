@@ -16,14 +16,14 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QCheckBox
 )
-from custom_gui_elements import *
-from errors import (FileDoesntExist,
+from .custom_gui_elements import *
+from .errors import (FileDoesntExist,
                     FileSizeMightBeTooBig,
                     FileTypeNotAllowed,
                     ImproperJumpMarker,
                     ImproperDataDefiniton)
-from helper_functions import loadFileFromPath
-from color_pallete import *
+from .helper_functions import loadFileFromPath
+from .color_pallete import *
 from screeninfo import get_monitors
 
 

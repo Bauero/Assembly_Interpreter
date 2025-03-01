@@ -1,7 +1,7 @@
 import re
 import os
-from hardware_registers import HardwareRegisters
-from errors import (WrongNumberBase,
+from .hardware_registers import HardwareRegisters
+from .errors import (WrongNumberBase,
                     IncorectValueInListOfBits,
                     FileDoesntExist,
                     FileSizeMightBeTooBig,

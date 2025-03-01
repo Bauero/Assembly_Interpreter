@@ -2,7 +2,7 @@
 This file initializes hardware registes, along with methods for it's initializaiton
 """
 
-from errors import RegisterNotImplemented
+from .errors import RegisterNotImplemented
 
 class RegisterBit:
     """This class holds singular bits, which are stored in registers, this way

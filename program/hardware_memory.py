@@ -4,7 +4,7 @@ and reading
 """
 
 from array import array
-from errors import (SegmentationFault,
+from .errors import (SegmentationFault,
                     ValueIsNotANumber,
                     ModificationOutsideDataSection)
 

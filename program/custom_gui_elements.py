@@ -3,11 +3,10 @@ This file containst gustom GUI structures which are then later used in main gui
 file
 """
 
-from engine import Engine
-from array import array
-from hardware_memory import DataSegment
-from color_pallete import c_green
-from helper_functions import return_name_from_size
+from .engine import Engine
+from .hardware_memory import DataSegment
+from .color_pallete import c_green
+from .helper_functions import return_name_from_size
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence,QPalette

@@ -4,10 +4,10 @@ to engine. It can communicate with engine to provide functionali like calling fu
 or jumps. It is also responible for managing history or operations done by program
 """
 
-from preprocessor import loadMainFile
-from helper_functions import loadFileFromPath, convert_number_to_int_with_binary_capacity
-from errors import ExecutionOfOperationInLineError, DetailedException
-from history import History
+from .preprocessor import loadMainFile
+from .helper_functions import loadFileFromPath, convert_number_to_int_with_binary_capacity
+from .errors import ExecutionOfOperationInLineError, DetailedException
+from .history import History
 import pickle
 
 class CodeHandler():

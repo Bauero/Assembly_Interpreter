@@ -3,9 +3,7 @@ CLI interface alongside GUI"""
 
 import sys
 from PyQt6.QtWidgets import QApplication
-from gui import MainWindow
-from engine import Engine
-from code_handler import CodeHandler
+from program import *
 
 def main():
     app = QApplication([])

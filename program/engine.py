@@ -3,22 +3,14 @@ This file contains Engine Class, which is responsible for simluation of operatio
 """
 
 from inspect import signature
-from helper_functions import *
-from hardware_memory import DataSegment
-from flag_register import FlagRegister
+from .helper_functions import *
+from .hardware_memory import DataSegment
+from .flag_register import FlagRegister
 from simpleeval import simple_eval
-from assembly_instructions.arithmetic_instrunctions import *
-from assembly_instructions.flag_setting_instructions import *
-from assembly_instructions.logical_instrunctions import *
-from assembly_instructions.flow_control_instructions import *
-from assembly_instructions.jump_instructions import *
-from assembly_instructions.stack_instructions import *
-from assembly_instructions.data_movement_instructions import *
-from assembly_instructions.interrupt_instructions import *
-from assembly_instructions.bit_movement_instructions import *
-from hardware_registers import HardwareRegisters
-from code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
-from errors import (ArgumentNotExpected,
+from .assembly_instructions import *
+from .hardware_registers import HardwareRegisters
+from .code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
+from .errors import (ArgumentNotExpected,
                     NoExplicitSizeError,
                     ExecutionOfOperationInLineError,
                     UnrecognizedArgumentInLineError,
@@ -87,8 +79,6 @@ class Engine():
                                                                           final_sizes, 
                                                                           explicite_sizes,
                                                                           args_values_int)
-
-        # destination = self._extract_destination()
 
         self._check_if_operation_allowed(keyword, args_types)
 

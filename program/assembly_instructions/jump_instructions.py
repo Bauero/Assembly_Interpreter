@@ -2,10 +2,10 @@
 This file contains all jump instuctions which are supported in x86 Assembly
 """
 
-from hardware_registers import HardwareRegisters
-from flag_register import FlagRegister
-from hardware_memory import DataSegment
-from helper_functions import convert_number_to_int_with_binary_capacity
+from program.hardware_registers import HardwareRegisters
+from program.flag_register import FlagRegister
+from program.hardware_memory import DataSegment
+from program.helper_functions import convert_number_to_int_with_binary_capacity
 
 def JMP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
