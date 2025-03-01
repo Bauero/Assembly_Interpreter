@@ -3,8 +3,8 @@
 ; Celem tego programu jest umożliwienie użytkownikowi przekształcenia działania;
 ; zapisanego normalnie na zapis w Odwrotnej Notacji Polskiej (ONP)             ;
 ; NP:   '2*(8-3)-3*2+10'   ->   '2 8 3 - * 2 3 * - 10 +'                       ;
-; Date: 23.02.2025                                                              ;
-; Autor:  Piotr Bauer                                                         ;
+; Date: 23.02.2025                                                             ;
+; Autor:  Piotr Bauer                                                          ;
 ;_______________________________________________________________________________
 
 org 100h

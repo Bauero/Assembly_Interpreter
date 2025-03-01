@@ -3,7 +3,6 @@
 ; by limits like, only one arg can ref. memory, and we cannot save result to immediate value
 ; Although ADD instructions is used, it should work with 
 
-
 section .data
 
 var1    db  10
