@@ -14,7 +14,9 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QHBoxLayout,
     QComboBox,
-    QCheckBox
+    QCheckBox,
+    QSizePolicy,
+    QLayout
 )
 from .custom_gui_elements import *
 from .errors import (FileDoesntExist,
@@ -38,6 +40,7 @@ class MainWindow(QWidget):
         self.code_handler = code_handler
         self.interactive_mode = False
         self._createUserInterface()
+        self._set_interactive_mode()
         self.program_running = False
         self.welcomeScreen.show()
         self.instructionCounter = 0
@@ -112,13 +115,13 @@ class MainWindow(QWidget):
         #
 
         self.registersSection = QWidget()
-        registersSectionLayout = QFormLayout()
+        registersSectionLayout = QVBoxLayout()
         registersSectionLayout.setAlignment(alg_top)
 
         self.registers_label = QLabel("Registers")
         self.registers_label.setFont(font)
         registersSectionLayout.addWidget(self.registers_label)
-        registersSectionLayout.setSpacing(10)
+        # registersSectionLayout.setStretch(10)
 
         HR = self.code_handler.engine.HR
         FR = self.code_handler.engine.FR
@@ -134,12 +137,17 @@ class MainWindow(QWidget):
             FunctionalRegisters(HR, "IP", deep_red, "Instruction Pointer Register"),
             FlagRegister(FR)
         ]
-        
-        self._set_interactive_mode()
+
+        registersSectionLayout.setSpacing(0)
 
         for element in self.register_section_elements:
+            element.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+            element.setMinimumHeight(50)  # Minimalna wysokość, do której może się skurczyć
+            element.setMaximumHeight(120)
             registersSectionLayout.addWidget(element)
 
+        self.registersSection.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
+        self.register_section_elements[-1].setMinimumHeight(130)
         self.registersSection.setLayout(registersSectionLayout)
 
         #
@@ -177,6 +185,14 @@ class MainWindow(QWidget):
             self.executionFrequencyList.addItem(t)
         self.executionFrequencyList.setCurrentIndex(2)
         self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
+        
+        box = QWidget()
+        frequencyBox = QHBoxLayout()
+        # frequencyBox.
+        frequencyBox.addWidget(comboBoxLabel)
+        frequencyBox.addWidget(self.executionFrequencyList)
+        box.setLayout(frequencyBox)
+        box
 
         row_1 = QHBoxLayout()
         row_1.addWidget(self.nextLineButton)
@@ -188,8 +204,7 @@ class MainWindow(QWidget):
 
         row_3 = QHBoxLayout()
         row_3.addWidget(self.startAutoExecButton)
-        row_3.addWidget(comboBoxLabel)
-        row_3.addWidget(self.executionFrequencyList)
+        row_3.addWidget(box)
 
         codeSectionLayout.addRow(code_label)
         codeSectionLayout.setSpacing(10)
@@ -208,7 +223,7 @@ class MainWindow(QWidget):
         stack_label.setFont(font)
         DT = self.code_handler.engine.data
         self.stackSection = StackTable(DT)
-        self.stackSection.setFixedWidth(205)
+        self.stackSection.setFixedWidth(185)
         self.stackSection.set_allow_change_content(False)
         self.stackSection.generate_table()
         self.stackColumn.addWidget(stack_label)
@@ -246,6 +261,7 @@ class MainWindow(QWidget):
         self.terminal_widget = Terminal()
         self.terminal_layout.addRow(self.terminal_widget)
         self.terminal.setLayout(self.terminal_layout)
+        self.terminal.setMaximumHeight(280)
 
         #
         #   Add elements to central layout
@@ -257,7 +273,8 @@ class MainWindow(QWidget):
         centralLayout.addLayout(self.variableColumn, 2)
         programLayout.addWidget(self.centerSection)
         programLayout.addWidget(self.terminal)
-        
+        programLayout.setSpacing(0)
+
     ############################################################################
     #   Functions which will be called as an action of buttons
     ############################################################################
@@ -494,18 +511,3 @@ class MainWindow(QWidget):
     def _refresh(self):
         for element in self.register_section_elements:
             element.update()
-
-
-if __name__ == "__main__":
-    import sys
-    from PyQt6.QtWidgets import QApplication
-    from engine import Engine
-    from code_handler import CodeHandler
-
-    app = QApplication([])
-    engine = Engine()
-    code_handeler = CodeHandler(engine)
-    window = MainWindow(code_handeler)
-    window.show()
-    window.pagesStack.setCurrentIndex(1)
-    sys.exit(app.exec())

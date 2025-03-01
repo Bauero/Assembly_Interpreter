@@ -63,6 +63,7 @@ class MultipurposeRegister(QWidget):
         self.register_high_bits.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
         self.register_high_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
         self.register_high_bits.setFixedWidth(90)  # Adjust for 8 characters
+        self.register_high_bits.setFixedHeight(20)  # Adjust for 8 characters
         self.register_high_bits.setReadOnly(True)
         self.register_high_bits.setAlignment(alg_cent)
         text_field_layout.addWidget(self.register_high_bits)
@@ -71,6 +72,7 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
         self.register_low_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
         self.register_low_bits.setFixedWidth(90)  # Adjust for 8 characters
+        self.register_low_bits.setFixedHeight(20)  # Adjust for 8 characters
         self.register_low_bits.setReadOnly(True)
         self.register_low_bits.setAlignment(alg_cent)
         text_field_layout.addWidget(self.register_low_bits)
@@ -82,11 +84,13 @@ class MultipurposeRegister(QWidget):
 
         # Equals label
         equals_label = QLabel("=")
+        equals_label.setFixedHeight(20)
         row_layout.addWidget(equals_label)
 
         # Smaller text field (8 characters wide)
         self.register_decimal_value = QLineEdit()
         self.register_decimal_value.setFixedWidth(60)  # Adjust width as needed
+        self.register_decimal_value.setFixedHeight(20)  # Adjust width as needed
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
         row_layout.addWidget(self.register_decimal_value)
@@ -152,6 +156,7 @@ class FunctionalRegisters(QWidget):
         self.register_content = QLineEdit()
         self.register_content.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
         self.register_content.setFixedWidth(180)
+        self.register_content.setFixedHeight(20)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
         row_layout.addWidget(self.register_content)
@@ -163,6 +168,7 @@ class FunctionalRegisters(QWidget):
         # Smaller text field (8 characters wide)
         self.register_decimal_value = QLineEdit()
         self.register_decimal_value.setFixedWidth(60)  # Adjust width as needed
+        self.register_decimal_value.setFixedHeight(20)  # Adjust width as needed
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
         row_layout.addWidget(self.register_decimal_value)
@@ -256,7 +262,7 @@ class FlagRegister(QWidget):
         self.flag_indicators_row_2.addWidget(self.trap_flag)
         self.flag_indicators_row_2.insertSpacing(1,34)
         self.flag_indicators_row_2.addWidget(self.sign_flag)
-        self.flag_indicators_row_2.insertSpacing(3,24)
+        self.flag_indicators_row_2.insertSpacing(3,22)
         self.flag_indicators_row_2.addWidget(self.zero_flag)
 
         self.flag_indicators_row_3.addWidget(self.auxiliary_carry_flag)
@@ -434,7 +440,7 @@ class Terminal(QWidget):
         font = QFont()
         font.setPointSize(15)
         self.terminal.setFont(font)
-        self.terminal.setMinimumHeight(160)
+        self.terminal.setMinimumHeight(100)
 
         # Connect signal
         self.terminal.inputFinished.connect(self.handle_input)
@@ -673,14 +679,15 @@ class StackTable(QTableWidget):
         self.data_copy = None
         self.font = QFont()
         self.font.setBold(True)
-        self.font.setPointSize(13)
+        self.font.setPointSize(15)
         self.font.setItalic(True)
 
         # Initialize table properties
         self.setRowCount(self.no_of_rows)
         self.setColumnCount(3)
-        self.setHorizontalHeaderLabels(["Addr.", "Value", "In dec."])
-        self.setColumnWidth(2, 50)
+        self.setHorizontalHeaderLabels(["Adr.", "Licz. Bin.", "Dec."])
+        self.setColumnWidth(2,1)
+        # self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
 
         # Hide row numbers
         self.verticalHeader().setVisible(False)
@@ -875,7 +882,7 @@ class VariableTable(QTableWidget):
         self.allow_change = False
         self.font = QFont()
         self.font.setBold(True)
-        self.font.setPointSize(13)
+        self.font.setPointSize(15)
         self.font.setItalic(True)
 
         # Initialize table properties
