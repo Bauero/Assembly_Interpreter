@@ -77,7 +77,6 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     -> `['1', '1',  '1', '0', '0', '1', '1', '0']` (for size == 8)
     """
     
-    assert type(size) == int, f"Size of number to convert cannot have different type than int" 
     assert size > 0, f"Cannot convert number to size which is less or equal to 0"
     assert size % 8 == 0, f"Cannot convert number, as the speciphied size is not mutiple of 8"
  

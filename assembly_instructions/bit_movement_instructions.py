@@ -4,7 +4,7 @@ This file contains operations which perform locical operations
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from datatypes import Data
+from hardware_memory import DataSegment
 from errors import ExecutionOfOperationInLineError, IncorrectParamForBitMovError
 from helper_functions import (convert_number_to_bit_list,
                               save_value_in_destination,
@@ -12,7 +12,7 @@ from helper_functions import (convert_number_to_bit_list,
 
 def SHL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -67,7 +67,7 @@ def SHL(HardwareRegister : HardwareRegisters,
 
 def SHR(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -122,7 +122,7 @@ def SHR(HardwareRegister : HardwareRegisters,
 
 def SAL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -177,7 +177,7 @@ def SAL(HardwareRegister : HardwareRegisters,
 
 def SAR(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -231,7 +231,7 @@ def SAR(HardwareRegister : HardwareRegisters,
 
 def ROL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -288,7 +288,7 @@ def ROL(HardwareRegister : HardwareRegisters,
 
 def ROR(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -345,7 +345,7 @@ def ROR(HardwareRegister : HardwareRegisters,
 
 def RCL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -415,7 +415,7 @@ def RCL(HardwareRegister : HardwareRegisters,
 
 def RCR(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):

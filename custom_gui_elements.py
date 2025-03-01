@@ -5,7 +5,7 @@ file
 
 from engine import Engine
 from array import array
-from datatypes import Data
+from hardware_memory import DataSegment
 from color_pallete import c_green
 from helper_functions import return_name_from_size
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
@@ -17,6 +17,9 @@ from PyQt6.QtWidgets import (
     QMessageBox, QPlainTextEdit, QTableWidget, QHeaderView, QTableWidgetItem, 
     QAbstractItemView,QApplication
     )
+
+from PyQt6.QtGui import QKeyEvent
+
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -242,29 +245,30 @@ class FlagRegister(QWidget):
             def_name = f"def_{attr_name}"
             setattr(self, attr_name, CustomIndicator(f))
             obj = getattr(self, attr_name)
-            obj.setToolTip(str(getattr(self.FR, def_name)))
+            obj.setToolTip(getattr(self.FR, def_name)())
             obj.stateChanged.connect(lambda _, flag=f: self._flag_indicator_clicked(flag))
 
         self.flag_indicators_row_1.addWidget(self.overflow_flag)
-        self.flag_indicators_row_1.insertSpacing(1,30)
+        self.flag_indicators_row_1.insertSpacing(1,32)
         self.flag_indicators_row_1.addWidget(self.direction_flag)
-        self.flag_indicators_row_1.insertSpacing(3,30)
+        self.flag_indicators_row_1.insertSpacing(3,21)
         self.flag_indicators_row_1.addWidget(self.interrupt_flag)
 
         self.flag_indicators_row_2.addWidget(self.trap_flag)
-        self.flag_indicators_row_2.insertSpacing(1,30)
+        self.flag_indicators_row_2.insertSpacing(1,34)
         self.flag_indicators_row_2.addWidget(self.sign_flag)
-        self.flag_indicators_row_2.insertSpacing(3,30)
+        self.flag_indicators_row_2.insertSpacing(3,24)
         self.flag_indicators_row_2.addWidget(self.zero_flag)
 
         self.flag_indicators_row_3.addWidget(self.auxiliary_carry_flag)
+        self.flag_indicators_row_3.insertSpacing(1,1)
         self.flag_indicators_row_3.addWidget(self.parity_flag)
-        self.flag_indicators_row_3.insertSpacing(2,30)
+        self.flag_indicators_row_3.insertSpacing(3,22)
         self.flag_indicators_row_3.addWidget(self.carry_flag)
 
-        self.flag_indicators_row_1.setStretch(0, 1)
-        self.flag_indicators_row_2.setStretch(1, 2)
-        self.flag_indicators_row_3.setStretch(2, 3)
+        # self.flag_indicators_row_1.setStretch(0, 1)
+        # self.flag_indicators_row_2.setStretch(1, 2)
+        # self.flag_indicators_row_3.setStretch(2, 3)
         body.addRow(firts_row)
         body.addRow(self.flag_indicators_row_1)
         body.addRow(self.flag_indicators_row_2)
@@ -353,31 +357,136 @@ class FlagRegister(QWidget):
         msg.setWindowTitle(title)
         msg.exec()
 
+class LimitedInputTextEdit(QTextEdit):
+    inputFinished = pyqtSignal(str)  # Signal emitted when input is done
+
+    def __init__(self, char_limit = 1000):
+        super().__init__()
+        self.char_limit = char_limit  # Limit of characters
+        self.current_input = ""       # Stores current input
+        self.setUndoRedoEnabled(False)
+        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        key = event.key()
+        
+        # Handle Enter key
+        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
+            self.append("")  # Move to next line
+            self.inputFinished.emit(self.current_input)
+            self.current_input = ""
+            return
+
+        # Handle Backspace
+        elif key == Qt.Key.Key_Backspace:
+            if len(self.current_input) > 0:
+                self.current_input = self.current_input[:-1]
+                self.textCursor().deletePreviousChar()
+            return
+
+        # Limit input to char_limit
+        elif event.text() and len(self.current_input) < self.char_limit:
+            self.current_input += event.text()
+            self.insertPlainText(event.text())
+        else:
+            # Ignore other keys or excess input
+            pass
+
+    def reset_char_limit(self):     self.char_limit = 1000
+
+class LimitedInputTextEdit(QTextEdit):
+    inputFinished = pyqtSignal(str)
+
+    def __init__(self, char_limit=20):
+        super().__init__()
+        self.char_limit = char_limit
+        self.current_input = ""
+        self.setUndoRedoEnabled(False)
+        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+
+    def keyPressEvent(self, event):
+        key = event.key()
+
+        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
+            self.append("")
+            self.inputFinished.emit(self.current_input)
+            self.current_input = ""
+            return
+
+        elif key == Qt.Key.Key_Backspace:
+            if len(self.current_input) > 0:
+                self.current_input = self.current_input[:-1]
+                self.textCursor().deletePreviousChar()
+            return
+
+        elif event.text() and len(self.current_input) < self.char_limit:
+            self.current_input += event.text()
+            self.insertPlainText(event.text())
+
 class Terminal(QWidget):
     def __init__(self):
         super().__init__()
 
-        main_frame = QFormLayout()
-        
-        label = QLabel('Terminal')
-        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
-        label.setFont(font)
-        # main_frame.addWidget(label)
+        # Layout for Terminal
+        layout = QVBoxLayout()
 
-        self.terminal = QTextEdit()
-        font = QFont() ; font.setBold(True) ; font.setPointSize(12)
+        # Custom LimitedInputTextEdit
+        self.terminal = LimitedInputTextEdit(20)  # Limit to 20 chars
+        font = QFont()
+        font.setPointSize(15)
         self.terminal.setFont(font)
         self.terminal.setMinimumHeight(160)
-        # main_frame.addWidget(terminal)
 
-        main_frame.addRow(label)
-        main_frame.addRow(self.terminal)
+        # Connect signal
+        self.terminal.inputFinished.connect(self.handle_input)
 
-        self.setLayout(main_frame)
+        # Add widgets to layout
+        layout.addWidget(self.terminal)
+        self.setLayout(layout)
 
-    def write_char(self, char : int):
+    def handle_input(self, user_input: str):
+        """Handle input when user presses Enter."""
+        print(f"User input: {user_input}")  # You can process/store input here
+
+    def write_char(self, char: int):
+        """Write characters to terminal programmatically."""
         text = self.terminal.toPlainText()
         self.terminal.setPlainText(text + chr(char))
+        
+
+# class Terminal(QWidget):
+#     def __init__(self):
+#         super().__init__()
+
+#         main_frame = QFormLayout()
+        
+#         label = QLabel('Terminal')
+#         font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+#         label.setFont(font)
+#         # main_frame.addWidget(label)
+
+#         self.terminal = QTextEdit()
+#         font = QFont() ; font.setPointSize(15)
+#         self.terminal.setFont(font)
+#         self.terminal.setMinimumHeight(160)
+
+#         main_frame.addRow(label)
+#         main_frame.addRow(self.terminal)
+
+#         self.setLayout(main_frame)
+
+#     def write_char(self, char : int):
+#         text = self.terminal.toPlainText()
+#         self.terminal.setPlainText(text + chr(char))
+
+
+
+
+
+
+
+
+
 
 class CustomIndicator(QLabel):
     # Signal to notify FlagRegister on toggle (emits new state: True/False)
@@ -392,11 +501,11 @@ class CustomIndicator(QLabel):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def setOn(self):
-        self.setText(f"🟢 {self.labelText}")
+        self.setText(f"🟩 {self.labelText}")
         self.turnedOnState = True
 
     def setOff(self):
-        self.setText(f"🔴 {self.labelText}")
+        self.setText(f"🟥 {self.labelText}")
         self.turnedOnState = False
 
     def toggleState(self):
@@ -558,7 +667,7 @@ class CodeEditor(QPlainTextEdit):
 class StackTable(QTableWidget):
     """This class allows to display Stack as a table with option to easily change
     content"""
-    def __init__(self, data: Data):
+    def __init__(self, data: DataSegment):
         super().__init__()
         self.no_of_rows = 65536
         self.data = data

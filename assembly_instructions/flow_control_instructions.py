@@ -3,7 +3,7 @@ This file contains instructions which modify flow of the program, but in contras
 they have it's own distinct function, and hence, deserve it's own file
 """
 
-from datatypes import Data
+from hardware_memory import DataSegment
 from flag_register import FlagRegister
 from hardware_registers import HardwareRegisters
 from helper_functions import (save_value_in_destination,
@@ -13,7 +13,7 @@ from helper_functions import (save_value_in_destination,
 
 def LOOP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -52,7 +52,7 @@ def LOOP(HardwareRegister : HardwareRegisters,
 
 def LOOPZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -91,7 +91,7 @@ def LOOPZ(HardwareRegister : HardwareRegisters,
 
 def LOOPE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -130,7 +130,7 @@ def LOOPE(HardwareRegister : HardwareRegisters,
 
 def LOOPNZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -169,7 +169,7 @@ def LOOPNZ(HardwareRegister : HardwareRegisters,
 
 def LOOPNE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -208,7 +208,7 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
 
 def CALL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -261,7 +261,7 @@ def CALL(HardwareRegister : HardwareRegisters,
 
 def RET(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):

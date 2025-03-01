@@ -13,7 +13,8 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QHBoxLayout,
-    QComboBox
+    QComboBox,
+    QCheckBox
 )
 from custom_gui_elements import *
 from errors import (FileDoesntExist,
@@ -23,6 +24,7 @@ from errors import (FileDoesntExist,
                     ImproperDataDefiniton)
 from helper_functions import loadFileFromPath
 from color_pallete import *
+from screeninfo import get_monitors
 
 
 class MainWindow(QWidget):
@@ -36,26 +38,24 @@ class MainWindow(QWidget):
         self.code_handler = code_handler
         self.interactive_mode = False
         self._createUserInterface()
-        self.instructionCounter = 10
         self.program_running = False
-        self.showMaximized() 
+        self.welcomeScreen.show()
+        self.instructionCounter = 0
 
     def _createUserInterface(self):
         """This funciton creates whole UI interface"""
 
-        #   General settings
-        self.setWindowTitle('Interpreter Asemblera')
-        self.setGeometry(460, 160, 1000, 400)
+        monitor = get_monitors()[0]
+        monitor_height, monitor_width = monitor.height, monitor.width
+        w_heigth, w_width = monitor_height//4, monitor_width//4
+        pos_x = monitor_width//2 - w_width//2
+        pos_y = monitor_height//2 - w_heigth//2
 
-        #   Main widow structure
-        main_window = QVBoxLayout()
-        self.setLayout(main_window)
-        self.pagesStack = QStackedLayout()
-
-        #   Initialize all pages
         self._createMainMenuPage()
         self._createMainProgramPage()
-        main_window.addLayout(self.pagesStack)
+        self.setWindowTitle('Interpreter Asemblera')
+        self.welcomeScreen.setGeometry(pos_x, pos_y, w_width, w_heigth)
+        self.programScreen.setGeometry(pos_x, pos_y, monitor_width, monitor_height)
 
     def _createMainMenuPage(self):
         """Defines Main Menu page visible when user lanuches program"""
@@ -93,17 +93,14 @@ class MainWindow(QWidget):
         self.welcomeScreenButtons.setLayout(welcomeButtonsLayout)
         welcomeLayout.addWidget(self.welcomeScreenButtons)
         self.welcomeScreen.setLayout(welcomeLayout)
-        self.pagesStack.addWidget(self.welcomeScreen)
         
     def _createMainProgramPage(self):
         """Designs the program page - live interpreter"""
 
-        # Main container of the page
         self.programScreen = QWidget()
         programLayout = QVBoxLayout()
         self.programScreen.setLayout(programLayout)
 
-        # Central container with registers, code, stack & variables
         self.centerSection = QWidget()
         centralLayout = QHBoxLayout()
         self.centerSection.setLayout(centralLayout)
@@ -118,11 +115,11 @@ class MainWindow(QWidget):
         registersSectionLayout = QFormLayout()
         registersSectionLayout.setAlignment(alg_top)
 
-        registers_label = QLabel("Registers")
-        registers_label.setFont(font)
-        registersSectionLayout.addRow(registers_label)
+        self.registers_label = QLabel("Registers")
+        self.registers_label.setFont(font)
+        registersSectionLayout.addWidget(self.registers_label)
         registersSectionLayout.setSpacing(10)
-        
+
         HR = self.code_handler.engine.HR
         FR = self.code_handler.engine.FR
         self.register_section_elements = [
@@ -149,7 +146,6 @@ class MainWindow(QWidget):
         #   Code and navigation buttons
         #
 
-        # Right column of the page
         self.codeSection = QWidget()
         codeSectionLayout = QFormLayout()
         code_label = QLabel("Code")
@@ -157,32 +153,24 @@ class MainWindow(QWidget):
         self.code_field = CodeEditor()
         self.code_field.setMinimumWidth(400)
 
-        # Create all buttons for right section 
         self.nextLineButton         = QPushButton('Wykonaj instrukcję')
         self.previousLineButton     = QPushButton('Powrót do poprzedniej instrukcji')
         self.startExecutionButton   = QPushButton('Uruchom program')
         self.saveStateButton        = QPushButton('Zapisz stan')
-        self.startAutoExecButton    = QPushButton('Automatyczne wykonywanie linii')
+        self.startAutoExecButton    = QCheckBox('Auto-wykonywanie')
         
-        # Set if buttons are enabled, and if are checkable
         self.nextLineButton.        setEnabled(self.interactive_mode)
         self.previousLineButton.    setEnabled(self.interactive_mode)
         self.saveStateButton.       setEnabled(self.interactive_mode)
         self.startAutoExecButton.   setEnabled(True)
-        self.startAutoExecButton.   setCheckable(True)
 
-        # Style buttons
         self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
-        
-        # Link buttons with functions
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
         self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
         self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
-        self.startAutoExecButton.clicked.   connect(lambda: self._toggle_automatic_execution)
         
-        # Design custom comboBox, with values and pick default
-        comboBoxLabel = QLabel('Odstęp do następnej instrukcji')
+        comboBoxLabel = QLabel('Opóźnienie')
         comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
         for t in ['0.1s', '0.5s', '1s', '2s', '5s']:
@@ -190,7 +178,6 @@ class MainWindow(QWidget):
         self.executionFrequencyList.setCurrentIndex(2)
         self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
 
-        # Combine buttons into rows for right column
         row_1 = QHBoxLayout()
         row_1.addWidget(self.nextLineButton)
         row_1.addWidget(self.previousLineButton)
@@ -204,7 +191,6 @@ class MainWindow(QWidget):
         row_3.addWidget(comboBoxLabel)
         row_3.addWidget(self.executionFrequencyList)
 
-        # Add widgets to the right section
         codeSectionLayout.addRow(code_label)
         codeSectionLayout.setSpacing(10)
         codeSectionLayout.addRow(self.code_field)
@@ -238,8 +224,6 @@ class MainWindow(QWidget):
         variables_label.setFont(font)
         engine = self.code_handler.engine
         self.variableSection = VariableTable(engine)
-        # self.variableSection.update()
-        # self.variableSection.generate_table()
         self.variableColumn.addWidget(variables_label)
         self.variableColumn.addSpacing(10)
         self.variableColumn.addWidget(self.variableSection)
@@ -248,23 +232,49 @@ class MainWindow(QWidget):
         #   Terminal
         #
 
-        self.terminal = Terminal()
+        self.terminal = QWidget()
+        self.terminal_layout = QFormLayout()
+
+        # Label setup
+        self.terminal_label = QLabel('Terminal')
+        font = QFont()
+        font.setBold(True)
+        font.setPointSize(15)
+        self.terminal_label.setFont(font)
+        self.terminal_layout.addRow(self.terminal_label)
+
+        self.terminal_widget = Terminal()
+        self.terminal_layout.addRow(self.terminal_widget)
+        self.terminal.setLayout(self.terminal_layout)
 
         #
-        #   Organizing layout
+        #   Add elements to central layout
+        #
 
-        # Add widgets with equal stretch factors
-        centralLayout.addWidget(self.registersSection, 1)  # Smaller width
-        centralLayout.addWidget(self.codeSection, 3)       # Wider code section
+        centralLayout.addWidget(self.registersSection, 1)
+        centralLayout.addWidget(self.codeSection, 3)
         centralLayout.addLayout(self.stackColumn, 2)
         centralLayout.addLayout(self.variableColumn, 2)
         programLayout.addWidget(self.centerSection)
         programLayout.addWidget(self.terminal)
-        self.pagesStack.addWidget(self.programScreen)
         
     ############################################################################
     #   Functions which will be called as an action of buttons
     ############################################################################
+
+    def _set_active_state(self, state = False):
+        self.code_field.setDisabled(not state)
+        self.stackSection.setDisabled(not state)
+        self.variableSection.setDisabled(not state)
+
+        for element in self.register_section_elements:
+            element.setDisabled(not state)
+
+        self.terminal_widget.setDisabled(not state)
+        self.startExecutionButton.setDisabled(False)
+        self.registers_label.setDisabled(False)
+        self.terminal_label.setDisabled(False)
+        self.registers_label.setDisabled(False)
 
     def _set_interactive_mode(self, interactive_active : bool = False):
         for element in self.register_section_elements:
@@ -385,9 +395,14 @@ class MainWindow(QWidget):
             
             break
 
-        self.pagesStack.setCurrentIndex(1)
+        self.welcomeScreen.close()
+        self.programScreen.show()
         self.variableSection.generate_table()
         
+        self._set_active_state(False)
+        self.nextLineButton.setFocus()
+        self.programScreen.showMaximized()
+
     @pyqtSlot()
     def _open_interactive_mode(self):
         # msg = QMessageBox()
@@ -410,12 +425,14 @@ class MainWindow(QWidget):
         match command:
             case 'start_stop':
                 if self.program_running:
+                    self._set_active_state(False)
                     self.nextLineButton.setEnabled(False)
                     self.previousLineButton.setEnabled(False)
                     self.startExecutionButton.setText("Uruchom program")
                     self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
                 else:
                     self.nextLineButton.setEnabled(True)
+                    self._set_active_state(True)
                     if self.instructionCounter > 0:
                         self.previousLineButton.setEnabled(True)
                     self.startExecutionButton.setText( "Wstrzymaj program")
@@ -424,16 +441,20 @@ class MainWindow(QWidget):
                 #   TODO connect automatic code executioin
             case 'next_instruction':
                 response = self.code_handler.executeCommand('next_instruction')
+                self.instructionCounter += 1
                 self._refresh()
                 self._act_on_response(response)
                 self.stackSection.refresh_table()
                 self.variableSection.refresh_table()
+                if self.instructionCounter > 0: self.previousLineButton.setEnabled(True)
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
+                self.instructionCounter -= 1
                 self._refresh()
                 self._act_on_response(response)
                 self.stackSection.refresh_table()
                 self.variableSection.refresh_table()
+                if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
 
     def _act_on_response(self, response : dict):
         """
@@ -467,13 +488,15 @@ class MainWindow(QWidget):
 
         if "write_char_to_terminal" in response:
             self.terminal.write_char(response["write_char_to_terminal"])
+        if "action_for_terminal" in response:
+            self.terminal.perform_action(response["action_for_terminal"])
 
     def _refresh(self):
         for element in self.register_section_elements:
             element.update()
 
 
-if __name__ == "__main__":#
+if __name__ == "__main__":
     import sys
     from PyQt6.QtWidgets import QApplication
     from engine import Engine

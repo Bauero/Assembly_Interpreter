@@ -4,12 +4,12 @@ This file contains all jump instuctions which are supported in x86 Assembly
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from datatypes import Data
+from hardware_memory import DataSegment
 from helper_functions import convert_number_to_int_with_binary_capacity
 
 def JMP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -21,7 +21,7 @@ def JMP(HardwareRegister : HardwareRegisters,
 
 def JZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -34,7 +34,7 @@ def JZ(HardwareRegister : HardwareRegisters,
 
 def JE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -47,7 +47,7 @@ def JE(HardwareRegister : HardwareRegisters,
 
 def JNZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -60,7 +60,7 @@ def JNZ(HardwareRegister : HardwareRegisters,
 
 def JNE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -76,7 +76,7 @@ def JNE(HardwareRegister : HardwareRegisters,
 
 def JA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -92,7 +92,7 @@ def JA(HardwareRegister : HardwareRegisters,
 
 def JNBE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -108,7 +108,7 @@ def JNBE(HardwareRegister : HardwareRegisters,
 
 def JAE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -121,7 +121,7 @@ def JAE(HardwareRegister : HardwareRegisters,
 
 def JNB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -134,7 +134,7 @@ def JNB(HardwareRegister : HardwareRegisters,
 
 def JB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -147,7 +147,7 @@ def JB(HardwareRegister : HardwareRegisters,
 
 def JNAE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -160,7 +160,7 @@ def JNAE(HardwareRegister : HardwareRegisters,
 
 def JBE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -176,7 +176,7 @@ def JBE(HardwareRegister : HardwareRegisters,
 
 def JNA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -192,7 +192,7 @@ def JNA(HardwareRegister : HardwareRegisters,
 
 def JG(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -209,7 +209,7 @@ def JG(HardwareRegister : HardwareRegisters,
 
 def JNLE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -226,7 +226,7 @@ def JNLE(HardwareRegister : HardwareRegisters,
 
 def JGE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -242,7 +242,7 @@ def JGE(HardwareRegister : HardwareRegisters,
 
 def JNL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -258,7 +258,7 @@ def JNL(HardwareRegister : HardwareRegisters,
 
 def JL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -274,7 +274,7 @@ def JL(HardwareRegister : HardwareRegisters,
 
 def JNGE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -290,7 +290,7 @@ def JNGE(HardwareRegister : HardwareRegisters,
 
 def JLE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -307,7 +307,7 @@ def JLE(HardwareRegister : HardwareRegisters,
 
 def JNG(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -324,7 +324,7 @@ def JNG(HardwareRegister : HardwareRegisters,
 
 def JS(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -337,7 +337,7 @@ def JS(HardwareRegister : HardwareRegisters,
 
 def JNS(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -350,7 +350,7 @@ def JNS(HardwareRegister : HardwareRegisters,
 
 def JC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -363,7 +363,7 @@ def JC(HardwareRegister : HardwareRegisters,
 
 def JNC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -376,7 +376,7 @@ def JNC(HardwareRegister : HardwareRegisters,
 
 def JP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -389,7 +389,7 @@ def JP(HardwareRegister : HardwareRegisters,
 
 def JPE(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -402,7 +402,7 @@ def JPE(HardwareRegister : HardwareRegisters,
 
 def JNP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -415,7 +415,7 @@ def JNP(HardwareRegister : HardwareRegisters,
 
 def JPO(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -428,7 +428,7 @@ def JPO(HardwareRegister : HardwareRegisters,
 
 def JO(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -441,7 +441,7 @@ def JO(HardwareRegister : HardwareRegisters,
 
 def JNO(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -454,7 +454,7 @@ def JNO(HardwareRegister : HardwareRegisters,
 
 def JCXZ(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):

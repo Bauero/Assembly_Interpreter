@@ -12,7 +12,7 @@ It is must use the
 
 # from hardware_registers import HardwareRegisters
 # from flag_register import FlagRegister
-# from datatypes import Data
+# from hardware_memory import DataSegment
 
 ##################################   INFO 2   ##################################
 
@@ -21,7 +21,7 @@ It is must use the
 
 # def EXAMPLE(HardwareRegister : HardwareRegisters, 
 #               FlagRegister : FlagRegister,
-#               Data : Data,
+#               Data : DataSegment,
 #               *params):
 #     """This function performs addition"""
 

@@ -5,11 +5,11 @@ This file contains all INT instructions which are possible to be Executed
 import time
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from datatypes import Data
+from hardware_memory import DataSegment
 
 def INT(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -28,7 +28,7 @@ def INT(HardwareRegister : HardwareRegisters,
 
 def _int_21h_2(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -39,7 +39,7 @@ def _int_21h_2(HardwareRegister : HardwareRegisters,
 
 def _int_21h_44(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -90,7 +90,7 @@ def _int_21h_44(HardwareRegister : HardwareRegisters,
 
 def _int_21h_0(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -99,12 +99,21 @@ def _int_21h_0(HardwareRegister : HardwareRegisters,
 
 def _int_21h_76(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
     
     return {"next_instruction" : -1}
+
+def _int_21h_10(HardwareRegister : HardwareRegisters, 
+        FlagRegister : FlagRegister,
+        Data : DataSegment,
+        Variables : dict,
+        Labels : dict,
+        **kwargs):
+
+    return {"action_for_terminal" : "int_21h_10"}
 
 INT.params_range = [1]
 INT.allowed_params_combinations = [ ("value",) ]

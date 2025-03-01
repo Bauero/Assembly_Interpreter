@@ -4,14 +4,14 @@ This file contains all operations which perform arithmetic operations
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from datatypes import Data
+from hardware_memory import DataSegment
 from helper_functions import eval_no_of_1, sign_changed, convert_number_to_bit_list, \
                              inverse_Twos_Compliment_Number, save_value_in_destination, \
                              convert_number_to_bit_list,convert_number_to_int_with_binary_capacity
 
 def AAA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -75,7 +75,7 @@ def AAA(HardwareRegister : HardwareRegisters,
 
 def AAS(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -139,7 +139,7 @@ def AAS(HardwareRegister : HardwareRegisters,
 
 def DAS(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -223,7 +223,7 @@ def DAS(HardwareRegister : HardwareRegisters,
 
 def DAA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -306,7 +306,7 @@ def DAA(HardwareRegister : HardwareRegisters,
 
 def AAM(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -367,7 +367,7 @@ def AAM(HardwareRegister : HardwareRegisters,
 
 def AAD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -434,7 +434,7 @@ def AAD(HardwareRegister : HardwareRegisters,
 
 def ADD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -497,7 +497,7 @@ def ADD(HardwareRegister : HardwareRegisters,
 
 def ADC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -561,7 +561,7 @@ def ADC(HardwareRegister : HardwareRegisters,
 
 def SUB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -625,7 +625,7 @@ def SUB(HardwareRegister : HardwareRegisters,
 
 def SBB(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -696,7 +696,7 @@ def SBB(HardwareRegister : HardwareRegisters,
 
 def CMP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -755,7 +755,7 @@ def CMP(HardwareRegister : HardwareRegisters,
 
 def CBW(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -791,7 +791,7 @@ def CBW(HardwareRegister : HardwareRegisters,
 
 def CWD(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -827,7 +827,7 @@ def CWD(HardwareRegister : HardwareRegisters,
 
 def DEC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -891,7 +891,7 @@ def DEC(HardwareRegister : HardwareRegisters,
 
 def INC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -952,7 +952,7 @@ def INC(HardwareRegister : HardwareRegisters,
 
 def MUL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -1035,7 +1035,7 @@ def MUL(HardwareRegister : HardwareRegisters,
 
 def IMUL(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -1130,7 +1130,7 @@ def IMUL(HardwareRegister : HardwareRegisters,
 
 def DIV(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -1178,7 +1178,7 @@ def DIV(HardwareRegister : HardwareRegisters,
 
 def IDIV(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -1245,7 +1245,7 @@ def IDIV(HardwareRegister : HardwareRegisters,
 
 def NEG(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):

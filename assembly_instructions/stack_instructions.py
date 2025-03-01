@@ -5,7 +5,7 @@ stack - all typical pop / push instructions which are avaialbe in assembly
 
 from hardware_registers import HardwareRegisters
 from flag_register import FlagRegister
-from datatypes import Data
+from hardware_memory import DataSegment
 from helper_functions import convert_number_to_int_with_binary_capacity, \
                              convert_number_to_bit_list, \
                              save_value_in_destination
@@ -14,7 +14,7 @@ list_of_registers = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
 
 def PUSH(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -87,7 +87,7 @@ def PUSH(HardwareRegister : HardwareRegisters,
 
 def PUSHF(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -132,7 +132,7 @@ def PUSHF(HardwareRegister : HardwareRegisters,
 
 def PUSHA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -193,7 +193,7 @@ def PUSHA(HardwareRegister : HardwareRegisters,
 
 def POP(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-        Data : Data,
+        Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -259,7 +259,7 @@ def POP(HardwareRegister : HardwareRegisters,
 
 def POPF(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-                Data : Data,
+                Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):
@@ -297,7 +297,7 @@ def POPF(HardwareRegister : HardwareRegisters,
 
 def POPA(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,
-                Data : Data,
+                Data : DataSegment,
         Variables : dict,
         Labels : dict,
         **kwargs):

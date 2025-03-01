@@ -4,15 +4,17 @@ allow for it's further use inside program.
 """
 
 from re import match, search, sub
-from datatypes import Data
-from helper_functions import return_size_from_name
+from hardware_memory import DataSegment
+from helper_functions import (return_size_from_name,
+                              return_if_base_16_value,
+                              return_if_base_10_value,
+                              return_if_base_8_value,
+                              return_if_base_2_value)
 from errors import ImproperJumpMarker, ImproperDataDefiniton
-
 
 allowed_sections = ['code', 'stack', 'data', 'text']
 
-
-def loadMainFile(raw_file : list, data : Data) -> tuple:
+def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     """
     This function tries to read and load file speciphied in the path - this is main funciton
     responsible for reading code - executing it with success, shoudl allow to run code from
@@ -21,7 +23,7 @@ def loadMainFile(raw_file : list, data : Data) -> tuple:
 
     assert type(raw_file) == list
 
-    assembly_code = _initialLoadAndCleanup(raw_file, data)
+    assembly_code = _initialLoadAndCleanup(raw_file, Data)
     assembly_code = _divideCodeToSection(assembly_code)
     assembly_code = _replaceEquateValues(assembly_code)
     assembly_code = _replaceDUPValues(assembly_code)
@@ -34,8 +36,7 @@ def loadMainFile(raw_file : list, data : Data) -> tuple:
 
     return start, assembly_code
 
-
-def _initialLoadAndCleanup(file : list, data : Data):
+def _initialLoadAndCleanup(file : list, Data : DataSegment):
     """
     Remove comments and empty lines - ignore directives and secitons
     """
@@ -44,7 +45,7 @@ def _initialLoadAndCleanup(file : list, data : Data):
         'lines' : [],
         'labels' : {},
         'variables' : {},
-        'data' : data
+        'data' : Data
     }
 
     for number, line in enumerate(file, 1):
@@ -59,7 +60,6 @@ def _initialLoadAndCleanup(file : list, data : Data):
         #   Skip any 'seciton header' which will not be processed
         if line.startswith('.') and line[1:].split(" ")[0].lower() not in allowed_sections:
             continue
-        
 
         #   Detect indentifiers (points where code could jump to)
         if match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
@@ -89,7 +89,6 @@ def _initialLoadAndCleanup(file : list, data : Data):
     
     return assembly_code
 
-
 def _divideCodeToSection(assembly_code):
     """
     This command will limit the subset of lines in code for execution, by spliting code
@@ -97,7 +96,7 @@ def _divideCodeToSection(assembly_code):
     variables
     """
 
-    default_section = "undefined"
+    default_section = ".code"
     current_section = default_section
     alaius = True # all lines are in undefined section
 
@@ -109,10 +108,9 @@ def _divideCodeToSection(assembly_code):
 
         match line_beginning:
             case '.code':           current_section = ".code";      alaius = False
-            case '.stack':          current_section = ".stack";     alaius = False
             case '.data':           current_section = ".data";      alaius = False
             case '.text':           current_section = ".code";      alaius = False
-            case '_':               current_section = 'undefined'
+            case '_':               current_section = '.code'
         
         assembly_code['lines'][id]["section"] = current_section
 
@@ -123,11 +121,10 @@ def _divideCodeToSection(assembly_code):
 
     return assembly_code
 
-
 def _replaceEquateValues(assembly_code):
     """
     This function looks for lines with 'EQU' macro, which allows for replacement of values
-    within kode with values provided to the macro. 
+    within code with values provided to the macro. 
     """
 
     undefined_lines = filter(lambda l: l['section'] == 'undefined', assembly_code['lines'])
@@ -160,7 +157,6 @@ def _replaceEquateValues(assembly_code):
 
     return assembly_code
 
-
 def _replaceDUPValues(assembly_code):
     """
     Within .data section it is possible to define variable with 'DUP' directive which 
@@ -189,11 +185,10 @@ def _replaceDUPValues(assembly_code):
             value   = matched.group()
 
             repeat, _, what = value.split(" ")
-            new_line_part = ",".join((what[1:-1] for _ in range(int(repeat))))
+            new_line_part = "".join((what[1:-1] for _ in range(int(repeat))))
             assembly_code['lines'][id]['content'] = content[:start] + new_line_part + content[end:]
 
     return assembly_code
-
 
 def _wrapMultiLineData(assembly_code):
     """
@@ -254,13 +249,13 @@ def _wrapMultiLineData(assembly_code):
 
     return assembly_code
 
-
 def _storeVariablesInData(assembly_code):
     """
     This function converts values from data section, to variables in Data
     """
 
     data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
+    byte_counter = 0
 
     for i in data_rows:
         line = assembly_code['lines'][i]['content']
@@ -298,6 +293,62 @@ def _storeVariablesInData(assembly_code):
         #   Write data, and receive it's size in data section
         start_add, size = assembly_code['data'].add_data(storage_size, var_content)
 
+        starting_address = byte_counter
+        elements = []
+        tmp = ''
+        inside_text = False
+
+        for char in var_content:
+            if not inside_text and char == '"':
+                inside_text = True
+                tmp += char
+            elif inside_text and char == '"':
+                inside_text = False
+                tmp += char
+                elements.append(tmp)
+                tmp = ''
+            elif not inside_text and char == ',':
+                if not tmp:
+                    continue
+                elements.append(tmp)
+                tmp = ''
+            else:
+                tmp += char
+        else:
+            elements.append(tmp)
+
+        for element in elements:
+            is_text = False
+            element = str(element).strip() if type(element) != str else element
+            if element.startswith('"') and element.endswith('"'):
+                element = element[1:-1]
+                is_text = True
+
+            if element == "?":
+                [str(0) for _ in range(storage_size)]
+                for e in range(storage_size):
+                    assembly_code['data'].modify_data(byte_counter, 0)
+                continue
+
+            elif not is_text:
+                element = element.strip()
+
+                if value := return_if_base_16_value(element):       base = 16
+                elif value := return_if_base_10_value(element):     base = 10
+                elif value := return_if_base_8_value(element):      base = 8
+                elif value := return_if_base_2_value(element):      base = 2
+
+                if bool(value):
+                    bite_list = bin(int(element, base))[2:].zfill(storage_size)
+                    byte_counter =  assembly_code['data'].modify_data(byte_counter, bite_list)
+                    continue
+
+            for c in element:
+                bite_list =  bin(ord(c))[2:].zfill(storage_size)
+                byte_counter = assembly_code['data'].modify_data(byte_counter, bite_list)
+
+        start_add, size = starting_address , byte_counter - starting_address
+
         #   If data have a name, store it with address, size and format
         if var_name:
             assembly_code['variables'][var_name] = {    # data : "ala"   # data : 68   # data : "Mati"
@@ -307,7 +358,6 @@ def _storeVariablesInData(assembly_code):
             }
 
     return assembly_code
-
 
 def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     """

@@ -28,33 +28,30 @@ class CodeHandler():
     def readPrepareFile(self, path_to_file, ignore_size_limit, ignore_file_type):
         """This function, reads file and prepare it's content for processing"""
 
-        raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
-        
-        #   Prepare data
-        assert type(raw_file) == list
-        self.rawfiles[path_to_file] = raw_file
-        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.data)
-        self.pass_variable_to_engine(preprocessed_instrucitons)
+        raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)      # Wczytanie pliku do zmiennej
 
-        #   Save variables inside Code Handler
-        self.currentlyExecutedFile = path_to_file
-        self.currentlyExecutedLine[path_to_file] = start
-        self.openFiles.append(path_to_file)
-        self.files[path_to_file] = preprocessed_instrucitons
+        self.rawfiles[path_to_file] = raw_file                                              # Zapisanie ścieżki dostępu do pliku
+        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.data)         # Wstępna analiza z użyciem preprocesor.py
+        self.pass_variable_to_engine(preprocessed_instrucitons)                             # Przekazanie listy zmiennych do silinika
+
+        self.currentlyExecutedFile = path_to_file                                           # Zapisanie jaki obecnie wykonywany jest plik (umożliwienie dodania wsparcia do wielu plików)
+        self.currentlyExecutedLine[path_to_file] = start                                    # Zapisanie jaka linijka w jakim pliku jest wykonywana (umożliwienie dodania wsparcia do wielu plików)
+        self.openFiles.append(path_to_file)                                                 # Zapisanie pełnej ścieżii do pliku w liści plików na których pracujemy
+        self.files[path_to_file] = preprocessed_instrucitons                                # Zapisanie przygotowanych instrkucji wśród plików
         
+        # Inicjalizacja modułu do zapisywania historii
         self.history = History(
             path_to_file,
             raw_file,
             preprocessed_instrucitons
         )
 
+        # W przypadku pustego pliku zwrócenie wartości 0 - lista oznacza które linie program ma podkreślić - możliwość pracy na instrukcjach wielolinijkow
         if start != (-1, [-1]):
             output = start[1]
         else:
             output = [0]
-        
         return output
-        # TODO what whould happen if there is no starting poing?
 
     def readInteractive(self, data : str):
         text_in_linex = data.split("\n")
