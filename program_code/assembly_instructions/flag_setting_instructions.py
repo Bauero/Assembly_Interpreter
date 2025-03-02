@@ -3,9 +3,9 @@ This file stores all instructions which are responsible for setting a speciphic 
 procesor
 """
 
-from ..hardware_registers import HardwareRegisters
-from ..flag_register import FlagRegister
-from ..hardware_memory import DataSegment
+from program_code.hardware_registers import HardwareRegisters
+from program_code.flag_register import FlagRegister
+from program_code.hardware_memory import DataSegment
 
 def CLC(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,

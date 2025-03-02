@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,QApplication)
 import json
 
-with open('program/names.json') as f:
+with open('program_code/names.json') as f:
     names = json.load(f)["language_specific_names"]
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter

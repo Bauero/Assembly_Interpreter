@@ -3,10 +3,10 @@ This file contains instrucitons which are available to user to put or remove dat
 stack - all typical pop / push instructions which are avaialbe in assembly
 """
 
-from program.hardware_registers import HardwareRegisters
-from program.flag_register import FlagRegister
-from program.hardware_memory import DataSegment
-from program.helper_functions import convert_number_to_int_with_binary_capacity, \
+from program_code.hardware_registers import HardwareRegisters
+from program_code.flag_register import FlagRegister
+from program_code.hardware_memory import DataSegment
+from program_code.helper_functions import convert_number_to_int_with_binary_capacity, \
                              convert_number_to_bit_list, \
                              save_value_in_destination
 

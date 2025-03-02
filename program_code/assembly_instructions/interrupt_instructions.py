@@ -3,9 +3,9 @@ This file contains all INT instructions which are possible to be Executed
 """
 
 import time
-from program.hardware_registers import HardwareRegisters
-from program.flag_register import FlagRegister
-from program.hardware_memory import DataSegment
+from program_code.hardware_registers import HardwareRegisters
+from program_code.flag_register import FlagRegister
+from program_code.hardware_memory import DataSegment
 
 def INT(HardwareRegister : HardwareRegisters, 
         FlagRegister : FlagRegister,

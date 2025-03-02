@@ -3,12 +3,12 @@ This file contains Engine Class, which is responsible for simluation of operatio
 """
 
 from inspect import signature
-from .helper_functions import *
-from .hardware_memory import DataSegment
-from .flag_register import FlagRegister
 from simpleeval import simple_eval
 from .assembly_instructions import *
+from .helper_functions import *
+from .hardware_memory import DataSegment
 from .hardware_registers import HardwareRegisters
+from .flag_register import FlagRegister
 from .code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
 from .errors import (ArgumentNotExpected,
                     NoExplicitSizeError,
@@ -70,10 +70,8 @@ class Engine():
         args_values_raw, args_values_int, final_sizes, destination = extracted
         
         for i, arg in enumerate(args_types):
-            if arg == "complex value":
-                args_types[i] = "value"
-            elif arg == "memory call":
-                args_types[i] = "memory"
+            if arg == "complex value":      args_types[i] = "value"
+            elif arg == "memory call":      args_types[i] = "memory"
 
         final_standardized_sizes = self._standardise_sizes_check_if_legal(args_types, 
                                                                           final_sizes, 
@@ -103,8 +101,7 @@ class Engine():
         return output
 
     def load_new_state_after_change(self, change : dict, forward : bool):
-        """
-        The purpose of this method is to directly change state of the simulated
+        """The purpose of this method is to directly change state of the simulated
         HR, FR, DATA or manipulate date, allowing to undo/redo instruction, and
         ommit resource-intensive processing, when running already processed instructions
         """

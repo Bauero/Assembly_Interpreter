@@ -2,10 +2,10 @@
 This file contains operations which perform locical operations
 """
 
-from program.hardware_registers import HardwareRegisters
-from program.flag_register import FlagRegister
-from program.hardware_memory import DataSegment
-from program.helper_functions import (save_value_in_destination,
+from program_code.hardware_registers import HardwareRegisters
+from program_code.flag_register import FlagRegister
+from program_code.hardware_memory import DataSegment
+from program_code.helper_functions import (save_value_in_destination,
                               convert_number_to_bit_list,
                               eval_no_of_1)
 

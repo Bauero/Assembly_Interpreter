@@ -26,7 +26,7 @@ from .color_pallete import *
 from .custom_message_boxes import *
 from screeninfo import get_monitors
 
-with open('program/names.json') as f:
+with open('program_code/names.json') as f:
     names = json.load(f)["language_specific_names"]
 
 class MainWindow(QWidget):

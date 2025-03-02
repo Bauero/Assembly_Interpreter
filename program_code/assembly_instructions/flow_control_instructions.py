@@ -3,10 +3,10 @@ This file contains instructions which modify flow of the program, but in contras
 they have it's own distinct function, and hence, deserve it's own file
 """
 
-from program.hardware_memory import DataSegment
-from program.flag_register import FlagRegister
-from program.hardware_registers import HardwareRegisters
-from program.helper_functions import (save_value_in_destination,
+from program_code.hardware_memory import DataSegment
+from program_code.flag_register import FlagRegister
+from program_code.hardware_registers import HardwareRegisters
+from program_code.helper_functions import (save_value_in_destination,
                               convert_number_to_bit_list,
                               convert_number_to_bit_list,
                               convert_number_to_int_with_binary_capacity)

@@ -3,7 +3,7 @@ CLI interface alongside GUI"""
 
 import sys
 from PyQt6.QtWidgets import QApplication
-from program import *
+from program_code import *
 
 def main():
     app = QApplication([])
