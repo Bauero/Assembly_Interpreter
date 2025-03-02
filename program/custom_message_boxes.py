@@ -1,57 +1,62 @@
 from PyQt6.QtWidgets import QMessageBox
+import json
+
+with open('program/names.json') as f:
+    names = json.load(f)["language_specific_names"]
 
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
 
-def unrecognized_error_popup(e):
+def unrecognized_error_popup(language : str, e : Exception) -> int:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle("File doesn't exist!")
-    msg.setText(f"{e}")
+    msg.setWindowTitle(names[language]["unhandled_exception"])
+    msg.setText(f"{names[language]['original_error']}:\n{e}")
     return msg.exec()
 
-def file_doesnt_exist_popup():
+def file_doesnt_exist_popup(language : str) -> int:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle("File doesn't exist!")
-    msg.setText("No file selected or file doesn't exist! 😵\nWant to try again?")
+    msg.setWindowTitle(names[language]["file_doesnt_exist"])
+    msg.setText(names[language]["file_not_sel_try_again"])
     msg.setStandardButtons(ok_button | cancel_button)
     return msg.exec()
 
-def file_size_too_big():
+def file_size_too_big(language : str) -> int:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle("File size might be too big")
-    msg.setText("It seems you are trying to open file above 1MB in size! \nWhat do you want to do?")
-    msg.addButton("Disable warning and select new file", QMessageBox.ButtonRole.YesRole)  # returns 2
-    msg.addButton("Continue with this file", QMessageBox.ButtonRole.NoRole) # returns 3
-    msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
+    msg.setWindowTitle(names[language]["file_too_big"])
+    msg.setText(names[language]["file_size_warning"])
+    msg.addButton(names[language]["sel_new_file"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cont_this_file"], QMessageBox.ButtonRole.NoRole) # returns 3
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)     # returns 4
     return msg.exec()
 
-def improper_file_type():
+def improper_file_type(language : str) -> int:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle("File doesn't exist!")
-    msg.setText("File type is not within allowed file typed (.s, .asm) \nWant do you want to do?")
-    msg.addButton("Disable warning and select new file", QMessageBox.ButtonRole.YesRole)  # returns 2
-    msg.addButton("Continue with this file", QMessageBox.ButtonRole.NoRole) # returns 3
-    msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
+    msg.setWindowTitle(names[language]["improper_file_type"])
+    msg.setText(names[language]["wrong_file_extension"])
+    msg.addButton(names[language]["sel_new_file"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cont_this_file"], QMessageBox.ButtonRole.NoRole) # returns 3
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)     # returns 4
     return msg.exec()
 
-def preparation_error(e):
+def data_section_error(language : str, e : Exception) -> int:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle("Preprocessing error")
-    msg.setText(f"Wrong data definition:\nLine {e.line()}\nMessage: \"{e.message()}\"")
-    msg.addButton("Load file in interactive mode", QMessageBox.ButtonRole.YesRole)  # returns 2
-    msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
+    msg.setWindowTitle(names[language]["data_sec_error"])
+    msg.setText(f"{names[language]['incorrect_data_def']}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
     return msg.exec()
 
-def preprocessing_error(e):
+def improper_label_error(language : str, e : Exception) -> int:
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle("Preprocessing error")
-    msg.setText(f"Improper line marker definition:\nLine {e.line()}\nMessage: \"{e.message()}\"")
-    msg.addButton("Load file in interactive mode", QMessageBox.ButtonRole.YesRole)  # returns 2
-    msg.addButton("Cancel", QMessageBox.ButtonRole.RejectRole) # returns 4
+    msg.setWindowTitle(names[language]["improper_label"])
+    msg.setText(f"{names[language]['incorrect_label']}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
     return msg.exec()
+

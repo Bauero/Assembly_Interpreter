@@ -10,7 +10,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QPushButton,
     QFileDialog,
-    QMessageBox,
     QHBoxLayout,
     QComboBox,
     QCheckBox,
@@ -27,6 +26,8 @@ from .color_pallete import *
 from .custom_message_boxes import *
 from screeninfo import get_monitors
 
+with open('program/names.json') as f:
+    names = json.load(f)["language_specific_names"]
 
 class MainWindow(QWidget):
     """
@@ -38,6 +39,7 @@ class MainWindow(QWidget):
         super().__init__()
         self.code_handler = code_handler
         self.interactive_mode = False
+        self.language = "PL"
         self._createUserInterface()
         self._set_interactive_mode()
         self.program_running = False
@@ -59,41 +61,43 @@ class MainWindow(QWidget):
 
         self._createMainMenuPage()
         self._createMainProgramPage()
-        self.setWindowTitle('Interpreter Asemblera')
+        self.setWindowTitle(names[self.language]["window_title"])
         self.welcomeScreen.setGeometry(pos_x, pos_y, w_width, w_heigth)
         self.programScreen.setGeometry(pos_x, pos_y, monitor_width, monitor_height)
 
     def _createMainMenuPage(self):
         """Defines Main Menu page visible when user lanuches program"""
             
-        #   Constants
         alg_cent = Qt.AlignmentFlag.AlignCenter
         font = QFont()
         font.setPointSize(20)
 
-        #   Create base widget
         self.welcomeScreen = QWidget()
         welcomeLayout = QVBoxLayout()
         welcomeLayout.setAlignment(alg_cent)
 
-        #   Create nested widget just for buttons
         self.welcomeScreenButtons = QWidget()
         welcomeButtonsLayout = QVBoxLayout()
         welcomeButtonsLayout.setAlignment(alg_cent)
         
-        #   Defining properties of elemetns
-        load_file_button = QPushButton('Wczytaj plik')
-        load_file_button.clicked.connect(self._select_file_to_open_dialog)
-        open_session_button = QPushButton('Tryb interakwyny')
-        open_session_button.clicked.connect(self._open_interactive_mode)
-        title = QLabel('Menu główne')
-        title.setFont(font)
+        self.main_menu_title = QLabel(names[self.language]["main_menu"])
+        self.load_file_button = QPushButton(names[self.language]["input_file"])
+        self.load_file_button.clicked.connect(self._select_file_to_open_dialog)
+        self.open_session_button = QPushButton(names[self.language]["interactive"])
+        self.open_session_button.clicked.connect(self._open_interactive_mode)
+        self.toggle_language = QComboBox()
+        self.toggle_language.addItems([names[self.language]["polish_lang"],
+                                       names[self.language]["english_lang"]])
+        self.toggle_language.currentIndexChanged.connect(self._lang_change)
+        self.toggle_language.setCurrentIndex(0)
+        self.main_menu_title.setFont(font)
 
         #   Put elements in widgets
-        welcomeLayout.addWidget(title, alignment = alg_cent)
+        welcomeLayout.addWidget(self.main_menu_title, alignment = alg_cent)
         welcomeLayout.addWidget(QLabel(), alignment = alg_cent)
-        welcomeButtonsLayout.addWidget(load_file_button, alignment = alg_cent)
-        welcomeButtonsLayout.addWidget(open_session_button, alignment = alg_cent)
+        welcomeButtonsLayout.addWidget(self.load_file_button, alignment = alg_cent)
+        welcomeButtonsLayout.addWidget(self.open_session_button, alignment = alg_cent)
+        welcomeButtonsLayout.addWidget(self.toggle_language, alignment = alg_cent)
 
         #   Save layouts so that they can be displayed
         self.welcomeScreenButtons.setLayout(welcomeButtonsLayout)
@@ -121,7 +125,7 @@ class MainWindow(QWidget):
         registersSectionLayout = QVBoxLayout()
         registersSectionLayout.setAlignment(alg_top)
 
-        self.registers_label = QLabel("Registers")
+        self.registers_label = QLabel(names[self.language]["registers"])
         self.registers_label.setFont(font)
         registersSectionLayout.addWidget(self.registers_label)
         # registersSectionLayout.setStretch(10)
@@ -129,21 +133,22 @@ class MainWindow(QWidget):
         HR = self.code_handler.engine.HR
         FR = self.code_handler.engine.FR
         self.register_section_elements = [
-            MultipurposeRegister(HR, "AX", neon_blue, 'Arithmetic & general purpose'),
-            MultipurposeRegister(HR, "BX", neon_blue, 'Used for memory & general purpose'),
-            MultipurposeRegister(HR, "CX", neon_blue, 'Counter & general purpose register'),
-            MultipurposeRegister(HR, "DX", neon_blue, 'Usef for memory, and buffor for some instrucitons like div'),
-            FunctionalRegisters(HR, "SI", 'orange', "Source Index Register"),
-            FunctionalRegisters(HR, "DI", 'orange', "Destination Index Register"),
-            FunctionalRegisters(HR, "SP", 'orange', 'Stack Index Register - \'top\' position where new data will be stored by default'),
-            FunctionalRegisters(HR, "BP", 'orange', 'Points to the base of stack'),
-            FunctionalRegisters(HR, "IP", deep_red, "Instruction Pointer Register"),
-            FlagRegister(FR)
+            MultipurposeRegister(HR, "AX", neon_blue, names[self.language]["AX_hint"]),
+            MultipurposeRegister(HR, "BX", neon_blue, names[self.language]["BX_hint"]),
+            MultipurposeRegister(HR, "CX", neon_blue, names[self.language]["CX_hint"]),
+            MultipurposeRegister(HR, "DX", neon_blue, names[self.language]["DX_hint"]),
+            FunctionalRegisters(HR, "SI", 'orange',   names[self.language]["SI_hint"]),
+            FunctionalRegisters(HR, "DI", 'orange',   names[self.language]["DI_hint"]),
+            FunctionalRegisters(HR, "SP", 'orange',   names[self.language]["SP_hint"]),
+            FunctionalRegisters(HR, "BP", 'orange',   names[self.language]["BP_hint"]),
+            FunctionalRegisters(HR, "IP", deep_red,   names[self.language]["IP_hint"]),
+            Flags(FR, self.language)
         ]
 
         registersSectionLayout.setSpacing(0)
 
         for element in self.register_section_elements:
+            setattr(self, element.get_name(), element)
             element.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
             element.setMinimumHeight(50)  # Minimalna wysokość, do której może się skurczyć
             element.setMaximumHeight(120)
@@ -159,23 +164,23 @@ class MainWindow(QWidget):
 
         self.codeSection = QWidget()
         codeSectionLayout = QFormLayout()
-        code_label = QLabel("Code")
-        code_label.setFont(font)
+        self.code_label = QLabel(names[self.language]["code"])
+        self.code_label.setFont(font)
         self.code_field = CodeEditor()
         self.code_field.setMinimumWidth(400)
 
-        self.nextLineButton         = QPushButton('Wykonaj instrukcję')
-        self.previousLineButton     = QPushButton('Powrót do poprzedniej instrukcji')
-        self.startExecutionButton   = QPushButton('Uruchom program')
-        self.saveStateButton        = QPushButton('Zapisz stan')
-        self.startAutoExecButton    = QCheckBox('Auto-wykonywanie')
+        self.nextLineButton         = QPushButton(names[self.language]["next_button"])
+        self.previousLineButton     = QPushButton(names[self.language]["prev_button"])
+        self.startExecutionButton   = QPushButton(names[self.language]["start_stop_1"])
+        self.saveStateButton        = QPushButton(names[self.language]["save_state"])
+        self.startAutoExecCheckbox  = QCheckBox(names[self.language]["auto_button"])
         
         self.nextLineButton.        setEnabled(self.interactive_mode)
         self.previousLineButton.    setEnabled(self.interactive_mode)
         self.saveStateButton.       setEnabled(self.interactive_mode)
-        self.startAutoExecButton.   setEnabled(True)
-        self.startAutoExecButton.   setChecked(False)
-        self.startAutoExecButton.   stateChanged.connect(lambda: self._run_next_instruction_or_stop())
+        self.startAutoExecCheckbox. setEnabled(True)
+        self.startAutoExecCheckbox. setChecked(False)
+        self.startAutoExecCheckbox. stateChanged.connect(lambda: self._run_next_instruction_or_stop())
 
         self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
@@ -183,7 +188,7 @@ class MainWindow(QWidget):
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
         self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
         
-        comboBoxLabel = QLabel('Opóźnienie')
+        comboBoxLabel = QLabel(names[self.language]["interval"])
         comboBoxLabel.setAlignment(alg_right)
         self.executionFrequencyList = QComboBox()
         for t in ['0.25s', '0.5s', '1s', '2s', '5s']:
@@ -207,10 +212,10 @@ class MainWindow(QWidget):
         row_2.addWidget(self.saveStateButton)
 
         row_3 = QHBoxLayout()
-        row_3.addWidget(self.startAutoExecButton)
+        row_3.addWidget(self.startAutoExecCheckbox)
         row_3.addWidget(box)
 
-        codeSectionLayout.addRow(code_label)
+        codeSectionLayout.addRow(self.code_label)
         codeSectionLayout.setSpacing(10)
         codeSectionLayout.addRow(self.code_field)
         codeSectionLayout.addRow(row_1)
@@ -219,18 +224,18 @@ class MainWindow(QWidget):
         self.codeSection.setLayout(codeSectionLayout)
 
         #
-        #   Stack Section
+        #   Stack / Segment Section
         #
 
         self.stackColumn = QVBoxLayout()
-        stack_label = QLabel("Stack")
-        stack_label.setFont(font)
+        self.segment_label = QLabel(names[self.language]["segment"])
+        self.segment_label.setFont(font)
         DT = self.code_handler.engine.data
         self.stackSection = StackTable(DT)
         self.stackSection.setFixedWidth(190)
         self.stackSection.set_allow_change_content(False)
         self.stackSection.generate_table()
-        self.stackColumn.addWidget(stack_label)
+        self.stackColumn.addWidget(self.segment_label)
         self.stackColumn.addSpacing(10)
         self.stackColumn.addWidget(self.stackSection)
         
@@ -239,11 +244,11 @@ class MainWindow(QWidget):
         #
 
         self.variableColumn = QVBoxLayout()
-        variables_label = QLabel("Variables")
-        variables_label.setFont(font)
+        self.variables_label = QLabel(names[self.language]["variables"])
+        self.variables_label.setFont(font)
         engine = self.code_handler.engine
         self.variableSection = VariableTable(engine)
-        self.variableColumn.addWidget(variables_label)
+        self.variableColumn.addWidget(self.variables_label)
         self.variableColumn.addSpacing(10)
         self.variableColumn.addWidget(self.variableSection)
 
@@ -254,7 +259,7 @@ class MainWindow(QWidget):
         self.terminal_widget = QWidget()
         self.terminal_layout = QVBoxLayout()
 
-        self.terminal_label = QLabel('Terminal')
+        self.terminal_label = QLabel(names[self.language]["terminal"])
         font = QFont()
         font.setBold(True)
         font.setPointSize(15)
@@ -329,7 +334,7 @@ class MainWindow(QWidget):
         while True:
             if not file_path:
                 file_path = QFileDialog.getOpenFileName(
-                    self, "Open File", "${HOME}",
+                    self, f"{names[self.language]['open_file']}", "${HOME}",
                     "All Files (*);; Python Files (*.py);; PNG Files (*.png)",
                 )[0]
                 if not file_path: return
@@ -340,26 +345,26 @@ class MainWindow(QWidget):
                 self.code_field.setHighlight(lines)
                 self.code_field.setEditable(False)
             except FileDoesntExist:
-                ans = file_doesnt_exist_popup()
+                ans = file_doesnt_exist_popup(self.language)
                 if ans == cancel_button.value:  return
                 file_path = ''
                 continue
             except FileSizeMightBeTooBig:
-                ans = file_size_too_big()
+                ans = file_size_too_big(self.language)
                 match ans:
                     case 2: ignore_size_limit = True ; file_path = ''
-                    case 3: ignore_size_limit = True
+                    case 3: ignore_file_type = True
                     case 4: return
                 continue
             except FileTypeNotAllowed:
-                ans = improper_file_type()
+                ans = improper_file_type(self.language)
                 match ans:
                     case 2: ignore_size_limit = True ; file_path = ''
-                    case 3: ignore_size_limit = True
+                    case 3: ignore_file_type = True
                     case 4: return
                 continue
             except ImproperDataDefiniton as e:
-                ans = preparation_error(e)
+                ans = data_section_error(self.language, e)
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
                     assert type(raw_file) == str
@@ -368,7 +373,7 @@ class MainWindow(QWidget):
                     self._open_interactive_mode()
                 return
             except ImproperJumpMarker as e:
-                ans = preprocessing_error()
+                ans = improper_label_error(self.language)
                 if ans == 2:
                     raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
                     assert type(raw_file) == str
@@ -377,7 +382,7 @@ class MainWindow(QWidget):
                     self._open_interactive_mode()
                 return
             except Exception as e:
-                unrecognized_error_popup(e)
+                unrecognized_error_popup(self.language, e)
                 return
             break
 
@@ -395,11 +400,11 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _toggle_automatic_execution(self):
-        self.automatic_execution = self.startAutoExecButton.isChecked()
+        self.automatic_execution = self.startAutoExecCheckbox.Checked()
     
     @pyqtSlot()
     def _run_next_instruction_or_stop(self):
-        if self.program_running and self.startAutoExecButton.isChecked():
+        if self.program_running and self.startAutoExecCheckbox.Checked():
             self._executeCommand("next_instruction")
             self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
 
@@ -412,17 +417,17 @@ class MainWindow(QWidget):
                     self._set_active_state(False)
                     self.nextLineButton.setEnabled(False)
                     self.previousLineButton.setEnabled(False)
-                    self.startExecutionButton.setText("Uruchom program")
+                    self.startExecutionButton.setText(names[self.language]["start_stop_1"])
                     self.startExecutionButton.setStyleSheet(f"color: {light_green_color};")
                 else:
                     self.nextLineButton.setEnabled(True)
                     self._set_active_state(True)
                     if self.instructionCounter > 0:
                         self.previousLineButton.setEnabled(True)
-                    self.startExecutionButton.setText( "Wstrzymaj program")
+                    self.startExecutionButton.setText(names[self.language]["start_stop_2"])
                     self.startExecutionButton.setStyleSheet(f"color: {darker_yellow};")
                 self.program_running = not self.program_running
-                if self.startAutoExecButton.isChecked():
+                if self.startAutoExecCheckbox.Checked():
                     self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
             case 'next_instruction':
                 response = self.code_handler.executeCommand('next_instruction')
@@ -468,7 +473,7 @@ class MainWindow(QWidget):
                 self.code_field.setHighlight([])
                 self.nextLineButton.setEnabled(True)
                 self.nextLineButton.setDisabled(True)
-                self.startExecutionButton.setText("Wstrzymaj program")
+                self.startExecutionButton.setText(names[self.language]["start_stop_2"])
                 self.startExecutionButton.setStyleSheet(f"color: {darker_yellow};")
                 self.program_running = False
 
@@ -482,4 +487,38 @@ class MainWindow(QWidget):
     @pyqtSlot()
     def _refresh(self):
         for element in self.register_section_elements:
-            element.update()
+            element.update()    
+
+    @pyqtSlot()
+    def _lang_change(self):
+        option = self.toggle_language.currentIndex()
+        lang_before= self.language
+        if option == 0:     self.language = "PL"
+        else:               self.language = "EN"
+        if lang_before != self.language:
+            self.main_menu_title.setText(names[self.language]["main_menu"])
+            self.load_file_button.setText(names[self.language]["input_file"])
+            self.open_session_button.setText(names[self.language]["interactive"])
+            self.registers_label.setText(names[self.language]["registers"])
+            self.code_label.setText(names[self.language]["code"])
+            self.segment_label.setText(names[self.language]['segment'])
+            self.variables_label.setText(names[self.language]['variables'])
+            self.nextLineButton.setText(names[self.language]['next_button'])
+            self.previousLineButton.setText(names[self.language]['prev_button'])
+            self.startAutoExecCheckbox.setText(names[self.language]['auto_button'])
+            self.AX.set_hint(names[self.language]["AX_hint"])
+            self.BX.set_hint(names[self.language]["BX_hint"])
+            self.CX.set_hint(names[self.language]["CX_hint"])
+            self.DX.set_hint(names[self.language]["DX_hint"])
+            self.SI.set_hint(names[self.language]["SI_hint"])
+            self.DI.set_hint(names[self.language]["DI_hint"])
+            self.BP.set_hint(names[self.language]["BP_hint"])
+            self.SP.set_hint(names[self.language]["SP_hint"])
+            self.FLAGS.set_hint(self.language)
+            self.toggle_language.blockSignals(True)
+            self.toggle_language.clear()
+            self.toggle_language.addItems([names[self.language]["polish_lang"],
+                                        names[self.language]["english_lang"]])
+            self.toggle_language.setCurrentIndex(option)
+            self.toggle_language.blockSignals(False)
+        self.load_file_button.setFocus()

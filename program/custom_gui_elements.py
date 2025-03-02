@@ -5,6 +5,7 @@ file
 
 from .engine import Engine
 from .hardware_memory import DataSegment
+from .flag_register import FlagRegister
 from .helper_functions import return_name_from_size
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
 from PyQt6.QtGui import (
@@ -14,6 +15,10 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QLabel, QHBoxLayout, QLineEdit, QTextEdit,
     QMessageBox, QPlainTextEdit, QTableWidget, QHeaderView, QTableWidgetItem, 
     QAbstractItemView,QApplication)
+import json
+
+with open('program/names.json') as f:
+    names = json.load(f)["language_specific_names"]
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
@@ -21,6 +26,9 @@ alg_top =       Qt.AlignmentFlag.AlignTop
 alg_jst =       Qt.AlignmentFlag.AlignJustify
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
+
+def color_txt(color : str, text : str, font_size_px : int = 14) -> str:
+    return f'<pre><span style="font-size: {font_size_px}px; color: {color};">{text}</span></pre>'
 
 class MultipurposeRegister(QWidget):
     """This class creates a widget for displaying multipurpose register, splited into
@@ -37,14 +45,12 @@ class MultipurposeRegister(QWidget):
         row_layout = QHBoxLayout()
         
         # Register name label (e.g., EAX)
-        register_label = QLabel(register_name)
-        register_label.setStyleSheet(f"color: {text_color};")
-        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
-        register_label.setFont(font)
-        row_layout.addWidget(register_label)
-        register_label.setToolTip(f'<span style="color: white;">\
-            {"General purpose register" if not custom_name else custom_name}\
-            </span>')
+        self.register_label = QLabel(register_name)
+        self.register_label.setStyleSheet(f"color: {text_color};")
+        font = QFont() ; font.setBold(True) ; font.setPointSize(16)
+        self.register_label.setFont(font)
+        row_layout.addWidget(self.register_label)
+        self.register_label.setToolTip(color_txt('#8F8F8F', custom_name))
         row_layout.insertSpacing(1,9)
         
         # Container for the H and L labels and main text fields
@@ -130,6 +136,9 @@ class MultipurposeRegister(QWidget):
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
+    def set_hint(self, text : str) -> None:
+        self.register_label.setToolTip(color_txt('#8F8F8F', text))
+
 
 class FunctionalRegisters(QWidget):
     def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
@@ -140,14 +149,13 @@ class FunctionalRegisters(QWidget):
 
         row_layout = QHBoxLayout()
 
-        register_label = QLabel(register_name)
-        register_label.setFixedWidth(30)
-        register_label.setStyleSheet(f"color: {text_color};")
-        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
-        register_label.setFont(font)
-        row_layout.addWidget(register_label)
-        register_label.setToolTip(
-            f'{"Special register" if not custom_name else custom_name}')
+        self.register_label = QLabel(register_name)
+        self.register_label.setFixedWidth(30)
+        self.register_label.setStyleSheet(f"color: {text_color};")
+        font = QFont() ; font.setBold(True) ; font.setPointSize(16)
+        self.register_label.setFont(font)
+        row_layout.addWidget(self.register_label)
+        self.register_label.setToolTip(color_txt('#8F8F8F', custom_name))
 
         self.register_content = QLineEdit()
         self.register_content.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
@@ -205,23 +213,25 @@ class FunctionalRegisters(QWidget):
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
 
+    def set_hint(self, text : str) -> None:
+        self.register_label.setToolTip(color_txt('#8F8F8F', text))
 
-class FlagRegister(QWidget):
+
+class Flags(QWidget):
     """
     This class is responsible for display of flag register = it containts a text
     field with source value, and below it, there are checkbox'es working like 
     indicators for all flags which are important for the user
     """
 
-    def __init__(self, FR):
+    def __init__(self, FR : FlagRegister, language : str):
         super().__init__()
         self.FR = FR
         wrapper = QHBoxLayout()
         body = QFormLayout()
         firts_row = QHBoxLayout()
-        register_label = QLabel("FLAGS")
-        register_label.setStyleSheet("color: #30BB73;")
-        font = QFont() ; font.setBold(True) ; font.setPointSize(15)
+        register_label = QLabel(color_txt('#30BB73', names[language]["flags"], 16))
+        font = QFont() ; font.setBold(True) #; font.setPointSize(16)
         register_label.setFont(font)
         firts_row.addWidget(register_label)
         firts_row.insertSpacing(1,20)
@@ -239,15 +249,14 @@ class FlagRegister(QWidget):
         self.flag_indicators_row_3 = QHBoxLayout()
 
         flags = ['Overflow', 'Direction', 'Interrupt',
-                 'Trap', 'Sign', 'Zero',
-                 'Auxiliary carry', 'Parity', 'Carry']
+                    'Trap', 'Sign', 'Zero',
+                    'Auxiliary carry', 'Parity', 'Carry']
 
         for f in flags:
             attr_name = f"{f.lower().replace(' ', '_')}_flag"
-            def_name = f"def_{attr_name}"
             setattr(self, attr_name, CustomIndicator(f))
             obj = getattr(self, attr_name)
-            obj.setToolTip(getattr(self.FR, def_name)())
+            obj.setToolTip(color_txt('#8F8F8F', names[language][attr_name]))
             obj.stateChanged.connect(lambda _, flag=f: self._flag_indicator_clicked(flag))
 
         self.flag_indicators_row_1.addWidget(self.overflow_flag)
@@ -268,9 +277,6 @@ class FlagRegister(QWidget):
         self.flag_indicators_row_3.insertSpacing(3,22)
         self.flag_indicators_row_3.addWidget(self.carry_flag)
 
-        # self.flag_indicators_row_1.setStretch(0, 1)
-        # self.flag_indicators_row_2.setStretch(1, 2)
-        # self.flag_indicators_row_3.setStretch(2, 3)
         body.addRow(firts_row)
         body.addRow(self.flag_indicators_row_1)
         body.addRow(self.flag_indicators_row_2)
@@ -359,6 +365,17 @@ class FlagRegister(QWidget):
         msg.setWindowTitle(title)
         msg.exec()
 
+    def set_hint(self, language : str) -> None:
+        self.overflow_flag.         setToolTip(color_txt('#8F8F8F', names[language]["overflow_flag"]))
+        self.direction_flag.        setToolTip(color_txt('#8F8F8F', names[language]["direction_flag"]))
+        self.interrupt_flag.        setToolTip(color_txt('#8F8F8F', names[language]["interrupt_flag"]))
+        self.trap_flag.             setToolTip(color_txt('#8F8F8F', names[language]["trap_flag"]))
+        self.sign_flag.             setToolTip(color_txt('#8F8F8F', names[language]["sign_flag"]))
+        self.zero_flag.             setToolTip(color_txt('#8F8F8F', names[language]["zero_flag"]))
+        self.auxiliary_carry_flag.  setToolTip(color_txt('#8F8F8F', names[language]["auxiliary_carry_flag"]))
+        self.parity_flag.           setToolTip(color_txt('#8F8F8F', names[language]["parity_flag"]))
+        self.carry_flag.            setToolTip(color_txt('#8F8F8F', names[language]["carry_flag"]))
+
 
 class LimitedInputTextEdit(QTextEdit):
     inputFinished = pyqtSignal(str)  # Signal emitted when input is done
@@ -427,6 +444,7 @@ class LimitedInputTextEdit(QTextEdit):
             self.current_input += event.text()
             self.insertPlainText(event.text())
 
+
 class Terminal(QWidget):
     def __init__(self):
         super().__init__()
@@ -456,32 +474,6 @@ class Terminal(QWidget):
         """Write characters to terminal programmatically."""
         text = self.terminal.toPlainText()
         self.terminal.setPlainText(text + chr(char))
-        
-
-# class Terminal(QWidget):
-#     def __init__(self):
-#         super().__init__()
-
-#         main_frame = QFormLayout()
-        
-#         label = QLabel('Terminal')
-#         font = QFont() ; font.setBold(True) ; font.setPointSize(15)
-#         label.setFont(font)
-#         # main_frame.addWidget(label)
-
-#         self.terminal = QTextEdit()
-#         font = QFont() ; font.setPointSize(15)
-#         self.terminal.setFont(font)
-#         self.terminal.setMinimumHeight(160)
-
-#         main_frame.addRow(label)
-#         main_frame.addRow(self.terminal)
-
-#         self.setLayout(main_frame)
-
-#     def write_char(self, char : int):
-#         text = self.terminal.toPlainText()
-#         self.terminal.setPlainText(text + chr(char))
 
 
 class CustomIndicator(QLabel):
