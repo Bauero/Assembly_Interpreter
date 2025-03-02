@@ -7,7 +7,14 @@ from .errors import (WrongNumberBase,
                     FileSizeMightBeTooBig,
                     FileTypeNotAllowed)
 
-allowed_file_types = ['.s','.asm']
+allowed_file_types = ['.asm']
+
+def color_txt(text : str,
+              color : str | None = None,
+              font_size_px : int | None = None) -> str:
+    fs = "font-size: {font_size_px}px;" if font_size_px else ""
+    clr = "color: {color};" if color else ""
+    return f'<pre><span style="{fs}{clr}">{text}</span></pre>'
 
 def is_white_char(char):            return char in [' ', '\t']
 def is_special(char):               return char in ['_', '@', '?']

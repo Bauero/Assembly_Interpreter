@@ -6,7 +6,8 @@ file
 from .engine import Engine
 from .hardware_memory import DataSegment
 from .flag_register import FlagRegister
-from .helper_functions import return_name_from_size
+from .helper_functions import return_name_from_size, color_txt
+from .custom_message_boxes import improper_flags_value
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette,
@@ -17,192 +18,184 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,QApplication)
 import json
 
-with open('program_code/names.json') as f:
-    names = json.load(f)["language_specific_names"]
+with open('program_code/names.json') as f:          names = json.load(f)
+with open('program_code/color_palette.json') as f:  colors = json.load(f)
 
 alg_cent =      Qt.AlignmentFlag.AlignCenter
 alg_right =     Qt.AlignmentFlag.AlignRight
 alg_top =       Qt.AlignmentFlag.AlignTop
 alg_jst =       Qt.AlignmentFlag.AlignJustify
+
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
 
-def color_txt(color : str, text : str, font_size_px : int = 14) -> str:
-    return f'<pre><span style="font-size: {font_size_px}px; color: {color};">{text}</span></pre>'
+bold_16 = QFont() ; bold_16.setBold(True) ; bold_16.setPointSize(16)
+bold_italic_15 = QFont() ; bold_italic_15.setBold(True)
+bold_italic_15.setItalic(True) ; bold_italic_15.setPointSize(15)
+
+register_text_style = "QLineEdit { letter-spacing: 1px; }"
+table_grid = "QTableWidget {gridline-color: #606060; letter-spacing: 1px; font-size: 13px}"
+input_mask_8 = "BBBBBBBB"
+width_int = 60
+width_8_bit = 90
+width_16_bit = 2 * width_8_bit
+register_height = 20
+reg_label_width = 30
+no_spacing = 0
 
 class MultipurposeRegister(QWidget):
     """This class creates a widget for displaying multipurpose register, splited into
     high and low bits as well as a dedicated field for displaying decimal value of register
     """
 
-    def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
+    def __init__(self, HR, register_name : str, language : str, theme : str):
         super().__init__()
 
-        self.register_name = register_name
         self.HR = HR
-        
-        # Main horizontal layout for the row
+        self.register_name = register_name
+        self.language = language
+        self.theme = theme
         row_layout = QHBoxLayout()
+        split_reg_widget = QWidget()
+        split_reg_layout = QHBoxLayout()
         
-        # Register name label (e.g., EAX)
         self.register_label = QLabel(register_name)
-        self.register_label.setStyleSheet(f"color: {text_color};")
-        font = QFont() ; font.setBold(True) ; font.setPointSize(16)
-        self.register_label.setFont(font)
-        row_layout.addWidget(self.register_label)
-        self.register_label.setToolTip(color_txt('#8F8F8F', custom_name))
-        row_layout.insertSpacing(1,9)
-        
-        # Container for the H and L labels and main text fields
-        main_field_layout = QVBoxLayout()
-
-        # Main text fields in a horizontal layout with no spacing
-        text_field_layout = QHBoxLayout()
-        text_field_layout.setSpacing(0)  # No gaps between fields
+        self.register_label.setStyleSheet(f'color: {colors[self.theme]["multipurpose_registers"]};')
+        self.register_label.setFont(bold_16)
+        self.register_label.setToolTip(color_txt(
+                                        names[self.language][f"{self.register_name}_hint"],
+                                        colors[theme]["hints"]))
+        self.register_label.setFixedWidth(reg_label_width)
+        self.register_label.setFixedHeight(register_height)
 
         self.register_high_bits = QLineEdit()
-        self.register_high_bits.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
-        self.register_high_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
-        self.register_high_bits.setFixedWidth(90)  # Adjust for 8 characters
-        self.register_high_bits.setFixedHeight(20)  # Adjust for 8 characters
+        self.register_high_bits.setStyleSheet(register_text_style)
+        self.register_high_bits.setInputMask(input_mask_8)
+        self.register_high_bits.setFixedWidth(width_8_bit)
+        self.register_high_bits.setFixedHeight(register_height)
         self.register_high_bits.setReadOnly(True)
         self.register_high_bits.setAlignment(alg_cent)
-        text_field_layout.addWidget(self.register_high_bits)
 
         self.register_low_bits = QLineEdit()
-        self.register_low_bits.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
-        self.register_low_bits.setInputMask("BBBBBBBB")  # 8-bitowa wartość binarna
-        self.register_low_bits.setFixedWidth(90)  # Adjust for 8 characters
-        self.register_low_bits.setFixedHeight(20)  # Adjust for 8 characters
+        self.register_low_bits.setStyleSheet(register_text_style)
+        self.register_low_bits.setInputMask(input_mask_8)
+        self.register_low_bits.setFixedWidth(width_8_bit)
+        self.register_low_bits.setFixedHeight(register_height)
         self.register_low_bits.setReadOnly(True)
         self.register_low_bits.setAlignment(alg_cent)
-        text_field_layout.addWidget(self.register_low_bits)
 
-        main_field_layout.addLayout(text_field_layout)
-
-        # Add main_field_layout to the row layout
-        row_layout.addLayout(main_field_layout)
-
-        # Equals label
         equals_label = QLabel("=")
-        equals_label.setFixedHeight(20)
-        row_layout.addWidget(equals_label)
+        equals_label.setFixedHeight(register_height)
 
-        # Smaller text field (8 characters wide)
         self.register_decimal_value = QLineEdit()
-        self.register_decimal_value.setFixedWidth(60)  # Adjust width as needed
-        self.register_decimal_value.setFixedHeight(20)  # Adjust width as needed
+        self.register_decimal_value.setFixedWidth(width_int)
+        self.register_decimal_value.setFixedHeight(register_height)
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
+        
+        split_reg_layout.addWidget(self.register_high_bits)
+        split_reg_layout.addWidget(self.register_low_bits)
+        split_reg_widget.setLayout(split_reg_layout)
+        
+        row_layout.addWidget(self.register_label)
+        row_layout.addWidget(split_reg_widget)
+        row_layout.addWidget(equals_label)
         row_layout.addWidget(self.register_decimal_value)
         
-        # Set the layout for this widget
+        split_reg_layout.setContentsMargins(0,0,0,0)
+        split_reg_layout.setSpacing(no_spacing)
+        row_layout.insertSpacing(4,1)
+        
         self.setLayout(row_layout)
         self.update()
 
-    def _setRegisterValue(self, value : int | list | str):
+    def _setRegisterValue(self, value : str) -> None:
         """This method sets value as bits in register"""
         
-        if type(value) == list:                  # Put this value for 32 bit mode
-            if len(value) < 16:                             # 32
-                while len(value) < 16:                      # 32
-                    value.insert(0,0)
-            if len(value) > 16:                             # 32
-                value = value[-16:]                         # -32
-            value = "".join((str(x) for x in value))
-
-        elif type(value) == int:
-            if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
-                value %= 2**16+1                           # 2**32 + 1
-            value = bin(value)[2:]
-        
-        assert type(value) == str
-        value = value.zfill(16)                            # 32
-
-        # self.register_upper_bits.setText(value[-32:-16]) # Uncomment this line 
+        value = value.zfill(16)[-16:]
         self.register_high_bits.setText(value[-16:-8])
         self.register_low_bits.setText(value[-8:])
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
-    def update(self):
+    def update(self) -> None:
         self._setRegisterValue(self.HR.readFromRegister(self.register_name))
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.register_name
     
-    def set_interactive(self, value : bool = False):
-        # self.register_upper_bits.setReadOnly(not value) # uncomment this line for 32
+    def set_interactive(self, value : bool = False) -> None:
         self.register_high_bits.setReadOnly(not value)
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
-    def set_hint(self, text : str) -> None:
-        self.register_label.setToolTip(color_txt('#8F8F8F', text))
+    def set_hint(self, language : str) -> None:
+        self.language = language
+        name = f"{self.register_name}_hint"
+        self.register_label.setToolTip(color_txt(
+            names[self.language][name], colors[self.theme]["hints"]))
+
+    def change_theme(self, theme : str) -> None:
+        current_hint = self.register_label.toolTip()
+        self.theme = theme
+        self.register_label.setToolTip(color_txt(current_hint, colors[self.theme]["hints"]))
 
 
 class FunctionalRegisters(QWidget):
-    def __init__(self, HR, register_name, text_color = 'white', custom_name = ''):
+    """
+    This class displays functional registers, which don't have upper and lower subregisters
+    """
+    
+    def __init__(self, HR, register_name : str, language : str, theme : str):
         super().__init__()
 
-        self.register_name = register_name
         self.HR = HR
-
+        self.register_name = register_name
+        self.language = language
+        self.theme = theme
         row_layout = QHBoxLayout()
 
+        reg_type = "instruction_pointer" if register_name == "IP" else "functional_registers" 
+        reg_color = colors[self.theme][reg_type]
+
         self.register_label = QLabel(register_name)
-        self.register_label.setFixedWidth(30)
-        self.register_label.setStyleSheet(f"color: {text_color};")
-        font = QFont() ; font.setBold(True) ; font.setPointSize(16)
-        self.register_label.setFont(font)
-        row_layout.addWidget(self.register_label)
-        self.register_label.setToolTip(color_txt('#8F8F8F', custom_name))
+        self.register_label.setFont(bold_16)
+        self.register_label.setStyleSheet(f'color: {reg_color};')
+        self.register_label.setToolTip(color_txt(
+                                        names[self.language][f"{self.register_name}_hint"],
+                                        colors[theme]["hints"]))
+        self.register_label.setFixedWidth(reg_label_width)
+        self.register_label.setFixedHeight(register_height)
 
         self.register_content = QLineEdit()
-        self.register_content.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
-        self.register_content.setFixedWidth(180)
-        self.register_content.setFixedHeight(20)
+        self.register_content.setFixedWidth(width_16_bit)
+        self.register_content.setFixedHeight(register_height)
+        self.register_content.setStyleSheet(register_text_style)
         self.register_content.setReadOnly(True)
         self.register_content.setAlignment(alg_cent)
-        row_layout.addWidget(self.register_content)
 
-        # Equals label
         equals_label = QLabel("=")
-        row_layout.addWidget(equals_label)
+        equals_label.setFixedHeight(register_height)
 
-        # Smaller text field (8 characters wide)
         self.register_decimal_value = QLineEdit()
-        self.register_decimal_value.setFixedWidth(60)  # Adjust width as needed
-        self.register_decimal_value.setFixedHeight(20)  # Adjust width as needed
+        self.register_decimal_value.setFixedWidth(width_int)
+        self.register_decimal_value.setFixedHeight(register_height)
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
+
+        row_layout.addWidget(self.register_label)
+        row_layout.addWidget(self.register_content)
+        row_layout.addWidget(equals_label)
         row_layout.addWidget(self.register_decimal_value)
 
         self.setLayout(row_layout)
         self.update()
 
-    def _setRegisterValue(self, value : int | list | str):
+    def _setRegisterValue(self, value : str) -> None:
         """This method sets value as bits in register"""
         
-        if type(value) == list:                  # Put this value for 32 bit mode
-            if len(value) < 16:                             # 32
-                while len(value) < 16:                      # 32
-                    value.insert(0,0)
-            if len(value) > 16:                             # 32
-                value = value[-16:]                         # -32
-            value = "".join((str(x) for x in value))
-
-        elif type(value) == int:
-            if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
-                value %= 2**16+1                           # 2**32 + 1
-            value = bin(value)[2:]
-        
-        assert type(value) == str
-        value = value.zfill(16)                            # 32
-
+        value = value.zfill(16)[-16:]
         self.register_content.setText(value)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
-
-    # Methods dedicated for interactive mode
 
     def update(self):
         self._setRegisterValue(self.HR.readFromRegister(self.register_name))
@@ -213,8 +206,16 @@ class FunctionalRegisters(QWidget):
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
 
-    def set_hint(self, text : str) -> None:
-        self.register_label.setToolTip(color_txt('#8F8F8F', text))
+    def set_hint(self, language : str) -> None:
+        self.language = language
+        name = f"{self.register_name}_hint"
+        self.register_label.setToolTip(color_txt(
+            names[self.language][name], colors[self.theme]["hints"]))
+
+    def change_theme(self, theme : str) -> None:
+        current_hint = self.register_label.toolTip()
+        self.theme = theme
+        self.register_label.setToolTip(color_txt(current_hint, colors[self.theme]["hints"]))
 
 
 class Flags(QWidget):
@@ -224,40 +225,44 @@ class Flags(QWidget):
     indicators for all flags which are important for the user
     """
 
-    def __init__(self, FR : FlagRegister, language : str):
+    def __init__(self, FR : FlagRegister, language : str, theme : str):
         super().__init__()
+        
         self.FR = FR
-        wrapper = QHBoxLayout()
-        body = QFormLayout()
-        firts_row = QHBoxLayout()
-        register_label = QLabel(color_txt('#30BB73', names[language]["flags"], 16))
-        font = QFont() ; font.setBold(True) #; font.setPointSize(16)
-        register_label.setFont(font)
-        firts_row.addWidget(register_label)
-        firts_row.insertSpacing(1,20)
+        self.language = language
+        self.theme = theme
 
-        self.register_content = QLineEdit()
-        self.register_content.setStyleSheet("QLineEdit { letter-spacing: 1px; }")
-        self.register_content.setFixedWidth(200)
-        self.register_content.setReadOnly(True)
-        self.register_content.setAlignment(alg_cent)
-        self.register_content.returnPressed.connect(self._validate_register_content)
-        firts_row.addWidget(self.register_content)
-
+        flags_section = QFormLayout()
+        flags_title_row = QHBoxLayout()
         self.flag_indicators_row_1 = QHBoxLayout()
         self.flag_indicators_row_2 = QHBoxLayout()
         self.flag_indicators_row_3 = QHBoxLayout()
+        
+        self.register_label = QLabel(names[language]["flags"])
+        self.register_label.setFont(bold_16)
+        self.register_label.setStyleSheet(f'color: {colors[self.theme]["flags_section"]}')
 
-        flags = ['Overflow', 'Direction', 'Interrupt',
-                    'Trap', 'Sign', 'Zero',
-                    'Auxiliary carry', 'Parity', 'Carry']
+        self.register_content = QLineEdit()
+        self.register_content.setStyleSheet(register_text_style)
+        self.register_content.setFixedWidth(180)
+        self.register_content.setReadOnly(True)
+        self.register_content.setAlignment(alg_cent)
+        self.register_content.returnPressed.connect(self._validate_register_content)
 
-        for f in flags:
+        self.flags = ['Overflow',        'Direction', 'Interrupt',
+                      'Trap',            'Sign',      'Zero',
+                      'Auxiliary carry', 'Parity',    'Carry']
+
+        for f in self.flags:
             attr_name = f"{f.lower().replace(' ', '_')}_flag"
             setattr(self, attr_name, CustomIndicator(f))
             obj = getattr(self, attr_name)
-            obj.setToolTip(color_txt('#8F8F8F', names[language][attr_name]))
+            obj.setToolTip(color_txt(names[language][attr_name], '#8F8F8F'))
             obj.stateChanged.connect(lambda _, flag=f: self._flag_indicator_clicked(flag))
+
+        flags_title_row.addWidget(self.register_label)
+        flags_title_row.addWidget(self.register_content)
+        flags_title_row.insertSpacing(1,20)
 
         self.flag_indicators_row_1.addWidget(self.overflow_flag)
         self.flag_indicators_row_1.insertSpacing(1,32)
@@ -277,13 +282,12 @@ class Flags(QWidget):
         self.flag_indicators_row_3.insertSpacing(3,22)
         self.flag_indicators_row_3.addWidget(self.carry_flag)
 
-        body.addRow(firts_row)
-        body.addRow(self.flag_indicators_row_1)
-        body.addRow(self.flag_indicators_row_2)
-        body.addRow(self.flag_indicators_row_3)
-
-        wrapper.addLayout(body)
-        self.setLayout(wrapper)
+        flags_section.addRow(flags_title_row)
+        flags_section.addRow(self.flag_indicators_row_1)
+        flags_section.addRow(self.flag_indicators_row_2)
+        flags_section.addRow(self.flag_indicators_row_3)
+        
+        self.setLayout(flags_section)
         self.update()
 
     def _flag_indicator_clicked(self, flag_name : str):
@@ -307,27 +311,11 @@ class Flags(QWidget):
         self.FR.setFlagRaw(content)
         self.register_content.setText("".join(content))
 
-    def _setRegisterValue(self, value : int | list | str):
+    def _setRegisterValue(self, value : str) -> None:
         """This method sets value as bits in register"""
         
-        if type(value) == list:                  # Put this value for 32 bit mode
-            if len(value) < 16:                             # 32
-                while len(value) < 16:                      # 32
-                    value.insert(0,0)
-            if len(value) > 16:                             # 32
-                value = value[-16:]                         # -32
-            value = "".join((str(x) for x in value))
-
-        elif type(value) == int:
-            if value >= 2**16 or value <= -(2**8):         # 2**32 | 2**16
-                value %= 2**16+1                           # 2**32 + 1
-            value = bin(value)[2:]
-        
-        assert type(value) == str
-        value = value.zfill(16)                            # 32
-
+        value = value.zfill(16)[-16:]
         self.register_content.setText(value)
-
         self.overflow_flag.         setChecked(value[-12] == "1")
         self.direction_flag.        setChecked(value[-11] == "1")
         self.interrupt_flag.        setChecked(value[-10] == "1")
@@ -354,27 +342,26 @@ class Flags(QWidget):
     def _validate_register_content(self):
         text = self.register_content.text()
         if not set(text).issubset(('1','0')):
-            self.showErrorMessage("Improper value", "Only text containing 1's and 0's can be put in this field!")
-        adjusted_text =text.zfill(16)[-16:]
-        self._setRegisterValue(adjusted_text)
+            improper_flags_value()
+            source_value = self.FR.readFlags()
+            self._setRegisterValue(source_value)
+        else:
+            adjusted_text = text.zfill(16)[-16:]
+            self._setRegisterValue(adjusted_text)
 
-    def showErrorMessage(self, title : str, message : str):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Warning)
-        msg.setText(message)
-        msg.setWindowTitle(title)
-        msg.exec()
+    def setDisabled(self, value : bool) -> None:
+        for attr_name in dir(self):
+            if attr_name.endswith('_flag'):
+                attr_value = getattr(self, attr_name)
+                attr_value.setDisabled(value)
+        self.register_content.setDisabled(value)
+        self.register_label.setDisabled(False)
 
     def set_hint(self, language : str) -> None:
-        self.overflow_flag.         setToolTip(color_txt('#8F8F8F', names[language]["overflow_flag"]))
-        self.direction_flag.        setToolTip(color_txt('#8F8F8F', names[language]["direction_flag"]))
-        self.interrupt_flag.        setToolTip(color_txt('#8F8F8F', names[language]["interrupt_flag"]))
-        self.trap_flag.             setToolTip(color_txt('#8F8F8F', names[language]["trap_flag"]))
-        self.sign_flag.             setToolTip(color_txt('#8F8F8F', names[language]["sign_flag"]))
-        self.zero_flag.             setToolTip(color_txt('#8F8F8F', names[language]["zero_flag"]))
-        self.auxiliary_carry_flag.  setToolTip(color_txt('#8F8F8F', names[language]["auxiliary_carry_flag"]))
-        self.parity_flag.           setToolTip(color_txt('#8F8F8F', names[language]["parity_flag"]))
-        self.carry_flag.            setToolTip(color_txt('#8F8F8F', names[language]["carry_flag"]))
+        for f in self.flags:
+            attr_name = f"{f.lower().replace(' ', '_')}_flag"
+            obj = getattr(self, attr_name)
+            obj.setToolTip(color_txt(names[language][attr_name], colors[self.theme]["hints"]))
 
 
 class LimitedInputTextEdit(QTextEdit):
@@ -477,7 +464,7 @@ class Terminal(QWidget):
 
 
 class CustomIndicator(QLabel):
-    # Signal to notify FlagRegister on toggle (emits new state: True/False)
+    
     stateChanged = pyqtSignal(bool)
 
     def __init__(self, text, *args):
@@ -497,18 +484,13 @@ class CustomIndicator(QLabel):
         self.turnedOnState = False
 
     def toggleState(self):
-        if self.turnedOnState:
-            self.setOff()
-        else:
-            self.setOn()
-        # Emit signal with new state
+        if self.turnedOnState:  self.setOff()
+        else:                   self.setOn()
         self.stateChanged.emit(self.turnedOnState)
 
     def setChecked(self, state):
-        if bool(state):
-            self.setOn()
-        else:
-            self.setOff()
+        if bool(state): self.setOn()
+        else:           self.setOff()
 
     def setModifiable(self, option):
         self.modifiable = bool(option)
@@ -656,46 +638,32 @@ class CodeEditor(QPlainTextEdit):
 
 
 class StackTable(QTableWidget):
-    """This class allows to display Stack as a table with option to easily change
-    content"""
-    def __init__(self, data: DataSegment):
+    """
+    This class allows to display Stack as a table with option to easily change
+    content
+    """
+    
+    def __init__(self, data: DataSegment, language : str, theme : str):
         super().__init__()
+
+        self.language = language
+        self.theme = theme
         self.no_of_rows = 65536
         self.data = data
         self.data_copy = None
-        self.font = QFont()
-        self.font.setBold(True)
-        self.font.setPointSize(15)
-        self.font.setItalic(True)
 
-        # Initialize table properties
         self.setRowCount(self.no_of_rows)
         self.setColumnCount(3)
-        self.setHorizontalHeaderLabels(["Adr.", "Licz. Bin.", "Dec."])
+        self.setHorizontalHeaderLabels(names[self.language]["segment_col"])
         self.setColumnWidth(2,1)
-        # self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-
-        # Hide row numbers
         self.verticalHeader().setVisible(False)
-
-        # Set grid visibility
         self.setShowGrid(True)
         self.setGridStyle(Qt.PenStyle.SolidLine)
-        self.setStyleSheet("QTableWidget {gridline-color: #606060; \
-                           letter-spacing: 1px; font-size: 13px}")
-
-        # Enable editability
+        self.setStyleSheet(table_grid)
+        
         self.cellChanged.connect(self.onCellChanged)
 
-    def set_allow_change_content(self, allow = True):
-        self.allow_change = allow
-        if allow:
-            self.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
-        else:
-            self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-
     def generate_table(self):
-        """Refresh table contents"""
         fresh_data = self.data.data
         self.data_copy = fresh_data[:]
 
@@ -707,7 +675,7 @@ class StackTable(QTableWidget):
             value_bin = bin(value_int)[2:].zfill(8)
             
             row_no = QTableWidgetItem(address_hex)
-            row_no.setFont(self.font)
+            row_no.setFont(bold_italic_15)
 
             self.setItem(row, 0, row_no)
             self.setItem(row, 1, QTableWidgetItem(value_bin))
@@ -717,6 +685,13 @@ class StackTable(QTableWidget):
             QHeaderView.ResizeMode.ResizeToContents)
         self.horizontalHeader().setStretchLastSection(True)
         self.cellChanged.connect(self.onCellChanged)
+
+    def set_allow_change_content(self, allow = True):
+        self.allow_change = allow
+        if allow:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.AllEditTriggers)
+        else:
+            self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
     def refresh_table(self):
         fresh_data = self.data.data
@@ -788,13 +763,6 @@ class StackTable(QTableWidget):
 
         self.blockSignals(False)  # Re-enable signals
 
-    def showErrorMessage(self, title : str, message : str):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Warning)
-        msg.setText(message)
-        msg.setWindowTitle(title)
-        msg.exec()
-
     def restorePreviousValue(self, row):
         """Restore the original value before it was edited"""
         value_int = self.data_copy[self.no_of_rows - row]
@@ -857,6 +825,9 @@ class StackTable(QTableWidget):
             item.setBackground(color)
         self.blockSignals(False)
 
+    def set_header(self, language : str) -> None:
+        self.language = language
+        self.setHorizontalHeaderLabels(names[self.language]["segment_col"])
 
 class VariableTable(QTableWidget):
     """This class allows to display Stack as a table with option to easily change

@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QMessageBox
 import json
 
 with open('program_code/names.json') as f:
-    names = json.load(f)["language_specific_names"]
+    names = json.load(f)
 
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
@@ -59,4 +59,12 @@ def improper_label_error(language : str, e : Exception) -> int:
     msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
     msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
     return msg.exec()
+
+def improper_flags_value(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_not_allowed"])
+    msg.setText(names[language]["only_binary_value"])
+    msg.exec()
+
 
