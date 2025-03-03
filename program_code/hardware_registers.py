@@ -96,7 +96,7 @@ class HardwareRegisters():
             print(f"{register} : {v} = {int('0b'+v,2)}")
 
     def listRegisters(self) -> list:
-        """Return list of availavle registers"""
+        """Return list of available registers"""
 
         return self._regList
 

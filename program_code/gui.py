@@ -4,23 +4,14 @@ This file contains main funciton responsible for handling a gui app
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QFormLayout,
-    QLabel,
-    QPushButton,
-    QFileDialog,
-    QHBoxLayout,
-    QComboBox,
-    QCheckBox,
-    QSizePolicy
+    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QPushButton, QFileDialog,
+    QComboBox, QCheckBox,QSizePolicy
 )
 from .custom_gui_elements import *
-from .errors import (FileDoesntExist,
-                    FileSizeMightBeTooBig,
-                    FileTypeNotAllowed,
-                    ImproperJumpMarker,
-                    ImproperDataDefiniton)
+from .errors import (
+    FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, ImproperJumpMarker,
+    ImproperDataDefiniton
+    )
 from .helper_functions import loadFileFromPath
 from .custom_message_boxes import *
 from screeninfo import get_monitors
@@ -31,6 +22,7 @@ with open('program_code/color_palette.json') as f:  colors = json.load(f)
 alg_cent = Qt.AlignmentFlag.AlignCenter
 font_bold_15 = QFont() ; font_bold_15.setBold(True) ; font_bold_15.setPointSize(15)
 font_20 = QFont() ; font_20.setPointSize(20)
+
 spacing_10 = 10
 min_reg_row_height = 50
 max_reg_row_height = 120
