@@ -67,4 +67,44 @@ def improper_flags_value(language : str) -> int:
     msg.setText(names[language]["only_binary_value"])
     msg.exec()
 
+def not_possible_to_edit_address(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["operation_forbidden"])
+    msg.setText(names[language]["cant_edit_address"])
+    msg.exec()
 
+def invalid_binary_number(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["invalid_binary_number"])
+    msg.setText(names[language]["only_1_0_allowed"])
+    msg.exec()
+
+def incorrect_decimal_value(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_not_allowed"])
+    msg.setText(names[language]["value_0_255"])
+    msg.exec()
+
+def cannot_edit_name(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["operation_forbidden"])
+    msg.setText(names[language]["cannot_edit_name"])
+    msg.exec()
+
+def cannot_edit_size(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["operation_forbidden"])
+    msg.setText(names[language]["cannot_edit_size"])
+    msg.exec()
+
+def cannot_edit_format(language : str) -> int:
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["operation_forbidden"])
+    msg.setText(names[language]["cannot_edit_format"])
+    msg.exec()

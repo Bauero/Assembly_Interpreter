@@ -6,6 +6,9 @@
         "functional_registers" : "orange",
         "instruction_pointer" : "#CC3F0C",
         "flags_section" : "#30BB73",
-        "hints" : "#EEEEEE"
+        "hints" : "#EEEEEE",
+        "line_highlight" : "#0000FF",
+        "code_text" : "#FFFFFF",
+        "change_highlight" : [255, 255, 0, 83]
     }
 }

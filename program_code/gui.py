@@ -176,7 +176,7 @@ class MainWindow(QWidget):
         codeSectionLayout = QFormLayout()
         self.code_label = QLabel(names[self.language]["code"])
         self.code_label.setFont(font_bold_15)
-        self.code_field = CodeEditor()
+        self.code_field = CodeEditor(self.language, self.theme)
         self.code_field.setMinimumWidth(400)
 
         self.nextLineButton         = QPushButton(names[self.language]["next_button"])
@@ -242,7 +242,6 @@ class MainWindow(QWidget):
         self.stackSection = StackTable(DT, self.language, self.theme)
         self.stackSection.setFixedWidth(200)
         self.stackSection.set_allow_change_content(False)
-        self.stackSection.generate_table()
         self.stackColumn.addWidget(self.segment_label)
         self.stackColumn.addSpacing(spacing_10)
         self.stackColumn.addWidget(self.stackSection)
@@ -254,7 +253,7 @@ class MainWindow(QWidget):
         self.variableColumn = QVBoxLayout()
         self.variables_label = QLabel(names[self.language]["variables"])
         self.variables_label.setFont(font_bold_15)
-        self.variableSection = VariableTable(EG)
+        self.variableSection = VariableTable(EG, self.language, self.theme)
         self.variableColumn.addWidget(self.variables_label)
         self.variableColumn.addSpacing(spacing_10)
         self.variableColumn.addWidget(self.variableSection)
@@ -385,8 +384,9 @@ class MainWindow(QWidget):
             break
 
         self.welcomeScreen.close()
-        self.programScreen.show()
+        self.stackSection.generate_table()
         self.variableSection.generate_table()
+        self.programScreen.show()
         self._set_active_state(False)
         self.programScreen.showMaximized()
         self.nextLineButton.setFocus()
@@ -522,6 +522,7 @@ class MainWindow(QWidget):
             self.saveStateButton.setText(names[self.language]["save_state"])
             self.comboBoxLabel.setText(names[self.language]['interval'])
             self.stackSection.set_header(self.language)
+            self.variableSection.set_header(self.language)
             for e in self.register_section_elements:
                 e.set_hint(self.language)
             self.toggle_language.blockSignals(True)

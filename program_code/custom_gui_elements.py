@@ -7,7 +7,7 @@ from .engine import Engine
 from .hardware_memory import DataSegment
 from .flag_register import FlagRegister
 from .helper_functions import return_name_from_size, color_txt
-from .custom_message_boxes import improper_flags_value
+from .custom_message_boxes import *
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
 from PyQt6.QtGui import (
     QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette,
@@ -32,6 +32,7 @@ cancel_button = QMessageBox.StandardButton.Cancel
 bold_16 = QFont() ; bold_16.setBold(True) ; bold_16.setPointSize(16)
 bold_italic_15 = QFont() ; bold_italic_15.setBold(True)
 bold_italic_15.setItalic(True) ; bold_italic_15.setPointSize(15)
+font_15 = QFont() ; font_15.setPointSize(15)
 
 register_text_style = "QLineEdit { letter-spacing: 1px; }"
 table_grid = "QTableWidget {gridline-color: #606060; letter-spacing: 1px; font-size: 13px}"
@@ -110,8 +111,6 @@ class MultipurposeRegister(QWidget):
         self.update()
 
     def _setRegisterValue(self, value : str) -> None:
-        """This method sets value as bits in register"""
-        
         value = value.zfill(16)[-16:]
         self.register_high_bits.setText(value[-16:-8])
         self.register_low_bits.setText(value[-8:])
@@ -191,8 +190,6 @@ class FunctionalRegisters(QWidget):
         self.update()
 
     def _setRegisterValue(self, value : str) -> None:
-        """This method sets value as bits in register"""
-        
         value = value.zfill(16)[-16:]
         self.register_content.setText(value)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
@@ -216,6 +213,45 @@ class FunctionalRegisters(QWidget):
         current_hint = self.register_label.toolTip()
         self.theme = theme
         self.register_label.setToolTip(color_txt(current_hint, colors[self.theme]["hints"]))
+
+
+class CustomIndicator(QLabel):
+    """SubClass of Flags"""
+    
+    stateChanged = pyqtSignal(bool)
+
+    def __init__(self, text, *args):
+        super().__init__(text)
+        self.labelText = text
+        self.turnedOnState = False
+        self.modifiable = True
+        self.setOff()
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def setOn(self):
+        self.setText(f"🟩 {self.labelText}")
+        self.turnedOnState = True
+
+    def setOff(self):
+        self.setText(f"🟥 {self.labelText}")
+        self.turnedOnState = False
+
+    def toggleState(self):
+        if self.turnedOnState:  self.setOff()
+        else:                   self.setOn()
+        self.stateChanged.emit(self.turnedOnState)
+
+    def setChecked(self, state):
+        if bool(state): self.setOn()
+        else:           self.setOff()
+
+    def setModifiable(self, option):
+        self.modifiable = bool(option)
+
+    def mousePressEvent(self, event):
+        if self.modifiable and event.button() == Qt.MouseButton.LeftButton:
+            self.toggleState()
+        super().mousePressEvent(event)
 
 
 class Flags(QWidget):
@@ -312,8 +348,6 @@ class Flags(QWidget):
         self.register_content.setText("".join(content))
 
     def _setRegisterValue(self, value : str) -> None:
-        """This method sets value as bits in register"""
-        
         value = value.zfill(16)[-16:]
         self.register_content.setText(value)
         self.overflow_flag.         setChecked(value[-12] == "1")
@@ -364,150 +398,15 @@ class Flags(QWidget):
             obj.setToolTip(color_txt(names[language][attr_name], colors[self.theme]["hints"]))
 
 
-class LimitedInputTextEdit(QTextEdit):
-    inputFinished = pyqtSignal(str)  # Signal emitted when input is done
-
-    def __init__(self, char_limit = 1000):
-        super().__init__()
-        self.char_limit = char_limit  # Limit of characters
-        self.current_input = ""       # Stores current input
-        self.setUndoRedoEnabled(False)
-        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-
-    def keyPressEvent(self, event: QKeyEvent):
-        key = event.key()
-        
-        # Handle Enter key
-        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
-            self.append("")  # Move to next line
-            self.inputFinished.emit(self.current_input)
-            self.current_input = ""
-            return
-
-        # Handle Backspace
-        elif key == Qt.Key.Key_Backspace:
-            if len(self.current_input) > 0:
-                self.current_input = self.current_input[:-1]
-                self.textCursor().deletePreviousChar()
-            return
-
-        # Limit input to char_limit
-        elif event.text() and len(self.current_input) < self.char_limit:
-            self.current_input += event.text()
-            self.insertPlainText(event.text())
-        else:
-            # Ignore other keys or excess input
-            pass
-
-    def reset_char_limit(self):     self.char_limit = 1000
-
-
-class LimitedInputTextEdit(QTextEdit):
-    inputFinished = pyqtSignal(str)
-
-    def __init__(self, char_limit=20):
-        super().__init__()
-        self.char_limit = char_limit
-        self.current_input = ""
-        self.setUndoRedoEnabled(False)
-        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-
-    def keyPressEvent(self, event):
-        key = event.key()
-
-        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
-            self.append("")
-            self.inputFinished.emit(self.current_input)
-            self.current_input = ""
-            return
-
-        elif key == Qt.Key.Key_Backspace:
-            if len(self.current_input) > 0:
-                self.current_input = self.current_input[:-1]
-                self.textCursor().deletePreviousChar()
-            return
-
-        elif event.text() and len(self.current_input) < self.char_limit:
-            self.current_input += event.text()
-            self.insertPlainText(event.text())
-
-
-class Terminal(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        # Layout for Terminal
-        layout = QVBoxLayout()
-
-        # Custom LimitedInputTextEdit
-        self.terminal = LimitedInputTextEdit(20)  # Limit to 20 chars
-        font = QFont()
-        font.setPointSize(15)
-        self.terminal.setFont(font)
-        self.terminal.setMinimumHeight(100)
-
-        # Connect signal
-        self.terminal.inputFinished.connect(self.handle_input)
-
-        # Add widgets to layout
-        layout.addWidget(self.terminal)
-        self.setLayout(layout)
-
-    def handle_input(self, user_input: str):
-        """Handle input when user presses Enter."""
-        print(f"User input: {user_input}")  # You can process/store input here
-
-    def write_char(self, char: int):
-        """Write characters to terminal programmatically."""
-        text = self.terminal.toPlainText()
-        self.terminal.setPlainText(text + chr(char))
-
-
-class CustomIndicator(QLabel):
-    
-    stateChanged = pyqtSignal(bool)
-
-    def __init__(self, text, *args):
-        super().__init__(text)
-        self.labelText = text
-        self.turnedOnState = False
-        self.modifiable = True
-        self.setOff()
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-
-    def setOn(self):
-        self.setText(f"🟩 {self.labelText}")
-        self.turnedOnState = True
-
-    def setOff(self):
-        self.setText(f"🟥 {self.labelText}")
-        self.turnedOnState = False
-
-    def toggleState(self):
-        if self.turnedOnState:  self.setOff()
-        else:                   self.setOn()
-        self.stateChanged.emit(self.turnedOnState)
-
-    def setChecked(self, state):
-        if bool(state): self.setOn()
-        else:           self.setOff()
-
-    def setModifiable(self, option):
-        self.modifiable = bool(option)
-
-    def mousePressEvent(self, event):
-        if self.modifiable and event.button() == Qt.MouseButton.LeftButton:
-            self.toggleState()
-        super().mousePressEvent(event)
-
-
 class LineNumberArea(QWidget):
+    """SubClass of CodeEditor"""
+    
     def __init__(self, editor):
         super().__init__(editor)
         self.myeditor = editor
 
     def sizeHint(self):
-        return self.myeditor.line_number_area_width(), 0
+        return self.myeditor._line_number_area_width(), 0
 
     def paintEvent(self, event):
         self.myeditor._lineNumberAreaPaintEvent(event)
@@ -517,47 +416,90 @@ class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
     custom text field, with numered lines, and option to highlight a certain line"""
 
-    def __init__(self):
+    def __init__(self, language : str, theme : str):
         super().__init__()
+        self.language = language
+        self.theme = theme
         self.lineNumberArea = LineNumberArea(self)
+        self.number_area_width = 0
 
-        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)  # Wyłącz zawijanie linii
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)  # Pasek poziomy pojawi się w razie potrzeby
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
-        self.blockCountChanged.connect(self.updateLine_number_area_width)
-        self.updateRequest.connect(self.updateLineNumberArea)
+        self.blockCountChanged.connect(self._updateLine_number_area_width)
+        self.updateRequest.connect(self._updateLineNumberArea)
 
-        self.updateLine_number_area_width(0)
+        self._updateLine_number_area_width()
         self.textCursor().movePosition(QTextCursor.MoveOperation.Start)
 
         self.highlighted_lines = []
 
-    def line_number_area_width(self):
-        digits = 1
-        count = max(1, self.blockCount())
-        while count >= 10:
-            count //= 10
-            digits += 1
-        space = 10 + self.fontMetrics().horizontalAdvance('9') * digits
-        return space
-
-    def updateLine_number_area_width(self, _):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
-
-    def updateLineNumberArea(self, rect, dy):
-        if dy != 0:
-            self.lineNumberArea.scroll(0, dy)
-        else:
-            self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
-
-        if rect.contains(self.viewport().rect()):
-            self.updateLine_number_area_width(0)
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
-
         cr = self.contentsRect()
-        self.lineNumberArea.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
+        left, top, height = cr.left(), cr.top(), cr.height()
+        width = self.number_area_width
+        self.lineNumberArea.setGeometry(QRect(left, top, width, height))
+
+    def setHighlight(self, line_numbers,
+                     background_color : str | None = "", 
+                     text_color : str | None = ""
+                     ) -> None:
+        """
+        Podświetla wybrane linie i przewija widok, aby podświetlona linia była na ekranie.
+        """
+        if not background_color:    background_color = colors[self.theme]["line_highlight"]
+        if not text_color:  text_color = colors[self.theme]["code_text"]
+        extraSelections = []
+
+        for line_number in line_numbers:
+            if line_number <= 0:    continue
+            cursor = QTextCursor(self.document().findBlockByLineNumber(line_number - 1))
+            selection = QTextEdit.ExtraSelection()
+            selection.format.setBackground(QColor(background_color))
+            selection.format.setForeground(QColor(text_color))
+            selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
+            selection.cursor = cursor
+            selection.cursor.clearSelection()
+
+            extraSelections.append(selection)
+
+        self.highlighted_lines = line_numbers
+        self.setExtraSelections(extraSelections)
+
+        if line_numbers:
+            target_line = line_numbers[0]
+            block = self.document().findBlockByLineNumber(target_line - 1)
+            if block.isValid():
+                cursor = QTextCursor(block)
+                self.setTextCursor(cursor)
+                self.ensureCursorVisible()
+
+                scroll_bar = self.verticalScrollBar()
+                scroll_position = line_number - 20
+                scroll_bar.setValue(scroll_position)
+
+            self.highlighted_lines = line_numbers
+            self.setExtraSelections(extraSelections)
+
+    def setText(self, text):
+        self.setPlainText(text)
+        self._line_number_area_width()
+        self._updateLine_number_area_width()
+
+    def setEditable(self, editable):
+        self.setReadOnly(not editable)
+
+    def _line_number_area_width(self):
+        digits = len(str(self.blockCount()))
+        width = 10 + self.fontMetrics().horizontalAdvance('9') * digits
+        self.number_area_width = width
+
+    def _updateLine_number_area_width(self):
+        self.setViewportMargins(self.number_area_width, 0, 0, 0)
+
+    def _updateLineNumberArea(self, rect, dy):
+        self.lineNumberArea.update(0, rect.y(), self.lineNumberArea.width(), rect.height())
 
     def _lineNumberAreaPaintEvent(self, event):
         painter = QPainter(self.lineNumberArea)
@@ -571,70 +513,12 @@ class CodeEditor(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = " " + str(blockNumber + 1) + "  "
-                # painter.setPen(Qt.GlobalColor.black)
-                painter.drawText(0, int(top), self.lineNumberArea.width(), height, Qt.AlignmentFlag.AlignRight, number)
-
+                painter.drawText(0, int(top), self.lineNumberArea.width(), 
+                                 height, Qt.AlignmentFlag.AlignRight, number)
             block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
-
-    def setHighlight(self, line_numbers, 
-                 background_color=Qt.GlobalColor.blue, 
-                 text_color=Qt.GlobalColor.white):
-        """
-        Podświetla wybrane linie i przewija widok, aby podświetlona linia była na ekranie.
-
-        Args:
-            line_numbers (list[int]): Lista numerów linii do podświetlenia (1-based).
-            background_color (QColor): Kolor tła dla podświetlenia.
-            text_color (QColor): Kolor tekstu w podświetlonych liniach.
-        """
-        extraSelections = []
-
-        for line_number in line_numbers:
-            if line_number <= 0:
-                continue
-
-            cursor = QTextCursor(self.document().findBlockByLineNumber(line_number - 1))
-            if not cursor.isNull():
-                selection = QTextEdit.ExtraSelection()
-                selection.format.setBackground(QColor(background_color))
-                selection.format.setForeground(QColor(text_color))
-                selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
-                selection.cursor = cursor
-                selection.cursor.clearSelection()
-
-                extraSelections.append(selection)
-
-        self.highlighted_lines = line_numbers
-        self.setExtraSelections(extraSelections)
-
-        # PRZEWIJANIE DO PODŚWIETLONEJ LINII
-        if line_numbers:
-            target_line = line_numbers[0]  # Wybieramy pierwszą podświetloną linię
-            block = self.document().findBlockByLineNumber(target_line - 1)
-            if block.isValid():
-                cursor = QTextCursor(block)
-                self.setTextCursor(cursor)  # Ustawiamy kursor na podświetloną linię
-                self.ensureCursorVisible()  # Upewniamy się, że linia jest widoczna
-
-                # Alternatywnie, możemy przewijać ręcznie
-                scroll_bar = self.verticalScrollBar()
-                scroll_position = line_number - 20 #int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top() - (self.viewport().height() // 2))
-                scroll_bar.setValue(scroll_position)
-
-            # Przechowujemy informacje o podświetlonych liniach
-            self.highlighted_lines = line_numbers
-
-            # Aktualizacja podświetleń w edytorze
-            self.setExtraSelections(extraSelections)
-
-    def setText(self, text):
-        self.setPlainText(text)
-
-    def setEditable(self, editable):
-        self.setReadOnly(not editable)
 
 
 class StackTable(QTableWidget):
@@ -681,8 +565,7 @@ class StackTable(QTableWidget):
             self.setItem(row, 1, QTableWidgetItem(value_bin))
             self.setItem(row, 2, QTableWidgetItem(str(value_int)))
         
-        self.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.horizontalHeader().setStretchLastSection(True)
         self.cellChanged.connect(self.onCellChanged)
 
@@ -697,6 +580,9 @@ class StackTable(QTableWidget):
         fresh_data = self.data.data
         self.cellChanged.disconnect()
 
+        r,g,b,i = colors[self.theme]["change_highlight"]
+        highlight_color = QColor(r,g,b,i)
+
         if self.data_copy != fresh_data:
             for row, address in enumerate(range(self.no_of_rows-1, -1, -1)):
                 if self.data_copy[address] != fresh_data[address]:
@@ -705,81 +591,81 @@ class StackTable(QTableWidget):
                     self.setItem(row, 1, QTableWidgetItem(value_bin))
                     self.setItem(row, 2, QTableWidgetItem(str(value_int)))
                     self.data_copy[address] = fresh_data[address]
-                    self.highlightChange(row, 1, QColor(255, 255, 0, 83))
-                    self.highlightChange(row, 2, QColor(255, 255, 0, 83))
+                    self._highlightChange(row, 1, highlight_color)
+                    self._highlightChange(row, 2, highlight_color)
 
         self.cellChanged.connect(self.onCellChanged)
 
     def onCellChanged(self, row, column):
-        """Handle cell edits and enforce binary/decimal rules"""
-
         self.blockSignals(True)
         item = self.item(row, column)
         value = item.text().strip()
         
         if not self.allow_change or not value:
-            self.restorePreviousValue(row)
+            self._restorePreviousValue(row)
             self.blockSignals(False)
             return
 
         match column:
             case 0:
-                self.showErrorMessage("Operation forbidden!",
-                    "It's not possible to edit memory address!")
-                self.restorePreviousValue(row)
-                self.blockSignals(False)
+                not_possible_to_edit_address(self.language)
+                self._restorePreviousValue(row)
             case 1:
                 if not all(c in '01' for c in value):
-                    self.showErrorMessage("Invalid binary number",
-                        "Enter valid binary number - only 1's and 0's")
-                    self.restorePreviousValue(row)
+                    invalid_binary_number(self.language)
+                    self._restorePreviousValue(row)
                 else:
                     decimal_value = int(value, 2)
-                    if decimal_value > 255:
-                        self.showErrorMessage("Incorrect value",
-                            "Value too big - value have to be between 0 and 255")
-                        self.restorePreviousValue(row)
+                    if decimal_value > 255 or decimal_value < 0:
+                        incorrect_decimal_value(self.language)
+                        self._restorePreviousValue(row)
                         return
                     self.setItem(row, 1, QTableWidgetItem(value.zfill(8)))
                     self.setItem(row, 2, QTableWidgetItem(str(decimal_value)))
-                    self.highlightChange(row, 1)
-                    self.highlightChange(row, 2)
+                    self._highlightChange(row, 1)
+                    self._highlightChange(row, 2)
             case 2:
                 if not value.isdigit():
-                    self.showErrorMessage("Incorrect decimal value",
-                        "Enter valid decimal value!")
-                    self.restorePreviousValue(row)
+                    incorrect_decimal_value(self.language)
+                    self._restorePreviousValue(row)
                 else:
                     decimal_value = int(value)
                     if decimal_value > 255 or decimal_value < 0:
-                        self.showErrorMessage("Incorrect value",
-                            "Value too big - value have to be between 0 and 255")
-                        self.restorePreviousValue(row)
+                        incorrect_decimal_value(self.language)
+                        self._restorePreviousValue(row)
                         return
                     binary_value = bin(decimal_value)[2:].zfill(8)
                     self.setItem(row, 1, QTableWidgetItem(binary_value))
-                    self.highlightChange(row, 1)
-                    self.highlightChange(row, 2)
+                    self._highlightChange(row, 1)
+                    self._highlightChange(row, 2)
 
-        self.blockSignals(False)  # Re-enable signals
+        self.blockSignals(False)
 
-    def restorePreviousValue(self, row):
-        """Restore the original value before it was edited"""
+    def keyPressEvent(self, event):
+        if event.matches(QKeySequence.StandardKey.Copy):
+            self._copySelectionToClipboard()
+        else:
+            super().keyPressEvent(event)
+
+    def set_header(self, language : str) -> None:
+        self.language = language
+        self.setHorizontalHeaderLabels(names[self.language]["segment_col"])
+
+    def _restorePreviousValue(self, row):
         value_int = self.data_copy[self.no_of_rows - row]
         value_bin = bin(value_int)[2:].zfill(8)
 
         address = hex(self.no_of_rows - 1 - row)[2:].upper()
         row_no = QTableWidgetItem(address)
-        row_no.setFont(self.font)
+        row_no.setFont(bold_italic_15)
 
         self.setItem(row, 0, row_no)
         self.setItem(row, 1, QTableWidgetItem(str(value_bin)))
         self.setItem(row, 2, QTableWidgetItem(str(value_int)))
 
-    def copySelectionToClipboard(self):
+    def _copySelectionToClipboard(self):
         selected_ranges = self.selectedRanges()
-        if not selected_ranges:
-            return
+        if not selected_ranges: return
 
         copied_text = []
         
@@ -789,74 +675,52 @@ class StackTable(QTableWidget):
                 cols = []
                 for col in range(selection.leftColumn(), selection.rightColumn() + 1):
                     item = self.item(row, col)
-                    cols.append(item.text() if item else "")  # Get text or empty string if None
-                rows.append("\t".join(cols))  # Separate columns by tab (Excel format)
-            copied_text.append("\n".join(rows))  # Separate rows by new line
+                    cols.append(item.text() if item else "")
+                rows.append("\t".join(cols))
+            copied_text.append("\n".join(rows))
 
         clipboard = QApplication.clipboard()
-        clipboard.setText("\n".join(copied_text))  # Copy formatted text to clipboard
+        clipboard.setText("\n".join(copied_text))
 
-    def keyPressEvent(self, event):
-        if event.matches(QKeySequence.StandardKey.Copy):
-            self.copySelectionToClipboard()
-        else:
-            super().keyPressEvent(event)
-
-    def highlightChange(self, row, column, color):
+    def _highlightChange(self, row, column, color):
         item = self.item(row, column)
-        if not item:
-            return
+        if not item:    return
 
-        # Get the original background color (handles dark/light mode properly)
         default_color = self.palette().color(QPalette.ColorRole.Base)
-        
-        # If item already has a custom background, use it
         original_color = item.background().color()
         if not original_color.isValid() or original_color == QColor(0, 0, 0):  
             original_color = default_color  
-
         item.setBackground(color)
-        QTimer.singleShot(500, lambda: self.resetCellColor(row, column, original_color))
 
-    def resetCellColor(self, row, column, color):
+        QTimer.singleShot(500, lambda: self._resetCellColor(row, column, original_color))
+
+    def _resetCellColor(self, row, column, color):
         self.blockSignals(True)
         item = self.item(row, column)
-        if item:
-            item.setBackground(color)
+        if item:    item.setBackground(color)
         self.blockSignals(False)
 
-    def set_header(self, language : str) -> None:
-        self.language = language
-        self.setHorizontalHeaderLabels(names[self.language]["segment_col"])
 
 class VariableTable(QTableWidget):
     """This class allows to display Stack as a table with option to easily change
     content"""
-    def __init__(self, engine : Engine):
+    def __init__(self, engine : Engine, language : str, theme : str):
         super().__init__()
+        self.language = language
+        self.theme = theme
         self.data = engine.data
         self.data_copy = []
         self.engine = engine
         self.allow_change = False
-        self.font = QFont()
-        self.font.setBold(True)
-        self.font.setPointSize(15)
-        self.font.setItalic(True)
 
-        # Initialize table properties
-        columns = ["Name","Addr.", "Size", "Format", "Content"]
+        columns = names[self.language]["variables_col"]
         self.setColumnCount(len(columns))
         self.setHorizontalHeaderLabels(columns)
-
-        # Hide row numbers
         self.verticalHeader().setVisible(False)
-
-        # Set grid visibility
         self.setShowGrid(True)
         self.setGridStyle(Qt.PenStyle.SolidLine)
-        self.setStyleSheet("QTableWidget {gridline-color: #606060;}")
+        self.setStyleSheet(table_grid)
 
-        # Enable editability
         self.cellChanged.connect(self.onCellChanged)
 
     def set_allow_change_content(self, allow = True):
@@ -867,8 +731,6 @@ class VariableTable(QTableWidget):
             self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
 
     def generate_table(self):
-        """Refresh table contents"""
-
         self.cellChanged.disconnect()
         self.variables = self.engine.variables
         self.setRowCount(len(self.variables))
@@ -882,13 +744,14 @@ class VariableTable(QTableWidget):
             binary_content = " ".join([bin(c)[2:].zfill(8) for c in content])
 
             var_name = QTableWidgetItem(var)
-            var_name.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            test = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+            var_name.setFlags(test)
             item_address = QTableWidgetItem(str(address))
-            item_address.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            item_address.setFlags(test)
             item_size = QTableWidgetItem(str(size))
-            item_size.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            item_size.setFlags(test)
             item_format =  QTableWidgetItem(format_str)
-            item_format.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+            item_format.setFlags(test)
 
             self.setItem(row, 0, var_name)
             self.setItem(row, 1, item_address)
@@ -898,14 +761,16 @@ class VariableTable(QTableWidget):
 
             self.data_copy.append(content)
         
-        self.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.horizontalHeader().setStretchLastSection(True)
         self.cellChanged.connect(self.onCellChanged)
 
     def refresh_table(self):
         
         self.cellChanged.disconnect()
+
+        r,g,b,i = colors[self.theme]["change_highlight"]
+        highlight_color = QColor(r,g,b,i)
 
         for row, var in enumerate(self.variables):
             variable = self.variables[var]
@@ -916,7 +781,7 @@ class VariableTable(QTableWidget):
             if self.data_copy[row] != content:
                 binary_content = " ".join([bin(c)[2:].zfill(8) for c in content])
                 self.setItem(row, 4, QTableWidgetItem(binary_content))
-                self.highlightChange(row, 4, QColor(255, 255, 0, 83))
+                self._highlightChange(row, 4, highlight_color)
                 self.data_copy[row] = content
 
         self.cellChanged.connect(self.onCellChanged)
@@ -929,60 +794,52 @@ class VariableTable(QTableWidget):
         value = item.text().strip()
         
         if not self.allow_change or not value:
-            self.restorePreviousValue(row)
+            self._restorePreviousValue(row)
             self.blockSignals(False)
             return
 
         match column:
             case 0:
-                self.showErrorMessage("Operation forbidden!",
-                    "It's not possible to edit variable name!")
-                self.restorePreviousValue(row)
-                self.blockSignals(False)
+                cannot_edit_name(self.language)
+                self._restorePreviousValue(row)
             case 1:
-                self.showErrorMessage("Operation forbidden!",
-                    "It's not possible to edit variable address!")
-                self.restorePreviousValue(row)
-                self.blockSignals(False)
+                not_possible_to_edit_address(self.language)
+                self._restorePreviousValue(row)
             case 2:
-                self.showErrorMessage("Operation forbidden!",
-                    "It's not possible to edit variable size!")
-                self.restorePreviousValue(row)
-                self.blockSignals(False)
+                cannot_edit_size(self.language)
+                self._restorePreviousValue(row)
             case 3:
-                self.showErrorMessage("Operation forbidden!",
-                    "It's not possible to edit variable format!")
-                self.restorePreviousValue(row)
-                self.blockSignals(False)
+                cannot_edit_format(self.language)
+                self._restorePreviousValue(row)
             case 4:
                 if not all(c in '01' for c in value):
-                    self.showErrorMessage("Invalid binary number",
-                        "Enter valid binary number - only 1's and 0's")
-                    self.restorePreviousValue(row)
+                    invalid_binary_number(self.language)
+                    self._restorePreviousValue(row)
                 else:
                     length = (len(value)//8 + 1) * 8 if len(value)//8 < len(value)/8 else len(value)//8
                     self.setItem(row, 4, QTableWidgetItem(value.zfill(length)))
-                    self.highlightChange(row, 4)
+                    self._highlightChange(row, 4)
 
-        self.blockSignals(False)  # Re-enable signals
+        self.blockSignals(False)
 
-    def showErrorMessage(self, title : str, message : str):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Warning)
-        msg.setText(message)
-        msg.setWindowTitle(title)
-        msg.exec()
+    def keyPressEvent(self, event):
+        if event.matches(QKeySequence.StandardKey.Copy):
+            self._copySelectionToClipboard()
+        else:
+            super().keyPressEvent(event)
 
-    def restorePreviousValue(self, row):
-        """Restore the original value before it was edited"""
+    def set_header(self, language : str) -> None:
+        self.language = language
+        self.setHorizontalHeaderLabels(names[self.language]["variables_col"])
+
+    def _restorePreviousValue(self, row):
         content = self.data_copy[row]
         binary_content = " ".join([bin(c)[2:].zfill(8) for c in content])
         self.setItem(row, 4, QTableWidgetItem(binary_content))
 
-    def copySelectionToClipboard(self):
+    def _copySelectionToClipboard(self):
         selected_ranges = self.selectedRanges()
-        if not selected_ranges:
-            return
+        if not selected_ranges: return
 
         copied_text = []
         
@@ -992,40 +849,86 @@ class VariableTable(QTableWidget):
                 cols = []
                 for col in range(selection.leftColumn(), selection.rightColumn() + 1):
                     item = self.item(row, col)
-                    cols.append(item.text() if item else "")  # Get text or empty string if None
-                rows.append("\t".join(cols))  # Separate columns by tab (Excel format)
-            copied_text.append("\n".join(rows))  # Separate rows by new line
+                    cols.append(item.text() if item else "")
+                rows.append("\t".join(cols))
+            copied_text.append("\n".join(rows))
 
         clipboard = QApplication.clipboard()
-        clipboard.setText("\n".join(copied_text))  # Copy formatted text to clipboard
+        clipboard.setText("\n".join(copied_text))
 
-    def keyPressEvent(self, event):
-        if event.matches(QKeySequence.StandardKey.Copy):
-            self.copySelectionToClipboard()
-        else:
-            super().keyPressEvent(event)
-
-    def highlightChange(self, row, column, color):
+    def _highlightChange(self, row, column, color):
         item = self.item(row, column)
-        if not item:
-            return
+        if not item:    return
 
-        # Get the original background color (handles dark/light mode properly)
         default_color = self.palette().color(QPalette.ColorRole.Base)
-        
-        # If item already has a custom background, use it
         original_color = item.background().color()
         if not original_color.isValid() or original_color == QColor(0, 0, 0):  
             original_color = default_color  
-
         item.setBackground(color)
 
-        # Restore original color after 500ms
-        QTimer.singleShot(500, lambda: self.resetCellColor(row, column, original_color))
+        QTimer.singleShot(500, lambda: self._resetCellColor(row, column, original_color))
 
-    def resetCellColor(self, row, column, color):
+    def _resetCellColor(self, row, column, color):
         self.blockSignals(True)
         item = self.item(row, column)
-        if item:
-            item.setBackground(color)
+        if item:    item.setBackground(color)
         self.blockSignals(False)
+
+
+class LimitedInputTextEdit(QTextEdit):
+    """SubClass of Terminal"""
+    
+    inputFinished = pyqtSignal(str)
+
+    def __init__(self, char_limit = 1000):
+        super().__init__()
+        self.char_limit = char_limit
+        self.current_input = ""
+        self.setUndoRedoEnabled(False)
+        self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        key = event.key()
+        
+        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
+            self.append("")
+            self.inputFinished.emit(self.current_input)
+            self.current_input = ""
+            return
+        elif key == Qt.Key.Key_Backspace:
+            if len(self.current_input) > 0:
+                self.current_input = self.current_input[:-1]
+                self.textCursor().deletePreviousChar()
+            return
+        elif event.text() and len(self.current_input) < self.char_limit:
+            self.current_input += event.text()
+            self.insertPlainText(event.text())
+
+    def reset_char_limit(self):     self.char_limit = 1000
+
+
+class Terminal(QWidget):
+    """This class represents terminal"""
+    
+    def __init__(self):
+        super().__init__()
+
+        layout = QVBoxLayout()
+
+        self.terminal = LimitedInputTextEdit(20)  # Limit to 20 chars
+        self.terminal.setFont(font_15)
+        self.terminal.setMinimumHeight(100)
+
+        self.terminal.inputFinished.connect(self.handle_input)
+
+        layout.addWidget(self.terminal)
+        self.setLayout(layout)
+
+    def handle_input(self, user_input: str):
+        """Handle input when user presses Enter."""
+        print(f"User input: {user_input}")
+
+    def write_char(self, char: int):
+        """Write characters to terminal programmatically."""
+        text = self.terminal.toPlainText()
+        self.terminal.setPlainText(text + chr(char))
