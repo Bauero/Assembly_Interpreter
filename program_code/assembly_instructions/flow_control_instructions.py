@@ -17,7 +17,7 @@ def LOOP(HardwareRegister : HardwareRegisters,
         Variables : dict,
         Labels : dict,
         **kwargs):
-    """This function perfoms jump to the speciphied location if value in CX>0;
+    """This function perfoms jump to the specified location if value in CX>0;
     
     1. Substract 1 from CX
     2. Compare if CX > 0
@@ -56,7 +56,7 @@ def LOOPZ(HardwareRegister : HardwareRegisters,
         Variables : dict,
         Labels : dict,
         **kwargs):
-    """This function perfoms jump to the speciphied location if value in CX>0 and ZF=1;
+    """This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=1
@@ -95,7 +95,7 @@ def LOOPE(HardwareRegister : HardwareRegisters,
         Variables : dict,
         Labels : dict,
         **kwargs):
-    """This function perfoms jump to the speciphied location if value in CX>0 and ZF=1;
+    """This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=1
@@ -134,7 +134,7 @@ def LOOPNZ(HardwareRegister : HardwareRegisters,
         Variables : dict,
         Labels : dict,
         **kwargs):
-    """This function perfoms jump to the speciphied location if value in CX>0 and ZF=0;
+    """This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=0
@@ -173,7 +173,7 @@ def LOOPNE(HardwareRegister : HardwareRegisters,
         Variables : dict,
         Labels : dict,
         **kwargs):
-    """This function perfoms jump to the speciphied location if value in CX>0 and ZF=0;
+    """This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=0

@@ -9,7 +9,7 @@ from abc import abstractmethod
 
 class DetailedException(Exception):
     """
-    This is abstract class for methods which should rise speciphic exeption which
+    This is abstract class for methods which should rise specific exeption which
     could later be used to prompt user with warning
     """
 
@@ -318,7 +318,7 @@ class IncorectValueInListOfBits (Exception):
 class NoExplicitSizeError (Exception):
     """
     This exceptin is raised if there is call to get data from address which is stored
-    in register or as provided address in memory, but no size is speciphied - 
+    in register or as provided address in memory, but no size is specified - 
     therefore program doesn't know how much data to get from data:
 
     EX 1:

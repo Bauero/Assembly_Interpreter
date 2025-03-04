@@ -198,6 +198,8 @@ class Engine():
                 types_of_args.append("value")
             elif return_if_base_10_value(arg):
                 types_of_args.append("value")
+            elif return_if_base_8_value(arg):
+                types_of_args.append("value")
             elif return_if_base_2_value(arg):
                 types_of_args.append("value")
             else:
@@ -371,6 +373,9 @@ class Engine():
                     elif sv := return_if_base_10_value(arg):
                         source_values.append(sv)
                         converted_values.append(int(sv))
+                    elif sv := return_if_base_8_value(arg):
+                        source_values.append(sv)
+                        converted_values.append(int(sv, 8))
                     elif sv := return_if_base_2_value(arg):
                         source_values.append(sv)
                         converted_values.append(int(sv, 2))
@@ -427,7 +432,7 @@ class Engine():
         
         reg, value      -   legal, but if explicite value size is passed it has to match reg size
         reg, reg        -   illegal if right register is bigger than the left one
-        reg, memory     -   legal, no speciphied size required
+        reg, memory     -   legal, no specified size required
         
         value, value    -   illegal
         value, reg      -   illegal

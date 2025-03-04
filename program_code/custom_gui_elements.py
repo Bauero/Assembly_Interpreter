@@ -608,7 +608,7 @@ class StackTable(QTableWidget):
 
         match column:
             case 0:
-                not_possible_to_edit_address(self.language)
+                cannot_edit_address(self.language)
                 self._restorePreviousValue(row)
             case 1:
                 if not all(c in '01' for c in value):
@@ -803,7 +803,7 @@ class VariableTable(QTableWidget):
                 cannot_edit_name(self.language)
                 self._restorePreviousValue(row)
             case 1:
-                not_possible_to_edit_address(self.language)
+                cannot_edit_address(self.language)
                 self._restorePreviousValue(row)
             case 2:
                 cannot_edit_size(self.language)

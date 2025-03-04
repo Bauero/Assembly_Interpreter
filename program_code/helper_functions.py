@@ -85,7 +85,7 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     """
     
     assert size > 0, f"Cannot convert number to size which is less or equal to 0"
-    assert size % 8 == 0, f"Cannot convert number, as the speciphied size is not mutiple of 8"
+    assert size % 8 == 0, f"Cannot convert number, as the specified size is not mutiple of 8"
  
     negative_value = False
 

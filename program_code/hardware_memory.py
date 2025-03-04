@@ -13,7 +13,7 @@ class DataSegment:
     This class is designed to keep static data which is defined in data section, but in COM app is also
     stack. As with real computer, we assume, that static data is kept within one continues line in memory - 
     therefore we can access values by asking for a range of memory - x amoung of bytes/words etc. 
-    which starts at a speciphic address. By default, all valuse are assumed to take up 1 byte in
+    which starts at a specific address. By default, all valuse are assumed to take up 1 byte in
     memory. This is also assumed by 'size' property - it returns amount of bytes stored in our data.
     """
 

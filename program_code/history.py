@@ -31,7 +31,6 @@ class History():
     def load_previous_instruction_if_executed(self):
         """Load previous instruction if there are any done before the current"""
         
-        #   We tried to load last executed instruction - we are at the end of history
         if self.current_instruction == -1:
             return None
         record = self.history[self.current_instruction].values()
@@ -80,6 +79,3 @@ class History():
         del self.variables
 
         return return_all
-
-    def print_state(self, text):
-        print(text, self.current_instruction, self.history)

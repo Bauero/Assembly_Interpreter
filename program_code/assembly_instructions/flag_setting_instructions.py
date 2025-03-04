@@ -1,5 +1,5 @@
 """
-This file stores all instructions which are responsible for setting a speciphic flags in
+This file stores all instructions which are responsible for setting a specific flags in
 procesor
 """
 
