@@ -16,7 +16,7 @@ allowed_sections = ['code', 'stack', 'data', 'text']
 
 def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     """
-    This function tries to read and load file speciphied in the path - this is main funciton
+    This function tries to read and load file specified in the path - this is main funciton
     responsible for reading code - executing it with success, shoudl allow to run code from
     file.
     """

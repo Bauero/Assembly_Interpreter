@@ -8,6 +8,7 @@ from .preprocessor import loadMainFile
 from .helper_functions import loadFileFromPath, convert_number_to_int_with_binary_capacity
 from .errors import ExecutionOfOperationInLineError, DetailedException
 from .history import History
+from .engine import Engine
 import pickle
 
 class CodeHandler():
@@ -16,7 +17,7 @@ class CodeHandler():
     handles opened file and loades instruction for engine
     """
 
-    def __init__(self, engine):
+    def __init__(self, engine : Engine, language : str):
         self.openFiles = []
         self.rawfiles = {}
         self.files = {}
@@ -24,6 +25,7 @@ class CodeHandler():
         self.currentlyExecutedLine = {}
         self.engine = engine
         self.working_in_interactive_mode = False
+        self.language = language
 
     def readPrepareFile(self, path_to_file, ignore_size_limit, ignore_file_type):
         """This function, reads file and prepare it's content for processing"""

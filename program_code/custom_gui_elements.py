@@ -110,30 +110,30 @@ class MultipurposeRegister(QWidget):
         self.setLayout(row_layout)
         self.update()
 
-    def _setRegisterValue(self, value : str) -> None:
+    def _setRegisterValue(self, value : str):
         value = value.zfill(16)[-16:]
         self.register_high_bits.setText(value[-16:-8])
         self.register_low_bits.setText(value[-8:])
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
-    def update(self) -> None:
+    def update(self):
         self._setRegisterValue(self.HR.readFromRegister(self.register_name))
 
     def get_name(self) -> str:
         return self.register_name
     
-    def set_interactive(self, value : bool = False) -> None:
+    def set_interactive(self, value : bool = False):
         self.register_high_bits.setReadOnly(not value)
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
 
-    def set_hint(self, language : str) -> None:
+    def set_hint(self, language : str):
         self.language = language
         name = f"{self.register_name}_hint"
         self.register_label.setToolTip(color_txt(
             names[self.language][name], colors[self.theme]["hints"]))
 
-    def change_theme(self, theme : str) -> None:
+    def change_theme(self, theme : str):
         current_hint = self.register_label.toolTip()
         self.theme = theme
         self.register_label.setToolTip(color_txt(current_hint, colors[self.theme]["hints"]))
@@ -189,7 +189,7 @@ class FunctionalRegisters(QWidget):
         self.setLayout(row_layout)
         self.update()
 
-    def _setRegisterValue(self, value : str) -> None:
+    def _setRegisterValue(self, value : str):
         value = value.zfill(16)[-16:]
         self.register_content.setText(value)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
@@ -203,13 +203,13 @@ class FunctionalRegisters(QWidget):
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
 
-    def set_hint(self, language : str) -> None:
+    def set_hint(self, language : str):
         self.language = language
         name = f"{self.register_name}_hint"
         self.register_label.setToolTip(color_txt(
             names[self.language][name], colors[self.theme]["hints"]))
 
-    def change_theme(self, theme : str) -> None:
+    def change_theme(self, theme : str):
         current_hint = self.register_label.toolTip()
         self.theme = theme
         self.register_label.setToolTip(color_txt(current_hint, colors[self.theme]["hints"]))
@@ -347,7 +347,7 @@ class Flags(QWidget):
         self.FR.setFlagRaw(content)
         self.register_content.setText("".join(content))
 
-    def _setRegisterValue(self, value : str) -> None:
+    def _setRegisterValue(self, value : str):
         value = value.zfill(16)[-16:]
         self.register_content.setText(value)
         self.overflow_flag.         setChecked(value[-12] == "1")
@@ -383,7 +383,7 @@ class Flags(QWidget):
             adjusted_text = text.zfill(16)[-16:]
             self._setRegisterValue(adjusted_text)
 
-    def setDisabled(self, value : bool) -> None:
+    def setDisabled(self, value : bool):
         for attr_name in dir(self):
             if attr_name.endswith('_flag'):
                 attr_value = getattr(self, attr_name)
@@ -391,7 +391,7 @@ class Flags(QWidget):
         self.register_content.setDisabled(value)
         self.register_label.setDisabled(False)
 
-    def set_hint(self, language : str) -> None:
+    def set_hint(self, language : str):
         for f in self.flags:
             attr_name = f"{f.lower().replace(' ', '_')}_flag"
             obj = getattr(self, attr_name)
@@ -444,7 +444,7 @@ class CodeEditor(QPlainTextEdit):
     def setHighlight(self, line_numbers,
                      background_color : str | None = "", 
                      text_color : str | None = ""
-                     ) -> None:
+                     ):
         """
         Podświetla wybrane linie i przewija widok, aby podświetlona linia była na ekranie.
         """
@@ -647,7 +647,7 @@ class StackTable(QTableWidget):
         else:
             super().keyPressEvent(event)
 
-    def set_header(self, language : str) -> None:
+    def set_header(self, language : str):
         self.language = language
         self.setHorizontalHeaderLabels(names[self.language]["segment_col"])
 
@@ -828,7 +828,7 @@ class VariableTable(QTableWidget):
         else:
             super().keyPressEvent(event)
 
-    def set_header(self, language : str) -> None:
+    def set_header(self, language : str):
         self.language = language
         self.setHorizontalHeaderLabels(names[self.language]["variables_col"])
 

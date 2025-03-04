@@ -13,6 +13,7 @@ from .errors import (
     ImproperDataDefiniton
     )
 from .helper_functions import loadFileFromPath
+from .code_handler import CodeHandler
 from .custom_message_boxes import *
 from screeninfo import get_monitors
 
@@ -34,7 +35,7 @@ class MainWindow(QWidget):
     which update the app depending on action by the user.
     """
 
-    def __init__(self, code_handler):
+    def __init__(self, code_handler : CodeHandler, language_preset : str , theme : str):
         super().__init__()
         self.code_handler = code_handler
         self.interactive_mode = False
@@ -43,8 +44,8 @@ class MainWindow(QWidget):
         self.timer_interval = 1000
         self.internal_timer.setInterval(self.timer_interval)
         self.instructionCounter = 0
-        self.language = "PL"
-        self.theme = "dark_mode"
+        self.language = language_preset
+        self.theme = theme
         self._createUserInterface()
         self._set_interactive_mode()
         self.welcomeScreen.show()
@@ -385,7 +386,7 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _oder_loading_file(self, file_path : str, ignore_size_limit : bool,
-                           ignore_file_type : bool, e : Exception) -> None:
+                           ignore_file_type : bool, e : Exception):
         raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
         assert type(raw_file) == str
         self.code_field.setText("".join(raw_file))

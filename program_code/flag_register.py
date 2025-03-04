@@ -13,7 +13,7 @@ class FlagRegister():
         self.FLAGS = [0 for _ in range(16)]
         self.clearFlags()
 
-    def setFlag(self, flag : str, setValue) -> None:
+    def setFlag(self, flag : str, setValue):
         """Allow to set specific flag"""
         setValue = int(bool(int(setValue)))
         match(flag):
@@ -31,7 +31,7 @@ class FlagRegister():
             case "PF":  self.FLAGS[13] = setValue
             case "CF":  self.FLAGS[15] = setValue
 
-    def setFlagRaw(self, valueInBits : list | str) -> None:
+    def setFlagRaw(self, valueInBits : list | str):
         """This option allow to set value to all bits in flag register at once"""
         if type(valueInBits) == list:
             valueInBits = "".join(valueInBits)
@@ -42,7 +42,7 @@ class FlagRegister():
         for bit in range(len(valueInBits)):
             self.FLAGS[bit] = int(valueInBits[bit] == '1')
 
-    def clearFlags(self) -> None:
+    def clearFlags(self):
         """Set all flags to default value"""
         for N in range(16): self.FLAGS[N] = 0
         self.setFlag("NT",1)

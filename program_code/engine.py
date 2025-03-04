@@ -27,18 +27,22 @@ class Engine():
     and flags accordingly
     """
 
-    def __init__(self):
+    def __init__(self, language : str):
         self._prepareFunctions()
         self.HR = HardwareRegisters()
         self.FR = FlagRegister()
         self.data = DataSegment()
         self.variables = []
+        self.language = language
 
     def informAboutLabels(self, labels : list):
         self.labels = labels
 
     def informAboutVariables(self, variables : list):
         self.variables = variables
+
+    def set_language(self, new_language : str):
+        self.language = new_language
 
     def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it cuts the line, extracting command
@@ -419,29 +423,25 @@ class Engine():
     def _standardise_sizes_check_if_legal(self, arg_types : list, sizes : list, expli_sizes : list,
                                           args_values_int : list) -> list:
         """This function asks for list with detected sizes and list with detected types and
-        werifies that sizes are correctly defined (should be equal)"""
+        werifies that sizes are correctly defined (should be equal)
 
-        if not arg_types:   return []
-
-        """
         Posible combinations, and general ideas:
 
-        memory, value   -   [memory, ____ value] : explicite size diff. req. in ____
-        memory, reg     -   allowed regardless of reg value
-        memory, memory  -   ILLEGAL
-        
-        reg, value      -   legal, but if explicite value size is passed it has to match reg size
-        reg, reg        -   illegal if right register is bigger than the left one
-        reg, memory     -   legal, no specified size required
-        
-        value, value    -   illegal
-        value, reg      -   illegal
-        value, memory   -   illegal
-
-        value           -   no explicite size required
-        reg             -   no explicite size requirements
-        ___ [memory]    -   explicite size required in place of ___
+        - memory, value   -   [memory, ____ value] : explicite size diff. req. in ____
+        - memory, reg     -   allowed regardless of reg value
+        - memory, memory  -   ILLEGAL
+        - reg, value      -   legal, but if explicite value size is passed it has to match reg size
+        - reg, reg        -   illegal if right register is bigger than the left one
+        - reg, memory     -   legal, no specified size required
+        - value, value    -   illegal
+        - value, reg      -   illegal
+        - value, memory   -   illegal
+        - value           -   no explicite size required
+        - reg             -   no explicite size requirements
+        - ___ [memory]    -   explicite size required in place of ___
         """
+
+        if not arg_types:   return []
 
         match arg_types:
             case ["memory", "value"]:

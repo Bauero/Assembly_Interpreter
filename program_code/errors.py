@@ -481,7 +481,7 @@ class DataNotByteMultipleError (DetailedException):
     is most likely a data storage error on the side of 
     """
 
-    def __init__(self, message = "", line = None) -> None:
+    def __init__(self, message = "", line = None):
         self._message = message
         self._line = line
 
@@ -508,7 +508,7 @@ class ImproperIndirectAddressingError (DetailedException):
     [BX - SI] -> substraction not allowed; only addition is allowed
     """
     
-    def __init__(self, message = "", line = None) -> None:
+    def __init__(self, message = "", line = None):
         self._message = message
         self._line = line
 
@@ -538,7 +538,7 @@ class SizesDoesntMatchError(DetailedException):
     ADD [var1], word 100    <- word doesn't fit in byte variable !!!
     """
 
-    def __init__(self, message = "", line = None) -> None:
+    def __init__(self, message = "", line = None):
         self._message = message
         self._line = line
 
@@ -554,7 +554,7 @@ class NoExpliciteSizeDefinitionWhenRequiredError(DetailedException):
     in state, when it doesn't know on how big range of memory it should operate.
     """
 
-    def __init__(self, message = "", line = None) -> None:
+    def __init__(self, message = "", line = None):
         self._message = message
         self._line = line
 

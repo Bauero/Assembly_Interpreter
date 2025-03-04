@@ -76,13 +76,13 @@ class HardwareRegisters():
         effReg = ["SI", "DI", "BP", "BX"]
         return register in effReg
 
-    def cleanRegister(self, register : str) -> None:
+    def cleanRegister(self, register : str):
         """Set value of register to 0"""
 
         register = register.upper()
         self.writeIntoRegister(register, 0)
 
-    def cleanAllRegisters(self) -> None:
+    def cleanAllRegisters(self):
         """Set value of each register to 0"""
 
         for regiser in self._regList:   self.cleanRegister(regiser)
