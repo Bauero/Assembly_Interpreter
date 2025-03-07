@@ -432,13 +432,17 @@ class MainWindow(QWidget):
                 if self.startAutoExecCheckbox.isChecked():
                     self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
             case 'next_instruction':
-                response = self.code_handler.executeCommand('next_instruction')
-                self.instructionCounter += 1
-                self._refresh()
-                self._act_on_response(response)
-                self.stackSection.refresh_table()
-                self.variableSection.refresh_table()
-                if self.instructionCounter > 0: self.previousLineButton.setEnabled(True)
+                try:
+                    response = self.code_handler.executeCommand('next_instruction')
+                    self.instructionCounter += 1
+                    self._refresh()
+                    self._act_on_response(response)
+                    self.stackSection.refresh_table()
+                    self.variableSection.refresh_table()
+                    if self.instructionCounter > 0: self.previousLineButton.setEnabled(True)
+                except Exception as e:
+                    unrecognized_error_popup(self.language, e)
+                    return
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
                 self.instructionCounter -= 1
@@ -525,3 +529,4 @@ class MainWindow(QWidget):
             self.toggle_language.setCurrentIndex(option)
             self.toggle_language.blockSignals(False)
         self.load_file_button.setFocus()
+        self.code_handler.engine.set_language(self.language)

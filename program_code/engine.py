@@ -9,14 +9,7 @@ from .helper_functions import *
 from .hardware_memory import DataSegment
 from .hardware_registers import HardwareRegisters
 from .flag_register import FlagRegister
-from .code_warnings import ExecutionOfOperationInLineWarning, ExpliciteSizeOperandIgnoredWarning
-from .errors import (ArgumentNotExpected,
-                    NoExplicitSizeError,
-                    ExecutionOfOperationInLineError,
-                    UnrecognizedArgumentInLineError,
-                    SizesDoesntMatchError,
-                    NoExpliciteSizeDefinitionWhenRequiredError,
-                    KeywordNotImplementedError)
+from .custom_message_boxes import *
 
 allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
 
@@ -36,12 +29,15 @@ class Engine():
         self.language = language
 
     def informAboutLabels(self, labels : list):
+        """This method allow to pass labels to engine after successful preprocessing"""
         self.labels = labels
 
     def informAboutVariables(self, variables : list):
+        """This method allow to pass variables to engine after successful preprocessing"""
         self.variables = variables
 
     def set_language(self, new_language : str):
+        """This method allow to pass language setting to engine - for warnings/errors"""
         self.language = new_language
 
     def executeInstruction(self, line : int, command : str):
@@ -54,9 +50,10 @@ class Engine():
 
         keyword, first_non_keyw_char = self._separate_keyword(command)
         if keyword not in self.funtionNameLink:
-            raise ExecutionOfOperationInLineError(KeywordNotImplementedError())
-        elements_in_line.append(keyword)
+            unsuported_instruction(self.language)
+            return -1
         
+        elements_in_line.append(keyword)
         arguments = command[first_non_keyw_char:].strip().split(",")
         arguments = [arg.strip() for arg in arguments if arg]
         elements_in_line.extend(arguments)
@@ -66,11 +63,16 @@ class Engine():
 
         args_types = self._detect_argument_type(args_cleaned)
         if "undefined" in args_types:
-            raise ExecutionOfOperationInLineError(UnrecognizedArgumentInLineError())
+            unrecognized_argument(self.language, self.curr_line + 1)
+            return -1
 
-        args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, args_types)
-
-        extracted = self._extract_argument_value_and_size(args_checked, args_types, explicite_sizes)
+        args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, 
+                                                                            args_types)
+        if args_checked == None:
+            return -1
+        
+        extracted = self._extract_argument_value_and_size(args_checked, args_types, 
+                                                          explicite_sizes)
         args_values_raw, args_values_int, final_sizes, destination = extracted
         
         for i, arg in enumerate(args_types):
@@ -80,9 +82,13 @@ class Engine():
         final_standardized_sizes = self._standardise_sizes_check_if_legal(args_types, 
                                                                           final_sizes, 
                                                                           explicite_sizes,
-                                                                          args_values_int)
-
-        self._check_if_operation_allowed(keyword, args_types)
+                                                                          args_values_int)        
+        if final_standardized_sizes == None:
+            return -1
+        
+        resp = self._check_if_operation_allowed(keyword, args_types)
+        if resp == None:
+            return -1
 
         try:
             output = self.funtionNameLink[ keyword ](
@@ -100,7 +106,8 @@ class Engine():
                 line = line
             )
         except Exception as e:
-            raise ExecutionOfOperationInLineError(exception=e)
+            instruction_error(self.language, self.curr_line + 1, e)
+            return -1
 
         return output
 
@@ -114,7 +121,6 @@ class Engine():
 
         for modified_elem in change:
             changes = change[modified_elem]
-
             match modified_elem:
                 case "register":
                     for modification in changes:
@@ -128,36 +134,29 @@ class Engine():
                         self.data.modify_data(start, modification[source])
 
     def _separate_keyword(self, line : str) -> tuple[str, int]:
-        """Extracts keyword from line, and returns it in capital leters. Keyword is defined as:
+        """Extracts keyword from line, and returns it in capital leters. Keyword is defined as
+        first non-epmty sequence of letters, which ends when space of tabulator is detected"""
         
-        - first non-epmty sequence of letters, which ends when space of tabulator is detected"""
-
-        keyword = ""
-        counter = 0
-        for c in line:
-            if c not in [" ", "\t"]:
-                keyword += c
-                counter += 1
-            else:
-                break
-        keyword = keyword.upper()
-
-        return keyword, counter
+        fs, ft = line.find(" "), line.find("\t")
+        smaller, greater = min(fs, ft), max(fs, ft)
+        if smaller == greater:
+            not_kw_char_index = len(line)
+        else:
+            not_kw_char_index = smaller if smaller != -1 else greater
+        
+        return line[:not_kw_char_index].upper(), not_kw_char_index
 
     def _extract_explicite_size_def(self, arguments : list) -> tuple[list, list]:
         """This function extracts explicite sizes definitions. It returns extracted sizes,
         and arguments without explicite sizes"""
 
-        sizes = []
-        args_no_sizes = []
+        sizes, args_no_sizes = [], []
 
         for arg in arguments:
             first_word = ""
-            counter = 0
-            for c in arg.upper():
-                if c.isalpha():
-                    first_word += c
-                    counter += 1
+            for counter, char in enumerate(arg.upper()):
+                if char.isalpha():
+                    first_word += char
                 else:
                     break
             
@@ -172,13 +171,9 @@ class Engine():
 
     def _detect_argument_type(self, list_of_arguments : list) -> list:
         """This function parses arguments in line and detects to which category they belong:
-        
         -   register
-        
         -   label (technically an immediate address in memory)
-        
         -   memory call
-        
         -   value (or complex value if it has to be calculated on runtime)
         """
         
@@ -186,8 +181,7 @@ class Engine():
 
         for arg in list_of_arguments:
             contain_arithm = any(filter(is_arithmetic, arg))
-            contain_brack = any(filter(is_rect_bracket, arg))
-            
+            contain_brack = any(filter(is_rect_bracket, arg)) 
             if contain_brack:
                 types_of_args.append("memory call")
             elif contain_arithm:
@@ -210,30 +204,13 @@ class Engine():
                 types_of_args.append("undefined")
 
         return types_of_args
+    
+    def _define_arg_types_and_value(self, elements : list):
+        """This funciton parses list with elements detected in expression, 
+        assigns types to elements, and extract values stores in elements"""
 
-    def _check_standardize_mem_call(self, mem_call : str) -> str:
-        """This funciton standardizes call for memory localtion, anlayzes it's syntax for
-        errors and if everything is fine, then returns standardized argument"""
-        
-        processed = mem_call.replace("[", "+").replace("]","").replace(" ","").replace("\t","")
-        if processed.startswith("+"):   processed = processed[1:]
-        
-        elements = []
-        tmp = ""
-        for c in processed:
-            if c.isalnum():             tmp += c
-            elif is_white_char(c):      continue
-            else:
-                if tmp:
-                    elements.append(tmp)
-                    tmp = ""
-                if is_allowed_arithmetic(c):
-                    elements.append(c)
-        else:
-            if tmp:         elements.append(tmp)
+        types, values = [], []
 
-        types = []
-        values = []
         for e in elements:
             if e in self.variables:
                 types.append("var")
@@ -257,27 +234,77 @@ class Engine():
                 types.append("constant")
                 values.append(b2v)
             else:
-                raise Exception()
+                return
 
-        if types.count("var") > 1:          raise Exception()
-        if types.count("register") > 2:     raise Exception()
+        return types, values
+
+    def _check_standardize_mem_call(self, mem_call : str) -> str:
+        """This funciton standardizes call for memory localtion, anlayzes it's syntax for
+        errors and if everything is fine, then returns standardized argument"""
+        
+        processed = mem_call.replace("[", "+").replace("]","").replace(" ","").replace("\t","")
+        if processed.startswith("+"):   processed = processed[1:]
+        
+        elements = []
+        tmp = ""
+        for c in processed:
+            if c.isalnum():             tmp += c
+            elif is_white_char(c):      continue
+            else:
+                if tmp:
+                    elements.append(tmp)
+                    tmp = ""
+                if is_allowed_arithmetic(c):
+                    elements.append(c)
+        else:
+            if tmp:         elements.append(tmp)
+
+        response = self._define_arg_types_and_value(self, elements)
+        if response == None:
+            unrecognized_elem_mem_call(self.language)
+            return
+        else:
+            types, values = response
+
+        if types.count("var") > 1:
+            double_memory_reference(self.language)
+            return
+        if types.count("register") > 2:
+            multiple_register_reference(self.language)
+            return
+
+        if types.count("register") == 1:
+            first_reg = elements[v1a := types.index("register")].upper()
+            first_reg_type = self.HR.getRegisterType(first_reg)
+
+            if first_reg_type == "multipurpose" and first_reg != "BX":
+                first_reg_must_be_bx(self.language)
+                return
+            if first_reg_type == "pointer" and first_reg == "SP":
+                cant_use_sp(self.language)
+                return
 
         if types.count("register") == 2:
             first_reg = elements[v1a := types.index("register")].upper()
             second_reg = elements[types.index("register", v1a + len(first_reg))].upper()
             
-            if first_reg == second_reg: raise Exception()
+            if first_reg == second_reg:
+                register_called_twice(self.language)
+                return
             
             first_reg_type = self.HR.getRegisterType(first_reg)
             second_reg_type = self.HR.getRegisterType(second_reg)
             
             if first_reg_type == second_reg_type:
-                raise Exception()
-            if first_reg_type == "multipurpose" and first_reg_type != "BX":
-                raise Exception()
+                reg_same_type(self.language)
+                return
+            if first_reg_type == "multipurpose" and first_reg != "BX":
+                first_reg_must_be_bx(self.language)
+                return
             if (first_reg_type == "pointer" and first_reg == "SP") or \
                (second_reg_type == "pointer" and second_reg == "SP"):
-                raise Exception()
+                cant_use_sp(self.language)
+                return
         
         standardized = "".join(values)
 
@@ -306,32 +333,12 @@ class Engine():
         """It is allowed to have values which - in general - are known at assembly
         time"""
 
-        types = []
-        values = []
-        for e in elements:
-            if e in self.variables:
-                types.append("var")
-                values.append(str(self.variables[e]['address']))
-            elif e.upper() in self.HR.listRegisters():
-                types.append("register")
-                values.append(str(int(self.HR.readFromRegister(e), 2)))
-            elif is_allowed_arithmetic(e):
-                types.append(e)
-                values.append(e)
-            elif b16v := return_if_base_16_value(e):
-                types.append("constant")
-                values.append(b16v)
-            elif b10v := return_if_base_10_value(e):
-                types.append("constant")
-                values.append(b10v)
-            elif b8v := return_if_base_8_value(e):
-                types.append("constant")
-                values.append(b8v)
-            elif b2v := return_if_base_2_value(e):
-                types.append("constant")
-                values.append(b2v)
-            else:
-                raise Exception()
+        response = self._define_arg_types_and_value(self, elements)
+        if response == None:
+            unrecognized_value_compl_val(self.language)
+            return
+        else:
+            _, values = response
 
         return "".join(values)
 
@@ -343,9 +350,15 @@ class Engine():
 
         for arg, atype in zip(arguments, types):
             if atype == "memory call":
-                validated_args.append(self._check_standardize_mem_call(arg))
+                response = self._check_standardize_mem_call(arg)
+                if response == None:
+                    return
+                validated_args.append(response)
             elif atype == "complex value":
-                validated_args.append(self._check_standardize_complex_value(arg))
+                response = self._check_standardize_complex_value(arg)
+                if response == None:
+                    return
+                validated_args.append(response)
             else:
                 validated_args.append(arg)
 
@@ -402,13 +415,11 @@ class Engine():
                     final_sizes.append(self.HR.getSize(arg.upper()))
                 case "memory call":
                     if not size:
-                        if len(final_sizes) == 1:
-                            size = final_sizes[0]
-                        else:
-                            size = 8
+                        size = final_sizes[0] if len(final_sizes) == 1 else 8
                     final_sizes.append(size)
                     data_in_mem = self.data.get_data(simple_eval(arg), size // 8)
-                    data_in_bits = (map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, data_in_mem))))
+                    data_in_bits = (map(lambda z: z.zfill(8), map(lambda x: x[2:], 
+                                                              map(bin, data_in_mem))))
                     data_in_bits_str = "".join(data_in_bits)
                     source_values.append(data_in_bits_str + "b")
                     conv_data = int(data_in_bits_str, 2)
@@ -447,11 +458,13 @@ class Engine():
             case ["memory", "value"]:
                 size = None
                 if all(expli_sizes) and expli_sizes[0] != expli_sizes[1]:
-                    raise ExecutionOfOperationInLineError(SizesDoesntMatchError())
+                    explicite_sizes_mismatch(self.language)
+                    return
                 if expli_sizes[0]:      size = expli_sizes[0]
                 elif expli_sizes[1]:    size = expli_sizes[1]
                 else:
-                    raise ExecutionOfOperationInLineError(NoExplicitSizeError())
+                    no_explicite_size(self.language)
+                    return
                 return size
                 
             case ['memory', 'register']:
@@ -460,20 +473,19 @@ class Engine():
                 reg_det_size = sizes[1]
 
                 if reg_exp_size and reg_exp_size < reg_det_size:
-                    
-                    raise ExecutionOfOperationInLineWarning(
-                        ExpliciteSizeOperandIgnoredWarning(),
-                        self.curr_line)
+                    explicite_size_ignored(self.language)
                 
                 final_reg_size = max(reg_exp_size, reg_det_size) if reg_exp_size else reg_det_size
 
                 if mem_exp_size and mem_exp_size < final_reg_size:
-                    raise ExecutionOfOperationInLineError(SizesDoesntMatchError)
+                    explicite_sizes_mismatch(self.language)
+                    return
                 
                 return final_reg_size
             
             case ['memory', 'memory']:
-                raise ExecutionOfOperationInLineError()
+                cant_call_mem_twice(self.language)
+                return
             
             case ["register", "value"]:
                 reg_exp_size = expli_sizes[0]
@@ -481,18 +493,13 @@ class Engine():
                 var_exp_size = expli_sizes[1]
                 var_det_size = sizes[1]
 
-                if reg_exp_size and reg_exp_size < reg_det_size:
-                    raise ExecutionOfOperationInLineWarning(
-                        ExpliciteSizeOperandIgnoredWarning(),
-                        self.curr_line)
+                if (reg_exp_size and reg_exp_size < reg_det_size) or \
+                    (reg_det_size < var_det_size):
+                    explicite_size_ignored(self.language)
                 
                 if var_exp_size and reg_det_size > var_exp_size:
-                    raise ExecutionOfOperationInLineError(SizesDoesntMatchError)
-                
-                if reg_det_size < var_det_size:
-                    raise ExecutionOfOperationInLineWarning(
-                        ExpliciteSizeOperandIgnoredWarning(),
-                        self.curr_line)
+                    explicite_sizes_mismatch(self.language)
+                    return
 
                 return reg_det_size
             
@@ -506,29 +513,31 @@ class Engine():
                 mem_det_size = sizes[1]
                 
                 if reg_exp_size and reg_det_size != reg_exp_size:
-                    raise ExecutionOfOperationInLineWarning(
-                        ExpliciteSizeOperandIgnoredWarning(),
-                        self.curr_line)
+                    explicite_size_ignored(self.language)
                 
                 if mem_exp_size and reg_det_size != mem_exp_size:
-                    raise ExecutionOfOperationInLineError(SizesDoesntMatchError)
+                    explicite_sizes_mismatch(self.language)
+                    return
                 
                 return reg_det_size
             
             case ['value', 'value']:
-                raise ExecutionOfOperationInLineError()
+                cant_call_mem_twice(self.language)
+                return
             
             case ['value', 'register']:
-                raise ExecutionOfOperationInLineError()
+                cant_call_mem_twice(self.language)
+                return
             
             case ['value', 'memory']:
-                raise ExecutionOfOperationInLineError()
+                cant_call_mem_twice(self.language)
+                return
             
             case ['memory']:
 
                 if expli_sizes[0] == None:
-                    raise ExecutionOfOperationInLineError(
-                        NoExpliciteSizeDefinitionWhenRequiredError())
+                    no_explicite_size(self.language)
+                    return
                 
                 return expli_sizes[0]
 
@@ -547,9 +556,7 @@ class Engine():
                 reg_det_size = sizes[0]
 
                 if reg_exp_size and reg_det_size != reg_exp_size:
-                    raise ExecutionOfOperationInLineWarning(
-                        ExpliciteSizeOperandIgnoredWarning(),
-                        self.curr_line)
+                    explicite_size_ignored(self.language)
                 
                 return reg_det_size
 
@@ -559,10 +566,12 @@ class Engine():
         in the program have """
 
         if not len(params) in self.funtionNameLink[keyword].params_range:
-            raise ArgumentNotExpected
+            wrong_no_of_params(self.language, len(params))
+            return
         
         if not tuple(params) in self.funtionNameLink[keyword].allowed_params_combinations:
-            raise ArgumentNotExpected
+            wrong_combination_params(self.language, params)
+            return
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
         """This funciton ensures that all calls for register are in capital names"""
