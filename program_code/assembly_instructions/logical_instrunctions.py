@@ -2,40 +2,37 @@
 This file contains operations which perform locical operations
 """
 
-from program_code.hardware_registers import HardwareRegisters
-from program_code.flag_register import FlagRegister
-from program_code.hardware_memory import DataSegment
 from program_code.helper_functions import (save_value_in_destination,
-                              convert_number_to_bit_list,
-                              eval_no_of_1)
+                                           convert_number_to_bit_list,
+                                           eval_no_of_1,
+                                           binary_or,
+                                           binary_xor)
 
-def AND(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def AND(**kwargs):
     """Performs logical and operation on two numbers"""
 
-    final_size = kwargs['final_size']
-    values_in_int = kwargs["args_values_int"]
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    INT = kwargs["args_values_int"]
 
-    and_value = values_in_int[0] ^ values_in_int[1]
-    output = convert_number_to_bit_list(and_value, final_size).zfill(final_size)
-    output = output[-final_size:]   # {final_size} bits from the end
+    and_value = INT[0] ^ INT[1]
+    output = convert_number_to_bit_list(and_value, FS).zfill(FS)[-FS:]
 
-    previous_flags = list(FlagRegister.readFlags())
+    previous_flags = list(FR.readFlags())
 
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("OF", 0)
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", 0)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("OF", 0)
     
-    new_flags = list(FlagRegister.readFlags())
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -47,51 +44,33 @@ def AND(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def OR(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def OR(**kwargs):
     """Performs logical and operation on two numbers"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
+
+    output, carry, auxiliary_carry = binary_or(FS, values_in_binary[0], 
+                                                   values_in_binary[1])
+
+    previous_flags = list(FR.readFlags())
+
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", 0)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("OF", 0)
     
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
-        
-    # Perform binary or operation
-    output = []
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        result = str(int(b1 or b2))
-        carry = result == 1
-        output.insert(0, str(result))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
-
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
-
-    previous_flags = list(FlagRegister.readFlags())
-
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("OF", 0)
-    
-    new_flags = list(FlagRegister.readFlags())
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -103,51 +82,33 @@ def OR(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def XOR(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def XOR(**kwargs):
     """Performs logical and operation on two numbers"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
         
-    # Perform binary xor operation
-    output = []
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        result = str(int((b1 or b2) and not (b1 and b2)))
-        carry = b1 and b2
-        output.insert(0, str(result))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_xor(FS, values_in_binary[0], 
+                                                    values_in_binary[1])
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    previous_flags = list(FR.readFlags())
 
-    previous_flags = list(FlagRegister.readFlags())
-
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("OF", 0)
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", 0)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("OF", 0)
     
-    new_flags = list(FlagRegister.readFlags())
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -159,31 +120,22 @@ def XOR(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def NOT(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def NOT(**kwargs):
     """Performs logical and operation on two numbers"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
     
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
-        
-    # Perform binary not operation
-    output = list(map(lambda x: str(int(not int(x) == 1)), values_in_binary[0]))
+    output = list(map(lambda x: str(int(not bool(int(x)))), values_in_binary[0]))[-FS:]
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -191,43 +143,33 @@ def NOT(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def NOP(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def NOP(**kwargs):
     """This function does nothing - just takes time"""
 
     return {}
 
-def TEST(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def TEST(**kwargs):
     """Logical compare between elements
     
     Argumen1 ^ Argument2
     """
-    final_size = kwargs['final_size']
-
-    values_in_int = kwargs["args_values_int"]
-
-    and_value = values_in_int[0] ^ values_in_int[1]
-    output = convert_number_to_bit_list(and_value, final_size).zfill(final_size)
-    output = output[-final_size:]
-
-    previous_flags = list(FlagRegister.readFlags())
-
-    FlagRegister.setFlag("ZF", not "1" in output)
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("OF", 0)
     
-    new_flags = list(FlagRegister.readFlags())
+    FR  = kwargs["FR"]
+    FS  = kwargs['final_size']
+    INT = kwargs["args_values_int"]
+
+    and_value = INT[0] ^ INT[1]
+    output = convert_number_to_bit_list(and_value, FS).zfill(FS)[-FS:]
+
+    previous_flags = list(FR.readFlags())
+
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", 0)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("OF", 0)
+    
+    new_flags = list(FR.readFlags())
     
     all_changes = {
         "flags" : {

@@ -2,19 +2,17 @@
 This file contains all operations which perform arithmetic operations
 """
 
-from program_code.hardware_registers import HardwareRegisters
-from program_code.flag_register import FlagRegister
-from program_code.hardware_memory import DataSegment
-from program_code.helper_functions import eval_no_of_1, sign_changed, convert_number_to_bit_list, \
-                             inverse_Twos_Compliment_Number, save_value_in_destination, \
-                             convert_number_to_bit_list,convert_number_to_int_with_binary_capacity
+from program_code.helper_functions import (eval_no_of_1,
+                                           sign_changed,
+                                           binary_addition,
+                                           convert_number_to_bit_list, 
+                                           inverse_Twos_Compliment_Number, 
+                                           save_value_in_destination, 
+                                           convert_number_to_bit_list, 
+                                           convert_number_to_int_with_binary_capacity)
 
-def AAA(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+
+def AAA(**kwargs):
     """ADJUST AFTER ADDITION.
     This function is designed to ajdust score after addition on number stored in BCD code.
     
@@ -26,31 +24,33 @@ def AAA(HardwareRegister : HardwareRegisters,
         4. CF = 1
         5. AL = AL ^ 0Fh
     """
-
-    all_changes = None
     
-    AL_source = HardwareRegister.readFromRegister("AL")
-    AF = FlagRegister.readFlag("AF")
+    HR = kwargs["HR"]
+    FR = kwargs["FR"]
+    AF = FR.readFlag("AF")
+    
+    all_changes = None
+    AL_source = HR.readFromRegister("AL")
     al_int = int("".join(AL_source), 2)
 
     if (al_int ^ 15) > 9 or AF:
         al_int += 6
         al_int ^= 15
         AL_new = convert_number_to_bit_list(al_int, 8)
-        HardwareRegister.writeIntoRegister(AL_new)
+        HR.writeIntoRegister(AL_new)
         
-        AH_source = HardwareRegister.readFromRegister("AH")
+        AH_source = HR.readFromRegister("AH")
         ah_int = int("".join(AH_source), 2)
         ah_int += 1
         AH_new = convert_number_to_bit_list(ah_int, 8)
-        HardwareRegister.writeIntoRegister(AH_new)
+        HR.writeIntoRegister(AH_new)
         
-        backup_flags = FlagRegister.readFlags()
+        backup_flags = FR.readFlags()
         
-        FlagRegister.setFlag("AF", 1)
-        FlagRegister.setFlag("CF", 1)
+        FR.setFlag("AF", 1)
+        FR.setFlag("CF", 1)
 
-        new_flags = FlagRegister.readFlags()
+        new_flags = FR.readFlags()
 
         all_changes = {
             "register" : [
@@ -73,12 +73,7 @@ def AAA(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def AAS(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def AAS(**kwargs):
     """ADJUST AFTER SUBSTRACTION.
     This function is designed to ajdust score after substraction on number stored in BCD code.
     
@@ -90,31 +85,33 @@ def AAS(HardwareRegister : HardwareRegisters,
         4. CF = 1
         5. AL = AL ^ 0Fh
     """
-
-    all_changes = None
     
-    AL_source = HardwareRegister.readFromRegister("AL")
-    AF = FlagRegister.readFlag("AF")
+    HR = kwargs["HR"]
+    FR = kwargs["FR"]
+    AF = FR.readFlag("AF")
+    
+    all_changes = None
+    AL_source = HR.readFromRegister("AL")
     al_int = int("".join(AL_source), 2)
 
     if (al_int ^ 15) > 9 or AF:
         al_int -= 6
         al_int ^= 15
         AL_new = convert_number_to_bit_list(al_int, 8)
-        HardwareRegister.writeIntoRegister(AL_new)
+        HR.writeIntoRegister(AL_new)
         
-        AH_source = HardwareRegister.readFromRegister("AH")
+        AH_source = HR.readFromRegister("AH")
         ah_int = int("".join(AH_source), 2)
         ah_int -= 1
         AH_new = convert_number_to_bit_list(ah_int, 8)
-        HardwareRegister.writeIntoRegister(AH_new)
+        HR.writeIntoRegister(AH_new)
         
-        backup_flags = FlagRegister.readFlags()
+        backup_flags = FR.readFlags()
         
-        FlagRegister.setFlag("AF", 1)
-        FlagRegister.setFlag("CF", 1)
+        FR.setFlag("AF", 1)
+        FR.setFlag("CF", 1)
 
-        new_flags = FlagRegister.readFlags()
+        new_flags = FR.readFlags()
 
         all_changes = {
             "register" : [
@@ -137,12 +134,7 @@ def AAS(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def DAS(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def DAS(**kwargs):
     """DECIMAL ADJUST FOR SUBSTRACTION
     
     TLDR:
@@ -154,56 +146,42 @@ def DAS(HardwareRegister : HardwareRegisters,
             3.1. AL = AL - 60h
             3.2. CF = 1
     """
+    
+    HR = kwargs["HR"]
+    FR = kwargs["FR"]
+    AF = FR.readFlag("AF")
 
     all_changes = None
-    
-    AL_source = HardwareRegister.readFromRegister("AL")
-    AF = FlagRegister.readFlag("AF")
+    AL_source = HR.readFromRegister("AL")
     al_int = int("".join(AL_source), 2)
 
     if (al_int ^ 15) > 9 or AF:
-        backup_flags = FlagRegister.readFlags()
+        backup_flags = FR.readFlags()
         six_in_binary = convert_number_to_bit_list(6, 8)
         minus_six_in_binary = inverse_Twos_Compliment_Number(six_in_binary)
 
-        output = []
-        carry = 0
-        auxiliary_carry = 0
-        for bit in range(-1, - 8 -1, -1):
-            b1 = int(AL_source[0][bit])
-            b2 = int(minus_six_in_binary[1][bit])
-            sum = b1 + b2 + carry
-            carry = sum > 1
-            output.insert(0, str(sum % 2))
-            if abs(bit) == 4:
-                auxiliary_carry = carry
+        output, carry, auxiliary_carry = binary_addition(8, AL_source, 
+                                                         minus_six_in_binary)
 
         AL_after_add = output
         al_int = convert_number_to_int_with_binary_capacity(output, 8)
-        FlagRegister.setFlag("AF", 1)
+        FR.setFlag("AF", 1)
 
         if carry or al_int > 159:
             ninety_six_in_binary = convert_number_to_bit_list(96, 8)
             minus_ninety_six_in_binary = inverse_Twos_Compliment_Number(ninety_six_in_binary)
 
-            output = []
-            for bit in range(-1, - 8 -1, -1):
-                b1 = int(AL_after_add[0][bit])
-                b2 = int(minus_ninety_six_in_binary[1][bit])
-                sum = b1 + b2 + carry
-                carry = sum > 1
-                output.insert(0, str(sum % 2))
-                if abs(bit) == 4:
-                    auxiliary_carry = carry
+            output, carry, auxiliary_carry = binary_addition(8, AL_after_add, 
+                                                         minus_ninety_six_in_binary)
 
-            FlagRegister.setFlag("CF", 1)
+            FR.setFlag("CF", 1)
 
-        FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-        FlagRegister.setFlag("SF", output[0] == "1")
-        FlagRegister.setFlag("PF", eval_no_of_1(output))
-        FlagRegister.setFlag("AF", auxiliary_carry)
+        FR.setFlag("ZF", not "1" in output)
+        FR.setFlag("SF", output[0] == "1")
+        FR.setFlag("PF", eval_no_of_1(output))
+        FR.setFlag("AF", auxiliary_carry)
 
-        new_flags = FlagRegister.readFlags()
+        new_flags = FR.readFlags()
 
         all_changes = {
             "register" : [
@@ -221,12 +199,7 @@ def DAS(HardwareRegister : HardwareRegisters,
 
         return all_changes
 
-def DAA(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def DAA(**kwargs):
     """DECIMAL ADJUST FOR ADDITION
     
     TLDR:
@@ -238,55 +211,40 @@ def DAA(HardwareRegister : HardwareRegisters,
             3.1. AL = AL + 60h
             3.2. CF = 1
     """
-
-    all_changes = None
     
-    AL_source = HardwareRegister.readFromRegister("AL")
-    AF = FlagRegister.readFlag("AF")
+    HR = kwargs["HR"]
+    FR = kwargs["FR"]
+    AF = FR.readFlag("AF")
+    
+    all_changes = None
+    AL_source = HR.readFromRegister("AL")
     al_int = int("".join(AL_source), 2)
 
     if (al_int ^ 15) > 9 or AF:
-        backup_flags = FlagRegister.readFlags()
+        backup_flags = FR.readFlags()
         six_in_binary = convert_number_to_bit_list(6, 8)
 
-        output = []
-        carry = 0
-        auxiliary_carry = 0
-        for bit in range(-1, - 8 -1, -1):
-            b1 = int(AL_source[0][bit])
-            b2 = int(six_in_binary[1][bit])
-            sum = b1 + b2 + carry
-            carry = sum > 1
-            output.insert(0, str(sum % 2))
-            if abs(bit) == 4:
-                auxiliary_carry = carry
+        output, carry, auxiliary_carry = binary_addition(8, AL_source, 
+                                                         six_in_binary)
 
         AL_after_add = output
         al_int = convert_number_to_int_with_binary_capacity(output, 8)
-        FlagRegister.setFlag("AF", 1)
+        FR.setFlag("AF", 1)
 
         if carry or al_int > 159:
-
             ninety_six_in_binary = convert_number_to_bit_list(96, 8)
 
-            output = []
-            for bit in range(-1, - 8 -1, -1):
-                b1 = int(AL_after_add[0][bit])
-                b2 = int(ninety_six_in_binary[1][bit])
-                sum = b1 + b2 + carry
-                carry = sum > 1
-                output.insert(0, str(sum % 2))
-                if abs(bit) == 4:
-                    auxiliary_carry = carry
+            output, carry, auxiliary_carry = binary_addition(8, AL_after_add, 
+                                                         ninety_six_in_binary)
 
-            FlagRegister.setFlag("CF", 1)
+            FR.setFlag("CF", 1)
 
-        FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-        FlagRegister.setFlag("SF", output[0] == "1")
-        FlagRegister.setFlag("PF", eval_no_of_1(output))
-        FlagRegister.setFlag("AF", auxiliary_carry)
+        FR.setFlag("ZF", not "1" in output)
+        FR.setFlag("SF", output[0] == "1")
+        FR.setFlag("PF", eval_no_of_1(output))
+        FR.setFlag("AF", auxiliary_carry)
 
-        new_flags = FlagRegister.readFlags()
+        new_flags = FR.readFlags()
 
         all_changes = {
             "register" : [
@@ -304,12 +262,7 @@ def DAA(HardwareRegister : HardwareRegisters,
 
         return all_changes
 
-def AAM(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def AAM(**kwargs):
     """ADJUST FOR MULTIPLY
     
     TLDR;
@@ -317,9 +270,11 @@ def AAM(HardwareRegister : HardwareRegisters,
     AL = AL mod 10
     Sets flags SF, ZF, PF according to AL value at the beginning of the operation
     """
-
-    AL = HardwareRegister.readFromRegister("AL")
-    AH = HardwareRegister.readFromRegister("AH")
+    
+    HR = kwargs["HR"]
+    FR = kwargs["FR"]
+    AL = HR.readFromRegister("AL")
+    AH = HR.readFromRegister("AH")
 
     divider = convert_number_to_int_with_binary_capacity(AL, 8)
     divisor = 10
@@ -333,16 +288,16 @@ def AAM(HardwareRegister : HardwareRegisters,
     ready_quotient = bin(converted_quotient)[2:].zfill(8)
     ready_reminder = bin(converted_reminder)[2:].zfill(8)
 
-    HardwareRegister.writeIntoRegister("AH", converted_quotient)
-    HardwareRegister.writeIntoRegister("AL", converted_reminder)
+    HR.writeIntoRegister("AH", converted_quotient)
+    HR.writeIntoRegister("AL", converted_reminder)
 
-    backup_flags = list(FlagRegister.readFlags())
+    backup_flags = list(FR.readFlags())
 
-    FlagRegister.setFlag("ZF", not "1" in AL)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", AL[0] == "1")
-    FlagRegister.setFlag("PF", eval_no_of_1(AL))
+    FR.setFlag("ZF", not "1" in AL)
+    FR.setFlag("SF", AL[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(AL))
 
-    new_flags = list(FlagRegister.readFlags())
+    new_flags = list(FR.readFlags())
 
     all_changes = {
         "register" : [
@@ -365,12 +320,7 @@ def AAM(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def AAD(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def AAD(**kwargs):
     """ADJUST FOR DIVISION
     
     TLDR:
@@ -378,38 +328,30 @@ def AAD(HardwareRegister : HardwareRegisters,
     AH = 0
     Sets SF, ZF and PF accoring to final value in AL
     """
-
-    AH = HardwareRegister.readFromRegister("AH")
-    AL = HardwareRegister.readFromRegister("AL")
+    
+    HR = kwargs["HR"]
+    FR = kwargs["FR"]
+    AH = HR.readFromRegister("AH")
+    AL = HR.readFromRegister("AL")
 
     ah_int = int("".join(AH),) * 10
     ah_bits = convert_number_to_bit_list(ah_int, 8)
 
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, -9, -1):
-        b1 = int(AL[0][bit])
-        b2 = int(ah_bits[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, *_ = binary_addition(9, AL, ah_bits)
 
     new_al = output
     new_ah = ['0' for _ in range(8)]
 
-    HardwareRegister.writeIntoRegister("AH", new_ah)
-    HardwareRegister.writeIntoRegister("AL", new_al)
+    HR.writeIntoRegister("AH", new_ah)
+    HR.writeIntoRegister("AL", new_al)
     
-    backup_flags = list(FlagRegister.readFlags())
+    backup_flags = list(FR.readFlags())
     
-    FlagRegister.setFlag("ZF", not "1" in new_al)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", new_al[0] == "1")
-    FlagRegister.setFlag("PF", eval_no_of_1(new_al))
+    FR.setFlag("ZF", not "1" in new_al)   # if any "1", ZF if OFF
+    FR.setFlag("SF", new_al[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(new_al))
 
-    new_flags = list(FlagRegister.readFlags())
+    new_flags = list(FR.readFlags())
 
     all_changes = {
         "register" : [
@@ -432,56 +374,36 @@ def AAD(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def ADD(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def ADD(**kwargs):
     """This function performs addition"""
-
-    final_size = kwargs['final_size']
-
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
     
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
+
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
         
-    # Perform binary addition
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    previous_flags = list(FR.readFlags())
 
-    previous_flags = list(FlagRegister.readFlags())
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", carry)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", carry)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
-
-    new_flags = list(FlagRegister.readFlags())
-
-    # Save value in the destination, and returned what have changed for history bilding
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -495,57 +417,37 @@ def ADD(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def ADC(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def ADC(**kwargs):
     """This funciton performs ADD with carry"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
-        
-    # Perform binary addition   
-    output = []
-    carry = FlagRegister.readFlag("CF")
-    assert type(carry) == int, "Carry flag was red from the flag register, but it's type is not int"
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1],
+                                                         FR.readFlag("CF"))
 
-    previous_flags = list(FlagRegister.readFlags())
+    previous_flags = list(FR.readFlags())
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", carry)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", carry)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    new_flags = list(FlagRegister.readFlags())
-
-    # Save value in the destination
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -559,57 +461,37 @@ def ADC(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def SUB(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def SUB(**kwargs):
     """This function performs substraction (A - B)"""
     
-    final_size = kwargs['final_size']
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
 
-    # Perform binary addition
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    previous_flags = list(FR.readFlags())
 
-    previous_flags = list(FlagRegister.readFlags())
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", carry)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", carry)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
-
-    new_flags = list(FlagRegister.readFlags())
-
-    # Save value in the destination, and returned what have changed for history bilding
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
     
     all_changes = {
         m[0] : [
@@ -623,64 +505,42 @@ def SUB(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def SBB(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def SBB(**kwargs):
     """This function performs substraction with borrow (A - B - CF)"""
     
-    final_size = kwargs['final_size']
-    values_in_binary = []
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
+    CF = FR.readFlag("CF")
     
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
 
     # Convert substracted value using the observation that: A - B - CF = A + ( -(B + CF) )
-    assert type(values_in_binary[1]) == str
-    CF = FlagRegister.readFlag("CF")
-    assert type(CF) == int
-    tmp = int(values_in_binary[1], base=2) + CF
+    tmp = int("".join(values_in_binary[1]), base=2) + CF
     values_in_binary[1] = bin(tmp)[2:].zfill(32)[-32:]
-
-    # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
+    
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
 
-    # Perform binary addition
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    previous_flags = list(FR.readFlags())
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", carry)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    previous_flags = list(FlagRegister.readFlags())
-
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", carry)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
-
-    new_flags = list(FlagRegister.readFlags())
-
-    # Save value in the destination, and returned what have changed for history bilding
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -694,55 +554,33 @@ def SBB(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def CMP(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def CMP(**kwargs):
     """This function performs comparison between two operands to set flags
     accordingly. It is equivalend to SUB instruction, but in contrast to it, 
     CMP doesn't save output anywhere"""
 
-    final_size = kwargs['final_size']
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    FR  = kwargs["FR"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
 
-    # Perform binary addition
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    previous_flags = list(FR.readFlags())
 
-    previous_flags = list(FlagRegister.readFlags())
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", carry)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", carry)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
-
-    new_flags = list(FlagRegister.readFlags())
+    new_flags = list(FR.readFlags())
     
     all_changes = {
         "flags" : {
@@ -753,29 +591,23 @@ def CMP(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def CBW(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def CBW(**kwargs):
     """CONVERT BYTE WORD
     
     Extends bit on position 7 in AL to AH.
     
     EX:
     
-    - AL = 01101010 -> AL [0] == 0 -> AH = 00000000
-    - AL = 10011101 -> AL [0] == 1 -> AH = 11111111
+    - AL = 01101010 -> AL [0] == 0 -> AX = 0000000001101010
+    - AL = 10011101 -> AL [0] == 1 -> AX = 1111111110011101
     """
 
-    AL = HardwareRegister.readFromRegister("AL")
-    AH = HardwareRegister.readFromRegister("AH")
+    HR  = kwargs["HR"]
+    AL = HR.readFromRegister("AL")
+    AH = HR.readFromRegister("AH")
 
-    if AL[0] == "0":
-        new_ah = ["0" for _ in range(8)]
-    else:
-        new_ah = ["1" for _ in range(8)]
+    if AL[0] == "0":    new_ah = ["0" for _ in range(8)]
+    else:               new_ah = ["1" for _ in range(8)]
 
     all_changes = {
         "register" : [
@@ -789,29 +621,22 @@ def CBW(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def CWD(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def CWD(**kwargs):
     """CONVERT WORD DOUBLEWORD
     
     Extends bit on position 15 in AX to DX.
     
     EX:
     
-    - AX = 0110101010110010 -> AX [0] == 0 -> DX = 0000000000000000
-    - AX = 1001110110100111 -> AX [0] == 1 -> DX = 1111111111111111
+    - AX = 0110101010110010 -> AX [0] == 0 -> DX:AX = 0000000000000000:0110101010110010
+    - AX = 1001110110100111 -> AX [0] == 1 -> DX:AX = 1111111111111111:1001110110100111
     """
+    HR = kwargs["HR"]
+    AX = HR.readFromRegister("AX")
+    DX = HR.readFromRegister("DX")
 
-    AX = HardwareRegister.readFromRegister("AX")
-    DX = HardwareRegister.readFromRegister("DX")
-
-    if AX[0] == "0":
-        new_dx = ["0" for _ in range(16)]
-    else:
-        new_dx = ["1" for _ in range(16)]
+    if AX[0] == "0":    new_dx = ["0" for _ in range(16)]
+    else:               new_dx = ["1" for _ in range(16)]
 
     all_changes = {
         "register" : [
@@ -825,59 +650,38 @@ def CWD(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def DEC(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def DEC(**kwargs):
     """This instruction substract 1 from the argument, and store the new value inside
     source value. Affects flags OF, SF, ZF, AF, and PF accordingly"""
 
-    final_size = kwargs['final_size']
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    #   Add binary numer, represeting 1 in binary, the size of final_size
-    values_in_binary.append("0" * final_size-1 + "1")
-
-    # Flip second number according to two's compliment rule (!x + 1 | 0011 -> 1101)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
+    values_in_binary.append("0" * (FS-1) + "1")
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
 
-    # Perform binary addition
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    previous_flags = list(FR.readFlags())
 
-    previous_flags = list(FlagRegister.readFlags())
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
-
-    new_flags = list(FlagRegister.readFlags())
-    
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [ m[1] ],
@@ -889,56 +693,37 @@ def DEC(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def INC(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def INC(**kwargs):
     """This instruction adds 1 to the argument, and store the new value inside
     source value. Affects flags OF, SF, ZF, AF, and PF accordingly"""
 
-    final_size = kwargs['final_size']
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    #   Add binary numer, represeting 1 in binary, the size of final_size
-    values_in_binary.append(f"{1:016}")
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
+    values_in_binary.append("0" * (FS-1) + "1")
 
-    # Perform binary addition
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
 
-    # Resuce size of number if needed
-    output = output[-final_size:]   # {final_size} bits from the end
+    previous_flags = list(FR.readFlags())
 
-    previous_flags = list(FlagRegister.readFlags())
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("OF", sign_changed(values_in_binary[0],
+                                  values_in_binary[1],
+                                  output))
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("OF", sign_changed(values_in_binary[0],
-                                            values_in_binary[1],
-                                            output))
-
-    new_flags = list(FlagRegister.readFlags())
-    
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [ m[1] ],
@@ -950,30 +735,23 @@ def INC(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def MUL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def MUL(**kwargs):
     """This function performs addition"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    FS  = kwargs['final_size']
+    INT = kwargs["args_values_int"]
 
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
-    
-    for v in kwargs['args_values_int']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in INT]
 
     multiplied_numbers_for_addition = []
 
-    for offset, bit in enumerate(range(-1, -final_size -1, -1)):
+    for offset, bit in enumerate(range(-1, -FS -1, -1)):
         multiplier = int(values_in_binary[1][bit])
         multiplied_bits = [str(int(b) & multiplier) for b in values_in_binary[0]]
         offseted_str = "".join(multiplied_bits) + "0" * offset
-        ready_number = list(offseted_str.rjust(final_size*2, "0"))
+        ready_number = list(offseted_str.rjust(FS*2, "0"))
         multiplied_numbers_for_addition.append(ready_number)
 
     all_auxiliary_carry = []
@@ -982,7 +760,7 @@ def MUL(HardwareRegister : HardwareRegisters,
     for number in range(len(multiplied_numbers_for_addition)):
         output = []
         auxiliary_carry = 0
-        for bit in range(-1, - (final_size*2) -1, -1):
+        for bit in range(-1, - (FS*2) -1, -1):
             b1 = int(final_number[bit])
             b2 = int(multiplied_numbers_for_addition[number][bit])
             sum = b1 + b2 + carry
@@ -993,24 +771,23 @@ def MUL(HardwareRegister : HardwareRegisters,
         final_number = output
         all_auxiliary_carry.append(auxiliary_carry)
 
-    # Resuce size of number if needed
-    final_number = final_number[-final_size*2:]
+    final_number = final_number[-FS*2:]
 
-    previous_flags = list(FlagRegister.readFlags())
+    previous_flags = list(FR.readFlags())
 
-    FlagRegister.setFlag("CF", "1" in final_number[:final_size])
-    FlagRegister.setFlag("OF", "1" in final_number[:final_size])
+    FR.setFlag("CF", "1" in final_number[:FS])
+    FR.setFlag("OF", "1" in final_number[:FS])
 
-    new_flags = list(FlagRegister.readFlags())
+    new_flags = list(FR.readFlags())
 
-    upper_register = "AH" if final_size == 8 else "DX"
-    lower_register = "AL" if final_size == 8 else "AX"
-    oryginal_upper = HardwareRegister.readFromRegister(upper_register)
-    oryginal_lower = HardwareRegister.readFromRegister(lower_register)
-    new_upper = output[:final_size]
-    HardwareRegister.readFromRegister(upper_register)
-    new_lower = output[final_size:]
-    HardwareRegister.readFromRegister(lower_register)
+    upper_register = "AH" if FS == 8 else "DX"
+    lower_register = "AL" if FS == 8 else "AX"
+    
+    oryginal_upper = HR.readFromRegister(upper_register)
+    oryginal_lower = HR.readFromRegister(lower_register)
+    
+    new_upper = output[:FS]
+    new_lower = output[FS:]
 
     all_changes = {
         "register" : [
@@ -1033,36 +810,31 @@ def MUL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def IMUL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def IMUL(**kwargs):
     """This function performs addition"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    # Convert both numbers to be in raw binary form -> 0111010110101101
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
 
     n1_neg = values_in_binary[0][0] == "1"
     n2_neg = values_in_binary[1][0] == "1"
 
-    if n1_neg:  values_in_binary[0] = list(inverse_Twos_Compliment_Number("".join(values_in_binary[0])))
-    if n2_neg:  values_in_binary[1] = list(inverse_Twos_Compliment_Number("".join(values_in_binary[1])))
+    if n1_neg:
+        values_in_binary[0] = list(inverse_Twos_Compliment_Number("".join(values_in_binary[0])))
+    if n2_neg:
+        values_in_binary[1] = list(inverse_Twos_Compliment_Number("".join(values_in_binary[1])))
 
     multiplied_numbers_for_addition = []
 
-    for offset, bit in enumerate(range(-1, -final_size -1, -1)):
+    for offset, bit in enumerate(range(-1, -FS -1, -1)):
         multiplier = int(values_in_binary[1][bit])
         multiplied_bits = [str(int(b) & multiplier) for b in values_in_binary[0]]
         offseted_str = "".join(multiplied_bits) + "0" * offset
-        ready_number = list(offseted_str.rjust(final_size*2, "0"))
+        ready_number = list(offseted_str.rjust(FS*2, "0"))
         multiplied_numbers_for_addition.append(ready_number)
 
     all_auxiliary_carry = []
@@ -1071,7 +843,7 @@ def IMUL(HardwareRegister : HardwareRegisters,
     for number in range(len(multiplied_numbers_for_addition)):
         output = []
         auxiliary_carry = 0
-        for bit in range(-1, - (final_size*2) -1, -1):
+        for bit in range(-1, - (FS*2) -1, -1):
             b1 = int(final_number[bit])
             b2 = int(multiplied_numbers_for_addition[number][bit])
             sum = b1 + b2 + carry
@@ -1082,30 +854,28 @@ def IMUL(HardwareRegister : HardwareRegisters,
         final_number = output
         all_auxiliary_carry.append(auxiliary_carry)
 
-    # Resuce size of number if needed
-    final_number = final_number[-final_size*2:]   # {final_size} bits from the end
+    final_number = final_number[-FS*2:]
 
     if bool(n1_neg) ^ bool(n2_neg): 
         final_number = list(inverse_Twos_Compliment_Number("".join(final_number)))
 
-    previous_flags = list(FlagRegister.readFlags())
+    previous_flags = list(FR.readFlags())
 
-    cf_of = [final_number[final_size] for _ in range(final_size)] != final_number[:final_size]
+    cf_of = [final_number[FS] for _ in range(FS)] != final_number[:FS]
 
-    FlagRegister.setFlag("CF", cf_of)
-    FlagRegister.setFlag("OF", cf_of)
+    FR.setFlag("CF", cf_of)
+    FR.setFlag("OF", cf_of)
 
-    new_flags = list(FlagRegister.readFlags())
-
-    # Save value in the destination, and returned what have changed for history bilding
-    upper_register = "AH" if final_size == 8 else "DX"
-    lower_register = "AL" if final_size == 8 else "AX"
-    oryginal_upper = HardwareRegister.readFromRegister(upper_register)
-    oryginal_lower = HardwareRegister.readFromRegister(lower_register)
-    new_upper = output[:final_size]
-    HardwareRegister.readFromRegister(upper_register)
-    new_lower = output[final_size:]
-    HardwareRegister.readFromRegister(lower_register)
+    new_flags = list(FR.readFlags())
+    
+    upper_register = "AH" if FS == 8 else "DX"
+    lower_register = "AL" if FS == 8 else "AX"
+    
+    oryginal_upper = HR.readFromRegister(upper_register)
+    oryginal_lower = HR.readFromRegister(lower_register)
+    
+    new_upper = output[:FS]
+    new_lower = output[FS:]
 
     all_changes = {
         "register" : [
@@ -1128,36 +898,33 @@ def IMUL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def DIV(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def DIV(**kwargs):
     """This operation performs division on unsigned numbers"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FS  = kwargs['final_size']
+    
     divisor = kwargs['args_values_int'][0]
 
-    upper = "AH" if final_size == 8 else "DX"
-    lower = "AL" if final_size == 8 else "AX"
+    upper = "AH" if FS == 8 else "DX"
+    lower = "AL" if FS == 8 else "AX"
 
-    upper_value = HardwareRegister.readFromRegister(upper)
-    lower_value = HardwareRegister.readFromRegister(lower)
+    upper_value = HR.readFromRegister(upper)
+    lower_value = HR.readFromRegister(lower)
 
     divider = int(upper_value + lower_value, 2) 
 
     quotient = divider // divisor
     reminder = divider % divisor
 
-    converted_quotient = convert_number_to_int_with_binary_capacity(quotient, final_size)
-    converted_reminder = convert_number_to_int_with_binary_capacity(reminder, final_size)
+    converted_quotient = convert_number_to_int_with_binary_capacity(quotient, FS)
+    converted_reminder = convert_number_to_int_with_binary_capacity(reminder, FS)
 
-    ready_quotient = bin(converted_quotient)[2:].zfill(final_size)
-    ready_reminder = bin(converted_reminder)[2:].zfill(final_size)
+    ready_quotient = bin(converted_quotient)[2:].zfill(FS)
+    ready_reminder = bin(converted_reminder)[2:].zfill(FS)
 
-    HardwareRegister.writeIntoRegister(upper, converted_reminder)
-    HardwareRegister.writeIntoRegister(lower, converted_quotient)
+    HR.writeIntoRegister(upper, converted_reminder)
+    HR.writeIntoRegister(lower, converted_quotient)
 
     all_changes = {
         "register" : [
@@ -1176,22 +943,19 @@ def DIV(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def IDIV(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def IDIV(**kwargs):
     """This operation performs division on signed numbers"""
 
-    final_size = kwargs['final_size']
+    HR = kwargs["HR"]
+    FS  = kwargs['final_size']
+    
     divisor = kwargs['args_values_int'][0]
 
-    upper = "AH" if final_size == 8 else "DX"
-    lower = "AL" if final_size == 8 else "AX"
+    upper = "AH" if FS == 8 else "DX"
+    lower = "AL" if FS == 8 else "AX"
 
-    upper_value = HardwareRegister.readFromRegister(upper)
-    lower_value = HardwareRegister.readFromRegister(lower)
+    upper_value = HR.readFromRegister(upper)
+    lower_value = HR.readFromRegister(lower)
 
     n1_neg = upper_value[0] == "1"
     n2_neg = lower_value[0] == "1"
@@ -1204,11 +968,11 @@ def IDIV(HardwareRegister : HardwareRegisters,
     quotient = divider // divisor
     reminder = divider % divisor
 
-    converted_quotient = convert_number_to_int_with_binary_capacity(quotient, final_size)
-    converted_reminder = convert_number_to_int_with_binary_capacity(reminder, final_size)
+    converted_quotient = convert_number_to_int_with_binary_capacity(quotient, FS)
+    converted_reminder = convert_number_to_int_with_binary_capacity(reminder, FS)
 
-    ready_quotient = bin(converted_quotient)[2:].zfill(final_size)
-    ready_reminder = bin(converted_reminder)[2:].zfill(final_size)
+    ready_quotient = bin(converted_quotient)[2:].zfill(FS)
+    ready_reminder = bin(converted_reminder)[2:].zfill(FS)
 
     if not n1_neg and not n2_neg:
         if ready_quotient[0] == "1":    Exception() # ready_quotient = inverse_Twos_Compliment_Number(ready_quotient)
@@ -1223,8 +987,8 @@ def IDIV(HardwareRegister : HardwareRegisters,
         if ready_quotient[0] == "1":    Exception() # ready_quotient = inverse_Twos_Compliment_Number(ready_quotient)
         if ready_reminder[0] == "0":    Exception() # ready_reminder = inverse_Twos_Compliment_Number(ready_reminder)
 
-    HardwareRegister.writeIntoRegister(upper, converted_reminder)
-    HardwareRegister.writeIntoRegister(lower, converted_quotient)
+    HR.writeIntoRegister(upper, converted_reminder)
+    HR.writeIntoRegister(lower, converted_quotient)
 
     all_changes = {
         "register" : [
@@ -1243,60 +1007,44 @@ def IDIV(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def NEG(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def NEG(**kwargs):
     """This instruction saves up negated value of argument passed in destination"""
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
 
-    values_in_binary = [['1' for _ in range(final_size)]]
+    values_in_binary = [list("1"*FS)]
 
-    output = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
+    output = convert_number_to_bit_list(RAW[0], FS)
     output = inverse_Twos_Compliment_Number(output)
     values_in_binary.append(output)
 
-    output = []
-    carry = 0
-    auxiliary_carry = 0
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1])
     
-    values_in_binary = [output, convert_number_to_bit_list(1, final_size)]
+    values_in_binary = [output, convert_number_to_bit_list(1, FS)]
 
-    output = []
-    for bit in range(-1, - final_size -1, -1):
-        b1 = int(values_in_binary[0][bit])
-        b2 = int(values_in_binary[1][bit])
-        sum = b1 + b2 + carry
-        carry = sum > 1
-        output.insert(0, str(sum % 2))
-        if abs(bit) == 4:
-            auxiliary_carry = carry
+    output, carry, auxiliary_carry = binary_addition(FS, values_in_binary[0], 
+                                                         values_in_binary[1],
+                                                         carry)
 
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
-    
-    previous_flags = list(FlagRegister.readFlags())
+    previous_flags = list(FR.readFlags())
 
-    # Set appriopriate flags
-    FlagRegister.setFlag("ZF", not "1" in output)   # if any "1", ZF if OFF
-    FlagRegister.setFlag("SF", output[0] == "1")
-    FlagRegister.setFlag("CF", 0)
-    FlagRegister.setFlag("AF", auxiliary_carry)
-    FlagRegister.setFlag("PF", eval_no_of_1(output))
-    FlagRegister.setFlag("OF", 0)
+    FR.setFlag("ZF", not "1" in output)
+    FR.setFlag("SF", output[0] == "1")
+    FR.setFlag("CF", 0)
+    FR.setFlag("AF", auxiliary_carry)
+    FR.setFlag("PF", eval_no_of_1(output))
+    FR.setFlag("OF", 0)
 
-    new_flags = list(FlagRegister.readFlags())
+    new_flags = list(FR.readFlags())
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],

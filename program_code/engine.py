@@ -2,7 +2,6 @@
 This file contains Engine Class, which is responsible for simluation of operations on memory
 """
 
-from inspect import signature
 from simpleeval import simple_eval
 from .assembly_instructions import *
 from .helper_functions import *
@@ -12,6 +11,7 @@ from .flag_register import FlagRegister
 from .custom_message_boxes import *
 
 allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
+funtionNameLink = {k:v for k,v in locals().items() if k.isupper()}
 
 class Engine():
     """
@@ -21,12 +21,10 @@ class Engine():
     """
 
     def __init__(self, language : str):
-        self._prepareFunctions()
         self.HR = HardwareRegisters()
         self.FR = FlagRegister()
-        self.data = DataSegment()
+        self.DS = DataSegment()
         self.variables = []
-        self.language = language
 
     def informAboutLabels(self, labels : list):
         """This method allow to pass labels to engine after successful preprocessing"""
@@ -36,20 +34,16 @@ class Engine():
         """This method allow to pass variables to engine after successful preprocessing"""
         self.variables = variables
 
-    def set_language(self, new_language : str):
-        """This method allow to pass language setting to engine - for warnings/errors"""
-        self.language = new_language
-
     def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it cuts the line, extracting command
         from arguments, defines what types are the arguments, defines what they represent, and passes
         so prepared elements to _functionExecutor()"""
-        
+
         self.curr_line = line
         elements_in_line = []
 
         keyword, first_non_keyw_char = self._separate_keyword(command)
-        if keyword not in self.funtionNameLink:
+        if keyword not in funtionNameLink:
             unsuported_instruction(self.language)
             return -1
         
@@ -82,21 +76,21 @@ class Engine():
         final_standardized_sizes = self._standardise_sizes_check_if_legal(args_types, 
                                                                           final_sizes, 
                                                                           explicite_sizes,
-                                                                          args_values_int)        
+                                                                          args_values_int)
         if final_standardized_sizes == None:
             return -1
         
         resp = self._check_if_operation_allowed(keyword, args_types)
-        if resp == None:
-            return -1
+        if resp == -1:
+            return
 
         try:
             output = self.funtionNameLink[ keyword ](
-                self.HR,
-                self.FR,
-                self.data,
-                self.variables,
-                self.labels,
+                HR = self.HR,
+                FR = self.FR,
+                DS = self.DS,
+                variables = self.variables,
+                labels = self.labels,
                 destination = destination,
                 source_params = elements_in_line[1:],
                 param_types = args_types,
@@ -131,7 +125,7 @@ class Engine():
                 case "memory":
                     for modification in changes:
                         start = modification["location"]
-                        self.data.modify_data(start, modification[source])
+                        self.DS.modify_data(start, modification[source])
 
     def _separate_keyword(self, line : str) -> tuple[str, int]:
         """Extracts keyword from line, and returns it in capital leters. Keyword is defined as
@@ -417,7 +411,7 @@ class Engine():
                     if not size:
                         size = final_sizes[0] if len(final_sizes) == 1 else 8
                     final_sizes.append(size)
-                    data_in_mem = self.data.get_data(simple_eval(arg), size // 8)
+                    data_in_mem = self.DS.get_data(simple_eval(arg), size // 8)
                     data_in_bits = (map(lambda z: z.zfill(8), map(lambda x: x[2:], 
                                                               map(bin, data_in_mem))))
                     data_in_bits_str = "".join(data_in_bits)
@@ -567,11 +561,11 @@ class Engine():
 
         if not len(params) in self.funtionNameLink[keyword].params_range:
             wrong_no_of_params(self.language, len(params))
-            return
+            return -1
         
         if not tuple(params) in self.funtionNameLink[keyword].allowed_params_combinations:
             wrong_combination_params(self.language, params)
-            return
+            return -1
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
         """This funciton ensures that all calls for register are in capital names"""
@@ -582,44 +576,3 @@ class Engine():
                 elements[i] = elements[i].upper()
 
         return elements
-
-    def _prepareFunctions(self):
-        """Is responsible for creating an addresable list of function since
-        users usualy call funciton by names represented by string and not by
-        a name of the function in program itself (which can be the same, but not for 
-        the program). This would allow to match between string and a function
-        and then execute the command based on the match"""
-
-        self.funtionNameLink = {k:v for k,v in globals().items() if k.isupper()}
-        self.funcSignature = {}  # Keeps the function signagure in a human-readible form
-        self.funcArguments = {}  # Keeps the information about signature - necessary for the program
-
-        # defining the function signature and default argument types needed
-        for f in self.funtionNameLink:
-            if type(self.funtionNameLink[f]) != dict:
-                # division for arguments
-                description = str(signature(self.funtionNameLink[f]))
-                self.funcSignature[f] = description
-                wynik = description.split(" -> ")
-                zwrot = wynik[-1] if "->" in description else None
-                argm = wynik[0].replace("(","").replace(")","").split(", ")
-                argtyp = [
-                    e.split(": ") if ":" in e else [e,"any"] for e in argm if e != ""
-                    ]
-                info = {}
-                if argtyp == []:
-                    info["arg"] = None
-                else:
-                    info["arg"] = {}
-                    for e in argtyp:
-                        if " = " in e[1]:
-                            para = e[1].split(" = ")
-                            info["arg"][e[0]] = {para[0] : para[1] if para[1] != "''" else ""}
-                        else:
-                            info["arg"][e[0]] = e[1]
-                info["ret"] = zwrot
-                self.funcArguments[f] = info
-            else:
-                self.funcArguments[f] = "dict"
-
-        self.funcList = [name for name in self.funcSignature]    # List all functions available

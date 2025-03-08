@@ -3,21 +3,12 @@ This file contains instrucitons which are available to user to put or remove dat
 stack - all typical pop / push instructions which are avaialbe in assembly
 """
 
-from program_code.hardware_registers import HardwareRegisters
-from program_code.flag_register import FlagRegister
-from program_code.hardware_memory import DataSegment
-from program_code.helper_functions import convert_number_to_int_with_binary_capacity, \
-                             convert_number_to_bit_list, \
-                             save_value_in_destination
+from program_code.helper_functions import (convert_number_to_bit_list,
+                                           save_value_in_destination)
 
 list_of_registers = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
 
-def PUSH(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def PUSH(**kwargs):
     """This function is responsible for writing value to stack. It works like this:
     
     1. Decrement SP by one - moves to next byte where content will be stored
@@ -54,19 +45,22 @@ def PUSH(HardwareRegister : HardwareRegisters,
     - PUSH word 260  -> 001         004
     """
 
-    SP = HardwareRegister.readFromRegister("SP")
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
+    SP  = HR.readFromRegister("SP")
+    
     SP_value = int(SP, base=2)
     SP_value_backup = SP_value
     
-    value = kwargs['args_values_raw'][0]
-    final_size = kwargs['final_size']
-    converted_value = convert_number_to_bit_list(value, final_size)
+    converted_value = convert_number_to_bit_list(RAW[0], FS)
     no_bytes_conv_value = len(converted_value) // 8
     
     SP_value -= no_bytes_conv_value
-    backup_stack = Data.get_data(SP_value, no_bytes_conv_value)
-    Data.modify_data(SP_value, converted_value)
-    HardwareRegister.writeIntoRegister("SP", SP_value)
+    backup_stack = DS.get_data(SP_value, no_bytes_conv_value)
+    DS.modify_data(SP_value, converted_value)
+    HR.writeIntoRegister("SP", SP_value)
 
     output = {
         "memory" : [
@@ -85,25 +79,24 @@ def PUSH(HardwareRegister : HardwareRegisters,
 
     return output
 
-def PUSHF(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def PUSHF(**kwargs):
     """This function is responsible for writing flag register to stack. It works like this:
     
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write flag register into stack
     3. Decrement SP by one (2 bytes in total)"""
 
-    SP = HardwareRegister.readFromRegister("SP")
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    SP = HR.readFromRegister("SP")
+    
     SP_value = int(SP, base=2)
     SP_value_backup = SP_value
     SP_value -= 2
     
-    value = list(FlagRegister.readFlags())
-    backup_stack = Data.get_data(SP_value, 2)
+    value = list(FR.readFlags())
+    backup_stack = DS.get_data(SP_value, 2)
     tmp = []
     for b in backup_stack:
         tmp.extend(list(bin(b)[2:]))
@@ -111,8 +104,8 @@ def PUSHF(HardwareRegister : HardwareRegisters,
     procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, backup_stack)))
     backup_stack = "".join(procc)
 
-    Data.modify_data(SP_value, value)
-    HardwareRegister.writeIntoRegister("SP", SP_value)
+    DS.modify_data(SP_value, value)
+    HR.writeIntoRegister("SP", SP_value)
 
     output = {
         "memory" : [
@@ -130,12 +123,7 @@ def PUSHF(HardwareRegister : HardwareRegisters,
     }
     return output
 
-def PUSHA(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def PUSHA(**kwargs):
     """This function is responsible for writing all registers to stack. It works like this:
     
     IMPORTANT:
@@ -153,24 +141,27 @@ def PUSHA(HardwareRegister : HardwareRegisters,
     2. Write flag register into stack
     3. Decrement SP by one (2 bytes in total)"""
 
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    
     reg_content = []
 
     for register in list_of_registers:
-        reg_bits = HardwareRegister.readFromRegister(register)
+        reg_bits = HR.readFromRegister(register)
         reg_content.append(reg_bits)
 
     SP = reg_content[4]
     SP_value = int(SP, 2)
     SP_backup = SP_value
-    backup_stack = Data.get_data(SP_value-16, 16)
+    backup_stack = DS.get_data(SP_value-16, 16)
     procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, backup_stack)))
     backup_stack = "".join(procc)
 
     for value in reg_content:
         SP_value -= 2
-        Data.modify_data(SP_value, value)
+        DS.modify_data(SP_value, value)
 
-    HardwareRegister.writeIntoRegister("SP", SP_value)
+    HR.writeIntoRegister("SP", SP_value)
     values_on_stack = reg_content[-1::-1]
     bits_on_stack = "".join(values_on_stack)
 
@@ -191,12 +182,7 @@ def PUSHA(HardwareRegister : HardwareRegisters,
 
     return output
 
-def POP(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def POP(**kwargs):
     """This functins pops value from stack. Inside it does the following:
     
     1. Read x bytes from the top of the stack (x, as it depends on the destinaiton)
@@ -217,21 +203,26 @@ def POP(HardwareRegister : HardwareRegisters,
     in segment !
     """
 
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    SP = HR.readFromRegister("SP")
+    
     no_of_bytes = 2
 
-    SP = HardwareRegister.readFromRegister("SP")
     SP_value = int(SP, base=2)
     SP_value_backup = SP_value
 
-    values = Data.get_data(SP_value, 2)
+    values = DS.get_data(SP_value, 2)
     procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, values)))
     comb_value = list("".join(procc))
     
-    m = save_value_in_destination(HardwareRegister, Data, Variables, comb_value, 
-                              kwargs['param_types'][0], kwargs['destination'])
+    m = save_value_in_destination(HR, DS, VAR, comb_value, PT, DST)
     
     SP_value += no_of_bytes
-    HardwareRegister.writeIntoRegister("SP", SP_value)
+    HR.writeIntoRegister("SP", SP_value)
 
     if m[0] == "register":
         all_changes = {
@@ -257,27 +248,26 @@ def POP(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def POPF(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-                Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def POPF(**kwargs):
     """This functins pops last to bits from stack, and stores it in flag register"""
 
-    SP = HardwareRegister.readFromRegister("SP")
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    SP = HR.readFromRegister("SP")
+
     SP_value = int(SP, base=2)
     SP_value_backup = SP_value
 
-    values = Data.get_data(SP_value, 2)
+    values = DS.get_data(SP_value, 2)
     procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, values)))
     comb_value = list("".join(procc))
     
-    flag_reg_backup = FlagRegister.readFlags()
-    FlagRegister.setFlagRaw(comb_value)
+    flag_reg_backup = FR.readFlags()
+    FR.setFlagRaw(comb_value)
     
     SP_value += 2
-    HardwareRegister.writeIntoRegister("SP", SP_value)
+    HR.writeIntoRegister("SP", SP_value)
 
     all_changes = {
        "register" : [ 
@@ -295,36 +285,31 @@ def POPF(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def POPA(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-                Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def POPA(**kwargs):
     """This functins pops top 16 bits of data into the registers in this order:
     'DI', 'SI', 'BP', 'SP', 'BX', 'DX', 'CX', 'AX' """
 
-    SP = HardwareRegister.readFromRegister("SP")
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    SP = HR.readFromRegister("SP")
+    
     SP_value = int(SP, base=2)
 
-    #   Save values of all registers, and then reverse the order of the list
-    register_backups = [HardwareRegister.readFromRegister(r) for r in list_of_registers][-1:]
+    register_backups = [HR.readFromRegister(r) for r in list_of_registers][-1:]
 
-    #   Update all registers
-    all_bytes = Data.get_data(SP_value, 16)
+    all_bytes = DS.get_data(SP_value, 16)
     new_registers_values = []
     for i in range(0,16, 2):
         procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, all_bytes[i:i+2])))
         value = list("".join(procc))
         new_registers_values.append(value)
         register = list_of_registers[- (i // 2) - 1]
-        HardwareRegister.writeIntoRegister(register, value)
+        HR.writeIntoRegister(register, value)
 
     all_changes = {
         "register" : []
     }
 
-    #   Generate history of changes for all registers
     for n, register in enumerate(list_of_registers[-1:]):
         all_changes["register"].append(
             {

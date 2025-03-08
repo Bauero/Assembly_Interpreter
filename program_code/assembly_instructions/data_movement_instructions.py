@@ -3,25 +3,21 @@ This file contains instructions which are responsible for data movement, and doe
 change flags, nor perform any operations on stack
 """
 
-from program_code.hardware_registers import HardwareRegisters
-from program_code.flag_register import FlagRegister
-from program_code.hardware_memory import DataSegment
 from program_code.helper_functions import convert_number_to_bit_list, save_value_in_destination
 
-def MOV(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def MOV(**kwargs):
     """This function perfoms movement of data from place to place"""
     
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
     v = kwargs['args_values_raw'][1]
-    output = list(convert_number_to_bit_list(v, final_size))
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, output,
-                             kwargs['param_types'][0], kwargs['destination'])
+    
+    output = list(convert_number_to_bit_list(v, FS))
+    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
     
     all_changes = {
         m[0] : [ m[1] ]
@@ -29,28 +25,22 @@ def MOV(HardwareRegister : HardwareRegisters,
     
     return all_changes
 
-def XCHG(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def XCHG(**kwargs):
     """This function swaps values between source and destination"""
     
-    final_size = kwargs['final_size']
-    values_in_binary = []
-    
-    for v in kwargs['args_values_raw']:
-        output = convert_number_to_bit_list(v, final_size)
-        values_in_binary.append(output)
-    
+    HR  = kwargs["HR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"]
+
+    values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
     save_in_des, save_in_sour = list(values_in_binary[1]), list(values_in_binary[0])
 
-    m1 = save_value_in_destination(HardwareRegister, Data, Variables, save_in_des,
-                             kwargs['param_types'][0], kwargs['destination'])
-
-    m2 = save_value_in_destination(HardwareRegister, Data, Variables, save_in_sour,
-                             kwargs['param_types'][0], kwargs['destination'])
+    m1 = save_value_in_destination(HR, DS, VAR, save_in_des, PT, DST)
+    m2 = save_value_in_destination(HR, DS, VAR, save_in_sour, PT, DST)
     
     if m1[0] == m2[0]:
         all_changes = {

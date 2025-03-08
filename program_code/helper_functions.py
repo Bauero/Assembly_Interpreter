@@ -220,3 +220,57 @@ def sign_changed(n1 : str, n2 : str, output : list):
     if n1b == n2b and n1b != int(output[0]):
         return True
     return False
+
+def binary_addition(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
+    """This funciton performs binary addition of two numbers, and returns result with values of 
+    carry flag and auxiliary carry flag after addition"""
+    
+    output = []
+    
+    for bit in range(-1, - bit_no - 1, -1):
+        b1 = int(n1[bit])
+        b2 = int(n2[bit])
+        result = b1 + b2 + carry
+        carry = result > 1
+        output.insert(0, str(result % 2))
+        if abs(bit) == 4:   auxiliary_carry = carry
+
+    output = output[-bit_no:]
+
+    return output, carry, auxiliary_carry
+
+def binary_or(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
+    """This funciton performs binary OR of two numbers, and returns result with values of 
+    carry flag and auxiliary carry flag after addition"""
+    
+    output = []
+    
+    for bit in range(-1, - bit_no - 1, -1):
+        b1 = int(n1[bit])
+        b2 = int(n2[bit])
+        result = str(int(b1 or b2))
+        carry = result == 1
+        output.insert(0, str(result))
+        if abs(bit) == 4:   auxiliary_carry = carry
+
+    output = output[-bit_no:]
+
+    return output, carry, auxiliary_carry
+
+def binary_xor(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
+    """This funciton performs binary XOR of two numbers, and returns result with values of 
+    carry flag and auxiliary carry flag after addition"""
+    
+    output = []
+    
+    for bit in range(-1, - bit_no - 1, -1):
+        b1 = int(n1[bit])
+        b2 = int(n2[bit])
+        result = str(int((b1 or b2) and not (b1 and b2)))
+        carry = b1 and b2
+        output.insert(0, str(result))
+        if abs(bit) == 4:   auxiliary_carry = carry
+
+    output = output[-bit_no:]
+
+    return output, carry, auxiliary_carry

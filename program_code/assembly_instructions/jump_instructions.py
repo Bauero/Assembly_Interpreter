@@ -2,474 +2,297 @@
 This file contains all jump instuctions which are supported in x86 Assembly
 """
 
-from program_code.hardware_registers import HardwareRegisters
-from program_code.flag_register import FlagRegister
-from program_code.hardware_memory import DataSegment
 from program_code.helper_functions import convert_number_to_int_with_binary_capacity
 
-def JMP(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JMP(**kwargs):
     """This function performs unconditional jump to label"""
 
-    label = kwargs['args_values_int'][0]
+    LBL = kwargs['label'][0]
 
-    return {"next_instruction" : label}
+    return {"next_instruction" : LBL}
 
-def JZ(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JZ(**kwargs):
     """Jump if last operation was equal zero -> ZF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if FlagRegister.readFlag("ZF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("ZF"):   return {"next_instruction" : LBL}
 
-def JE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JE(**kwargs):
     """Jump if numbers are equal -> ZF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if FlagRegister.readFlag("ZF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("ZF"):   return {"next_instruction" : LBL}
 
-def JNZ(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNZ(**kwargs):
     """Jump if last operation wasn't equal to zero -> ZF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if not FlagRegister.readFlag("ZF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("ZF"):   return {"next_instruction" : LBL}
 
-def JNE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNE(**kwargs):
     """Jump if numbers aren't equal -> ZF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if not FlagRegister.readFlag("ZF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("ZF"):   return {"next_instruction" : LBL}
     
-    if not FlagRegister.readFlag("SF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("SF"):   return {"next_instruction" : LBL}
 
-def JA(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JA(**kwargs):
     """Jump if last result was above zero -> CF=0 AND ZF=0"""
 
-    label = kwargs['args_values_int'][0]
-
-    CF = FlagRegister.readFlag("CF")
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    CF  = FR.readFlag("CF")
+    ZF  = FR.readFlag("ZF")
     
-    if not (CF or ZF):
-        return {"next_instruction" : label}
+    if not (CF or ZF):  return {"next_instruction" : LBL}
 
-def JNBE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNBE(**kwargs):
     """Jump if last result not below or equal 0 -> CF=0 AND ZF=0"""
 
-    label = kwargs['args_values_int'][0]
-
-    CF = FlagRegister.readFlag("CF")
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    CF  = FR.readFlag("CF")
+    ZF  = FR.readFlag("ZF")
     
-    if not (CF or ZF):
-        return {"next_instruction" : label}
+    if not (CF or ZF):  return {"next_instruction" : LBL}
 
-def JAE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JAE(**kwargs):
     """Jump if above or equal -> CF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if not FlagRegister.readFlag("CF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("CF"):   return {"next_instruction" : LBL}
 
-def JNB(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNB(**kwargs):
     """Jump if not below -> CF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if not FlagRegister.readFlag("CF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("CF"):   return {"next_instruction" : LBL}
 
-def JB(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JB(**kwargs):
     """Jump if below -> CF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if FlagRegister.readFlag("CF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("CF"):   return {"next_instruction" : LBL}
 
-def JNAE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNAE(**kwargs):
     """Jump if not above or equal -> CF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
     
-    if FlagRegister.readFlag("CF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("CF"):   return {"next_instruction" : LBL}
 
-def JBE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JBE(**kwargs):
     """Jump if below or equal -> CF=1 or ZF=1"""
 
-    label = kwargs['args_values_int'][0]
-
-    CF = FlagRegister.readFlag("CF")
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    CF  = FR.readFlag("CF")
+    ZF  = FR.readFlag("ZF")
     
-    if CF or ZF:
-        return {"next_instruction" : label}
+    if CF or ZF:    return {"next_instruction" : LBL}
 
-def JNA(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNA(**kwargs):
     """Jump if not above -> CF=1 or ZF=1"""
 
-    label = kwargs['args_values_int'][0]
-
-    CF = FlagRegister.readFlag("CF")
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    CF  = FR.readFlag("CF")
+    ZF  = FR.readFlag("ZF")
     
-    if CF or ZF:
-        return {"next_instruction" : label}
+    if CF or ZF:    return {"next_instruction" : LBL}
 
-def JG(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JG(**kwargs):
     """Jump if greater -> SF=0F and ZF=0"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
+    ZF  = FR.readFlag("ZF")
     
-    if SF == OF and ZF == 0:
-        return {"next_instruction" : label}
+    if SF == OF and ZF == 0:    return {"next_instruction" : LBL}
 
-def JNLE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNLE(**kwargs):
     """Jump if not less or equal -> SF=0F and ZF=0"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
+    ZF  = FR.readFlag("ZF")
     
-    if SF == OF and ZF == 0:
-        return {"next_instruction" : label}
+    if SF == OF and ZF == 0:    return {"next_instruction" : LBL}
 
-def JGE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JGE(**kwargs):
     """Jump if greater or equal -> SF=0F"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
     
-    if SF == OF:
-        return {"next_instruction" : label}
+    if SF == OF:    return {"next_instruction" : LBL}
 
-def JNL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNL(**kwargs):
     """Jump if not less -> SF=0F"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
     
-    if SF == OF:
-        return {"next_instruction" : label}
+    if SF == OF:    return {"next_instruction" : LBL}
 
-def JL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JL(**kwargs):
     """Jump if less -> SF<=0F"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
     
-    if SF <= OF:
-        return {"next_instruction" : label}
+    if SF <= OF:    return {"next_instruction" : LBL}
 
-def JNGE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNGE(**kwargs):
     """Jump if not greater or equal -> SF<=0F"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
     
-    if SF <= OF:
-        return {"next_instruction" : label}
+    if SF <= OF:    return {"next_instruction" : LBL}
 
-def JLE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JLE(**kwargs):
     """Jump if less or equal -> SF<=0F and ZF=1"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
+    ZF  = FR.readFlag("ZF")
     
-    if SF <= OF and ZF:
-        return {"next_instruction" : label}
+    if SF <= OF and ZF: return {"next_instruction" : LBL}
 
-def JNG(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNG(**kwargs):
     """Jump if not greater -> SF<=0F and ZF=1"""
 
-    label = kwargs['args_values_int'][0]
-
-    SF = bool(FlagRegister.readFlag("SF"))
-    OF = bool(FlagRegister.readFlag("OF"))
-    ZF = FlagRegister.readFlag("ZF")
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
+    SF  = bool(FR.readFlag("SF"))
+    OF  = bool(FR.readFlag("OF"))
+    ZF  = FR.readFlag("ZF")
     
-    if SF <= OF and ZF:
-        return {"next_instruction" : label}
+    if SF <= OF and ZF: return {"next_instruction" : LBL}
 
-def JS(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JS(**kwargs):
     """Jump if sign flag is active -> SF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if FlagRegister.readFlag("SF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("SF"):   return {"next_instruction" : LBL}
 
-def JNS(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNS(**kwargs):
     """Jump if sign flag is inactive -> SF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if not FlagRegister.readFlag("SF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("SF"):   return {"next_instruction" : LBL}
 
-def JC(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JC(**kwargs):
     """Jump if carry flag is active -> CF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if FlagRegister.readFlag("CF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("CF"):   return {"next_instruction" : LBL}
 
-def JNC(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNC(**kwargs):
     """Jump if carry flag is inactive -> CF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if not FlagRegister.readFlag("CF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("CF"):   return {"next_instruction" : LBL}
 
-def JP(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JP(**kwargs):
     """Jump if parity flag is active -> PF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if FlagRegister.readFlag("PF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("PF"):   return {"next_instruction" : LBL}
 
-def JPE(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JPE(**kwargs):
     """Jump if parity even -> PF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if FlagRegister.readFlag("PF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("PF"):   return {"next_instruction" : LBL}
 
-def JNP(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNP(**kwargs):
     """Jump if parity flag is inactive -> PF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if not FlagRegister.readFlag("PF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("PF"):   return {"next_instruction" : LBL}
 
-def JPO(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JPO(**kwargs):
     """Jump if parity is odd -> PF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if not FlagRegister.readFlag("PF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("PF"):   return {"next_instruction" : LBL}
 
-def JO(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JO(**kwargs):
     """Jump if overflow occured -> OF=1"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if FlagRegister.readFlag("OF"):
-        return {"next_instruction" : label}
+    if FR.readFlag("OF"):   return {"next_instruction" : LBL}
 
-def JNO(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JNO(**kwargs):
     """Jump if overflow haven't occured -> PF=0"""
 
-    label = kwargs['args_values_int'][0]
+    FR  = kwargs["FR"]
+    LBL = kwargs['label'][0]
 
-    if not FlagRegister.readFlag("OF"):
-        return {"next_instruction" : label}
+    if not FR.readFlag("OF"):   return {"next_instruction" : LBL}
 
-def JCXZ(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def JCXZ(**kwargs):
     """Jump if value in CX is not 0"""
 
-    label = kwargs['args_values_int'][0]
+    HR  = kwargs["HR"]
+    LBL = kwargs['label'][0]
 
-    cx_value = HardwareRegister.readFromRegister("CX")
+    cx_value = HR.readFromRegister("CX")
     cx_int = convert_number_to_int_with_binary_capacity(cx_value, 16)
 
-    if cx_int != 0:
-        return {"next_instruction" : label}
+    if cx_int != 0: return {"next_instruction" : LBL}
 
 for fn_name in list(filter(lambda n: n.upper() == n, dir())):
-    """Assign all functions the same attributes"""
     fn = locals()[fn_name]
     fn.params_range = [1]
     fn.allowed_params_combinations = [("value",), ("label",)]

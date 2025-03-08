@@ -2,31 +2,32 @@
 This file contains operations which perform locical operations
 """
 
-from program_code.hardware_registers import HardwareRegisters
-from program_code.flag_register import FlagRegister
-from program_code.hardware_memory import DataSegment
 from program_code.errors import ExecutionOfOperationInLineError, IncorrectParamForBitMovError
 from program_code.helper_functions import (convert_number_to_bit_list,
-                              save_value_in_destination,
-                              eval_no_of_1)
+                                           save_value_in_destination,
+                                           eval_no_of_1)
 
-def SHL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def SHL(**kwargs):
     """SHIFT LOGICAL LEFT"""
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
     first_bit = value_to_shift[0] == "1"
     carry = "0"
@@ -40,18 +41,16 @@ def SHL(HardwareRegister : HardwareRegisters,
 
     first_bit_after = value_to_shift[0] == "1"
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", first_bit != first_bit_after)
-    FlagRegister.setFlag("SF", sign == "1")
-    FlagRegister.setFlag("CF", carry == "1")
-    FlagRegister.setFlag("ZF", not "1" in value_to_shift)
-    FlagRegister.setFlag("PF", eval_no_of_1(value_to_shift))
+    FR.setFlag("OF", first_bit != first_bit_after)
+    FR.setFlag("SF", sign == "1")
+    FR.setFlag("CF", carry == "1")
+    FR.setFlag("ZF", not "1" in value_to_shift)
+    FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -65,23 +64,27 @@ def SHL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def SHR(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def SHR(**kwargs):
     """SHIFT LOGICAL RIGHT"""
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
     first_bit = value_to_shift[0] == "1"
     carry = "0"
@@ -95,18 +98,16 @@ def SHR(HardwareRegister : HardwareRegisters,
 
     first_bit_after = value_to_shift[0] == "1"
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", first_bit != first_bit_after)
-    FlagRegister.setFlag("SF", sign == "1")
-    FlagRegister.setFlag("CF", carry == "1")
-    FlagRegister.setFlag("ZF", not "1" in value_to_shift)
-    FlagRegister.setFlag("PF", eval_no_of_1(value_to_shift))
+    FR.setFlag("OF", first_bit != first_bit_after)
+    FR.setFlag("SF", sign == "1")
+    FR.setFlag("CF", carry == "1")
+    FR.setFlag("ZF", not "1" in value_to_shift)
+    FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -120,23 +121,27 @@ def SHR(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def SAL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def SAL(**kwargs):
     """SHIFT ARITHMETIC LEFT"""
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
     first_bit = value_to_shift[0] == "1"
     carry = "0"
@@ -150,18 +155,16 @@ def SAL(HardwareRegister : HardwareRegisters,
 
     first_bit_after = value_to_shift[0] == "1"
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", first_bit != first_bit_after)
-    FlagRegister.setFlag("SF", sign == "1")
-    FlagRegister.setFlag("CF", carry == "1")
-    FlagRegister.setFlag("ZF", not "1" in value_to_shift)
-    FlagRegister.setFlag("PF", eval_no_of_1(value_to_shift))
+    FR.setFlag("OF", first_bit != first_bit_after)
+    FR.setFlag("SF", sign == "1")
+    FR.setFlag("CF", carry == "1")
+    FR.setFlag("ZF", not "1" in value_to_shift)
+    FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -175,23 +178,27 @@ def SAL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def SAR(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def SAR(**kwargs):
     """SHIFT ARITHMETIC RIGHT"""
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS  = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
     first_bit = value_to_shift[0] == "1"
     carry = "0"
@@ -204,18 +211,16 @@ def SAR(HardwareRegister : HardwareRegisters,
 
     first_bit_after = value_to_shift[0] == "1"
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", first_bit != first_bit_after)
-    FlagRegister.setFlag("SF", sign == "1")
-    FlagRegister.setFlag("CF", carry == "1")
-    FlagRegister.setFlag("ZF", not "1" in value_to_shift)
-    FlagRegister.setFlag("PF", eval_no_of_1(value_to_shift))
+    FR.setFlag("OF", first_bit != first_bit_after)
+    FR.setFlag("SF", sign == "1")
+    FR.setFlag("CF", carry == "1")
+    FR.setFlag("ZF", not "1" in value_to_shift)
+    FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -229,12 +234,7 @@ def SAR(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def ROL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def ROL(**kwargs):
     """ROTATE LEFT
     
     EX.
@@ -246,15 +246,24 @@ def ROL(HardwareRegister : HardwareRegisters,
         1. 01011011 CL = 1  OF = 1
     """
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
     carry = "0"
     
@@ -264,15 +273,13 @@ def ROL(HardwareRegister : HardwareRegisters,
         overfolow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[1:]
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", overfolow)
-    FlagRegister.setFlag("CF", carry == "1")
+    FR.setFlag("OF", overfolow)
+    FR.setFlag("CF", carry == "1")
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -286,12 +293,7 @@ def ROL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def ROR(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def ROR(**kwargs):
     """ROTATE RIGHT
     
     EX.
@@ -303,15 +305,24 @@ def ROR(HardwareRegister : HardwareRegisters,
         1. 11010110 CL = 1  OF = 0
     """
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
     carry = "0"
     
@@ -321,15 +332,13 @@ def ROR(HardwareRegister : HardwareRegisters,
         overfolow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[:-1]
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", overfolow)
-    FlagRegister.setFlag("CF", carry == "1")
+    FR.setFlag("OF", overfolow)
+    FR.setFlag("CF", carry == "1")
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -343,12 +352,7 @@ def ROR(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def RCL(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def RCL(**kwargs):
     """ROTATE THROUGH CARRY LEFT
 
     Perform rotation as if carry flag was an additional, most significant bit of number
@@ -373,17 +377,26 @@ def RCL(HardwareRegister : HardwareRegisters,
         1. 01011010 CL = 1  OF = 1
     """
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
-    carry = HardwareRegister.readFromRegister("CF")
+    carry = HR.readFromRegister("CF")
     
     for shift in range(rotation_counter):
         value_to_shift.append(carry)
@@ -391,15 +404,13 @@ def RCL(HardwareRegister : HardwareRegisters,
         overfolow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[1:]
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", overfolow)
-    FlagRegister.setFlag("CF", carry == "1")
+    FR.setFlag("OF", overfolow)
+    FR.setFlag("CF", carry == "1")
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -413,12 +424,7 @@ def RCL(HardwareRegister : HardwareRegisters,
 
     return all_changes
 
-def RCR(HardwareRegister : HardwareRegisters, 
-        FlagRegister : FlagRegister,
-        Data : DataSegment,
-        Variables : dict,
-        Labels : dict,
-        **kwargs):
+def RCR(**kwargs):
     """ROTATE THROUGH CARRY RIGH
 
     Perform rotation as if carry flag was an additional, least significant bit of number
@@ -443,17 +449,26 @@ def RCR(HardwareRegister : HardwareRegisters,
         1. 01111111 CL = 1  OF = 1
     """
 
-    if kwargs['param_types'][1] == "register" and kwargs['source_params'][1].upper() != "CL":
+    if kwargs['param_types'][1] == "register" and \
+        kwargs['source_params'][1].upper() != "CL":
         raise ExecutionOfOperationInLineError(
             IncorrectParamForBitMovError()
         )
 
-    final_size = kwargs['final_size']
+    HR  = kwargs["HR"]
+    FR  = kwargs["FR"]
+    DS  = kwargs["DS"]
+    VAR = kwargs["variables"]
+    PT  = kwargs['param_types'][0]
+    DST = kwargs["destination"]
+    FS = kwargs['final_size']
+    RAW = kwargs["args_values_raw"][0]
+    INT = kwargs["args_values_int"][1]
 
-    value_to_shift = convert_number_to_bit_list(kwargs['args_values_raw'][0], final_size)
-    rotation_counter = kwargs['args_values_int'][1] % final_size
+    value_to_shift = convert_number_to_bit_list(RAW, FS)
+    rotation_counter = INT % FS
 
-    carry = HardwareRegister.readFromRegister("CF")
+    carry = HR.readFromRegister("CF")
     
     for shift in range(rotation_counter):
         value_to_shift.insert(0, carry)
@@ -461,15 +476,13 @@ def RCR(HardwareRegister : HardwareRegisters,
         overfolow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[:-1]
 
-    backup_flags = FlagRegister.readFlags()
+    backup_flags = FR.readFlags()
 
-    FlagRegister.setFlag("OF", overfolow)
-    FlagRegister.setFlag("CF", carry == "1")
+    FR.setFlag("OF", overfolow)
+    FR.setFlag("CF", carry == "1")
 
-    new_flags = FlagRegister.readFlags()
-
-    m = save_value_in_destination(HardwareRegister, Data, Variables, value_to_shift,
-                             kwargs['param_types'][0], kwargs['destination'])
+    new_flags = FR.readFlags()
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
 
     all_changes = {
         m[0] : [
