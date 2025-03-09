@@ -6,10 +6,10 @@ allow for it's further use inside program.
 from re import match, search, sub
 from .hardware_memory import DataSegment
 from .helper_functions import (return_size_from_name,
-                              return_if_base_16_value,
-                              return_if_base_10_value,
-                              return_if_base_8_value,
-                              return_if_base_2_value)
+                               return_if_base_16_value,
+                               return_if_base_10_value,
+                               return_if_base_8_value,
+                               return_if_base_2_value)
 from .errors import ImproperJumpMarker, ImproperDataDefiniton
 
 allowed_sections = ['code', 'stack', 'data', 'text']

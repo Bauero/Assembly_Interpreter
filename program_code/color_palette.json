@@ -8,6 +8,7 @@
         "flags_section" : "#30BB73",
         "hints" : "#EEEEEE",
         "line_highlight" : "#0000FF",
+        "error_in_line" : "#EC3614",
         "code_text" : "#FFFFFF",
         "change_highlight" : [255, 255, 0, 83]
     }

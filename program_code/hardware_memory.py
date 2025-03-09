@@ -54,3 +54,7 @@ class DataSegment:
         """Returns data in form of string with 1's or 0's - represents raw binary data"""
         
         return "".join(bin(c)[2:] for c in self.get_data(starting_byte, no_of_bytes))
+    
+    def reset(self):
+        self.data = array('B', (0 for _ in range(2**16)))
+        self.byte_counter = 0

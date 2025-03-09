@@ -445,16 +445,21 @@ class CodeEditor(QPlainTextEdit):
         width = self.number_area_width
         self.lineNumberArea.setGeometry(QRect(left, top, width, height))
 
-    def setHighlight(self, line_numbers,
+    def setHighlight(self, line_numbers : list | None,
                      background_color : str | None = "", 
                      text_color : str | None = ""
                      ):
         """
         Podświetla wybrane linie i przewija widok, aby podświetlona linia była na ekranie.
         """
+        extraSelections = []
+
+        if not line_numbers:
+            self.highlighted_lines = line_numbers
+            self.setExtraSelections(extraSelections)
+
         if not background_color:    background_color = colors[self.theme]["line_highlight"]
         if not text_color:  text_color = colors[self.theme]["code_text"]
-        extraSelections = []
 
         for line_number in line_numbers:
             if line_number <= 0:    continue

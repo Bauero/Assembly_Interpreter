@@ -34,6 +34,13 @@ class Engine():
         """This method allow to pass variables to engine after successful preprocessing"""
         self.variables = variables
 
+    def reset(self):
+        """This method sets engine to state after init"""
+        self.HR.reset()
+        self.FR.clearFlags()
+        self.DS.reset()
+        self.variables = []
+
     def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it cuts the line, extracting command
         from arguments, defines what types are the arguments, defines what they represent, and passes
