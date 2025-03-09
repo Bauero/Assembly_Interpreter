@@ -10,7 +10,6 @@ with open('program_code/names.json') as f:
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
 
-
 def _unrecognized_error_popup(**kwargs):
     """An undefined error occured"""
     language = kwargs["language"]
