@@ -57,7 +57,10 @@ class Engine():
 
         args_types = self._detect_argument_type(args_cleaned)
         if "undefined" in args_types:
-            return self._gen_err("unrecognized_argument")
+            pairs = list(filter(lambda x: x[1] == "undefined", zip(args_cleaned, args_types)))
+            wrong_params = "' '".join([x[0] for x in pairs])
+            wrong_params = f"'{wrong_params}'"
+            return self._gen_err("unrecognized_argument", values=wrong_params)
         
         args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, 
                                                                             args_types)
@@ -558,12 +561,14 @@ class Engine():
     def _gen_err(self, 
                  name : str, 
                  param_no : int | None = None, 
-                 params : list | None = None, 
+                 params : list | None = None,
+                 values : str | None = None,
                  exc : Exception | None = None) -> dict:
         return {"error" : {
             "popup" : name,
             "line" : self.curr_line + 1,
             "param_no" : param_no,
             "params" : params,
+            "values" : values,
             "source_error" : exc
         }}

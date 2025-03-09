@@ -1,7 +1,11 @@
 from PyQt6.QtWidgets import QMessageBox
 import json
 
-with open('program_code/names.json') as f:  names = json.load(f)
+with open('program_code/names.json') as f:
+    all_conumicates = json.load(f)
+    supported_languages = all_conumicates["supported_languages"]
+    lang_names_each_other = all_conumicates["lang_names_each_other"]
+    names = all_conumicates["language_presets"]
 
 ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
@@ -161,11 +165,13 @@ def _unrecognized_argument(**kwargs):
     """Argument wasn't recognized to be anything supported"""
     language = kwargs["language"]
     line = kwargs["line"]
+    values = kwargs["values"]
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
     msg.setWindowTitle(names[language]["argument_unrecognized"])
     msg.setText(names[language]["arg_not_recognized"] + "\n" +
-                names[language]["line"] + ": " + str(line))
+                names[language]["line"] + ": " + str(line) + "\n" + 
+                names[language]["err_by"] + ": " + str(values))
     return msg.exec()
 
 def _instruction_error(**kwargs):
@@ -332,10 +338,11 @@ all_popups = locals()
 def show_custom_popup(language : str, notification : dict) -> int:
     
     popup        = "_" + notification["popup"]
-    line         = notification["line"]
-    param_no     = notification["param_no"]
-    params       = notification["params"]
-    source_error = notification["source_error"]
+    line         = notification.get("line", None)
+    param_no     = notification.get("param_no")
+    params       = notification.get("params")
+    values       = notification.get("values")
+    source_error = notification.get("source_error")
 
     if type(params) == list:
         params_list = []
@@ -350,5 +357,6 @@ def show_custom_popup(language : str, notification : dict) -> int:
         return all_popups[popup](language = language, 
                                  line = line,
                                  param_no = param_no, 
-                                 params = params_adjusted, 
+                                 params = params_adjusted,
+                                 values = values,
                                  source_error = source_error)
