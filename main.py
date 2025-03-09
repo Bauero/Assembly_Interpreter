@@ -6,12 +6,10 @@ from PyQt6.QtWidgets import QApplication
 from program_code import *
 
 def main():
-    language = "PL"
-    theme = "dark_mode"
     app = QApplication([])
-    engine = Engine(language)
-    code_handeler = CodeHandler(engine, language)
-    window = MainWindow(code_handeler, language, theme)
+    engine = Engine()
+    code_handeler = CodeHandler(engine)
+    window = MainWindow(code_handeler)
     sys.exit(app.exec())
 
 if __name__ == "__main__":

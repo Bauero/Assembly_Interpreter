@@ -5,8 +5,7 @@ or jumps. It is also responible for managing history or operations done by progr
 """
 
 from .preprocessor import loadMainFile
-from .helper_functions import loadFileFromPath, convert_number_to_int_with_binary_capacity
-from .errors import ExecutionOfOperationInLineError, DetailedException
+from .helper_functions import loadFileFromPath
 from .history import History
 from .engine import Engine
 import pickle
@@ -17,7 +16,7 @@ class CodeHandler():
     handles opened file and loades instruction for engine
     """
 
-    def __init__(self, engine : Engine, language : str):
+    def __init__(self, engine : Engine):
         self.openFiles = []
         self.rawfiles = {}
         self.files = {}
@@ -25,15 +24,15 @@ class CodeHandler():
         self.currentlyExecutedLine = {}
         self.engine = engine
         self.working_in_interactive_mode = False
-        self.language = language
 
-    def readPrepareFile(self, path_to_file, ignore_size_limit, ignore_file_type):
+    def readPrepareFile(self, path_to_file : str, ignore_size_limit : bool, 
+                        ignore_file_type : bool) -> list[int]:
         """This function, reads file and prepare it's content for processing"""
 
-        raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)      # Wczytanie pliku do zmiennej
+        raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
 
         self.rawfiles[path_to_file] = raw_file                                              # Zapisanie ścieżki dostępu do pliku
-        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.data)         # Wstępna analiza z użyciem preprocesor.py
+        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.DS)         # Wstępna analiza z użyciem preprocesor.py
         self.pass_variable_to_engine(preprocessed_instrucitons)                             # Przekazanie listy zmiennych do silinika
 
         self.currentlyExecutedFile = path_to_file                                           # Zapisanie jaki obecnie wykonywany jest plik (umożliwienie dodania wsparcia do wielu plików)
@@ -49,13 +48,13 @@ class CodeHandler():
         )
 
         # W przypadku pustego pliku zwrócenie wartości 0 - lista oznacza które linie program ma podkreślić - możliwość pracy na instrukcjach wielolinijkow
-        if start != (-1, [-1]):
-            output = start[1]
-        else:
-            output = [0]
+        output = start[1] if start != (-1, [-1]) else [0]
+        
         return output
 
-    def readInteractive(self, data : str):
+    def readInteractive(self, data : str) -> list[int]:
+        """This funciton """
+
         text_in_linex = data.split("\n")
         
         #   Prepare data
@@ -67,8 +66,7 @@ class CodeHandler():
         self.files["interactive"] = preprocessed_instrucitons
         self.currentlyExecutedFile = "interactive"
 
-        if start != (-1, [-1]):
-            return start[1]
+        if start != (-1, [-1]): return start[1]
         
     def pass_variable_to_engine(self, preprocessed_instrucitons):
         assert type(preprocessed_instrucitons) == dict
@@ -99,30 +97,16 @@ class CodeHandler():
     def set_interactive_mode(self, value : bool):
         self.working_in_interactive_mode = value
 
+    def get_curr_exec_line(self):
+        file = self.currentlyExecutedFile
+        return self.currentlyExecutedLine[file]
+
     def _get_current_line_instr(self):
         curr_line = self.currentlyExecutedLine[self.currentlyExecutedFile][0]
         curr_inst = self.files[self.currentlyExecutedFile]['lines'][
                 curr_line
         ]
         return curr_line, curr_inst
-
-    def _handle_engine_output(self, current_line : int, output : dict):
-        """
-        This function handles decistion, which line should be next. By default, it's
-        current line + 1, but in case of jump, or end of code, we have to handle this
-        as well
-        """
-
-        if output == None or not "next_instruction" in output:
-            if current_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
-                return current_line + 1
-            else:
-                return -1
-
-        elif "next_instruction" in output:
-            return output["next_instruction"]
-        else:
-            return -1
 
     def _run_next_instruction(self, **kwargs):
         """
@@ -131,71 +115,49 @@ class CodeHandler():
         will be loaded from history - otherwise, instruction will be executed by engine.
         """
         
-        try:
-            next_instruction = self.history.load_next_instruction_if_executed()
-            wtd = None
+        already_executed = self.history.load_next_instruction_if_executed()
 
-            #   If next instruction is already executed, load it from history
-            if next_instruction:
-                next_line, change = next_instruction
-                self.engine.load_new_state_after_change(change, forward = True)
-                self.engine.HR.writeIntoRegister("IP", next_line)
-                lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
-                self.currentlyExecutedLine[self.currentlyExecutedFile] = \
-                    [next_line, lines_in_source_file]
-
-            #   If next instruction wasn't executed run it
-            else:
-                #   Check which line in which file should be executed, and pass it to engine
-                curr_line, curr_inst = self._get_current_line_instr()
-                
-                #   Execute command and handle any What To Do things
-                line_content = curr_inst['content']
-                wtd = self.engine.executeInstruction(curr_line, line_content)
-                next_line = self._handle_engine_output(curr_line, wtd)
-                self.history.add_new_instruction(curr_line, wtd, next_line)
-
-                #   In case of end of file, stop executon - return info to user
-                if next_line == -1: return {"status" : "finish"}
-                
-                self.engine.HR.writeIntoRegister("IP", next_line)
-                lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
-                
-                self.currentlyExecutedLine[self.currentlyExecutedFile] = \
-                    [next_line, lines_in_source_file]
+        if already_executed:
+            next_line, change = already_executed
+            self.engine.load_new_state_after_change(change, forward = True)
+            self.engine.HR.writeIntoRegister("IP", next_line)
+            lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
+            self.currentlyExecutedLine[self.currentlyExecutedFile] = \
+                [next_line, lines_in_source_file]
             
-            status = {"status" : 0, "highlight" : lines_in_source_file}
-            if wtd and "write_char_to_terminal" in wtd:
-                status["write_char_to_terminal"] = wtd["write_char_to_terminal"]
-            return status
+            return {"status" : 0, "highlight" : lines_in_source_file}
 
-        except ExecutionOfOperationInLineError as exc:
-            org_exc = exc.source_exception()
-            status = {
-                "status" : 1,
-                "action" : "stop",
-                "exception" : org_exc 
-            }
-            if  org_exc.isinstance(DetailedException):
-                status['line'] = org_exc.line() if org_exc.line() else curr_line
-                status['message'] = org_exc.message()
-            return status
+        else:
+            curr_line, curr_inst = self._get_current_line_instr()
+            line_content = curr_inst['content']
+            output = self.engine.executeInstruction(curr_line, line_content)
+            
+            if output.get("error", None):
+                output["status"] = 1
+                return output
+            if output.get("warnings", None):
+                output["status"] = 2
+            
+            if output == None or not "next_instruction" in output:
+                if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
+                    next_line = curr_line + 1
+                else:
+                    if output.get("status", None):
+                        output["status"] = -12
+                        return output
+                    else:
+                        return {"status" : -12}
+            elif "next_instruction" in output:
+                next_line = output["next_instruction"]
+
+            self.history.add_new_instruction(curr_line, output, next_line)
+            self.engine.HR.writeIntoRegister("IP", next_line)
+            
+            lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
+            self.currentlyExecutedLine[self.currentlyExecutedFile] = [next_line, lines_in_source_file]
         
-        except NotImplementedError as e:
-            status = {
-                'status' : 1,
-                "action" : "stop",
-                "exception" : e,
-                "message" : "Instruction unrecognized"
-            }
-            return status
-
-        except Exception as e:
-            """Handle undefined exceptions"""
-            status = {
-                "status" : -1,
-                "exception" : ""
-            }
+            status = {"status" : 0, "highlight" : lines_in_source_file}
+            
             return status
 
     def _run_previous_instruction(self, **kwargs):
@@ -231,12 +193,12 @@ class CodeHandler():
         try:
             path = kwargs['path']
 
-            HR = self.engine.HR
-            FR = self.engine.FR
-            data = self.engine.data
-            variables = self.engine.variables
+            HR  = self.engine.HR
+            FR  = self.engine.FR
+            DS  = self.engine.DS
+            VAR = self.engine.variables
 
-            self.history.save_final_state(HR, FR, data, variables)
+            self.history.save_final_state(HR, FR, DS, VAR)
             pickle.dump(self.history, path)
 
             status = {"status" : 0}
@@ -254,7 +216,7 @@ class CodeHandler():
             self.history = pickle.load(path)
             output = self.history.return_saved_state()
 
-            HR, FR, data, variables, path_to_file, raw_file, \
+            HR, FR, DS, VAR, path_to_file, raw_file, \
                 preprocessed_instructions = output
 
             self.pass_variable_to_engine(preprocessed_instructions)

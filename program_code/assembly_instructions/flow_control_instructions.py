@@ -200,11 +200,11 @@ def CALL(**kwargs):
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    LBL = kwargs['label']
+    INT = kwargs['args_values_int']
     SP = HR.readFromRegister("SP")
     IP = HR.readFromRegister("IP")
 
-    label_in_bits = convert_number_to_bit_list(LBL[0], 16)
+    label_in_bits = convert_number_to_bit_list(INT[0], 16)
     SP_value = int(SP, base=2)
     SP_value_backup = SP_value
     SP_value -= 2
@@ -215,7 +215,7 @@ def CALL(**kwargs):
 
     DS.modify_data(SP_value, IP)
     HR.writeIntoRegister("SP", SP_value)
-    HR.writeIntoRegister("IP", LBL[0])
+    HR.writeIntoRegister("IP", INT[0])
 
     output = {
         "memory" : [
@@ -238,7 +238,7 @@ def CALL(**kwargs):
                 "new_value" :       list(map(int, label_in_bits))
             }
         ],
-        "next_instruction" : LBL[0]
+        "next_instruction" : INT[0]
     }
 
     return output

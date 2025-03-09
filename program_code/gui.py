@@ -8,13 +8,13 @@ from PyQt6.QtWidgets import (
     QComboBox, QCheckBox,QSizePolicy
 )
 from .custom_gui_elements import *
-from .errors import (
+from .errors import (DetailedException,
     FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, ImproperJumpMarker,
     ImproperDataDefiniton
     )
 from .helper_functions import loadFileFromPath
 from .code_handler import CodeHandler
-from .custom_message_boxes import *
+from .custom_message_boxes import show_custom_popup
 from screeninfo import get_monitors
 
 with open('program_code/names.json') as f:          names = json.load(f)
@@ -35,7 +35,7 @@ class MainWindow(QWidget):
     which update the app depending on action by the user.
     """
 
-    def __init__(self, code_handler : CodeHandler, language_preset : str , theme : str):
+    def __init__(self, code_handler : CodeHandler):
         super().__init__()
         self.code_handler = code_handler
         self.interactive_mode = False
@@ -44,8 +44,8 @@ class MainWindow(QWidget):
         self.timer_interval = 1000
         self.internal_timer.setInterval(self.timer_interval)
         self.instructionCounter = 0
-        self.language = language_preset
-        self.theme = theme
+        self.language = "PL"
+        self.theme = "dark_mode"
         self._createUserInterface()
         self._set_interactive_mode()
         self.welcomeScreen.show()
@@ -122,7 +122,7 @@ class MainWindow(QWidget):
 
         HR = self.code_handler.engine.HR
         FR = self.code_handler.engine.FR
-        DT = self.code_handler.engine.data
+        DT = self.code_handler.engine.DS
         EG = self.code_handler.engine
         
         #
@@ -434,22 +434,25 @@ class MainWindow(QWidget):
             case 'next_instruction':
                 try:
                     response = self.code_handler.executeCommand('next_instruction')
-                    self.instructionCounter += 1
-                    self._refresh()
                     self._act_on_response(response)
-                    self.stackSection.refresh_table()
-                    self.variableSection.refresh_table()
+                    self.instructionCounter += 1
                     if self.instructionCounter > 0: self.previousLineButton.setEnabled(True)
-                except Exception as e:
-                    unrecognized_error_popup(self.language, e)
-                    return
+                except Exception as e: 
+                    response = {
+                        "status" : 1,
+                        "error" : {
+                            "popup" : "unrecognized_error_popup",
+                            "line" : self.code_handler.get_curr_exec_line(),
+                            "param_no" : None,
+                            "params" : None,
+                            "source_error" : e
+                        }
+                    }
+                    self._act_on_response(response)
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
-                self.instructionCounter -= 1
-                self._refresh()
                 self._act_on_response(response)
-                self.stackSection.refresh_table()
-                self.variableSection.refresh_table()
+                self.instructionCounter -= 1
                 if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
 
     @pyqtSlot()
@@ -457,39 +460,70 @@ class MainWindow(QWidget):
         """
         This funciton is suppose to handle answers from CodeHandler - when we request to
         perform some action with code, CodeHandler, tries to do it using Engine, and 
-        returns status of this action - 0 = success ; 1 = defined error ; -1 = undefined error.
+        returns status of this action
+        -   0 = success
+        -   1 = defined error
+        -   2 = success, with warnings
+        -  -1 = finish execution
+        - -12 = finish execution, with warnings
         Response is returned in form of dictionary which contains mandatory filed - "status"
         """
 
         match response['status']:
 
-            #   Everything went as expected - continue execution
-            case 0:
-                self.code_field.setHighlight(response["highlight"])
+            case 0: ...
 
-            #   Predefined error occured - notify user ; stop execution
-            case 1: ...
+            case 1:
+                self.internal_timer.stop()
+                self._set_active_state(False)
+                self.nextLineButton.setDisabled(True)
+                self.previousLineButton.setEnabled(True)
+                self._show_popup(response["error"])
+                self.program_running = False
+                return
 
-            #   Undefined error occured - notify user ; stop execution
-            case -1: ...
+            case 2:
+                timer_active = self.internal_timer.isActive()
+                if timer_active:    self.internal_timer.stop()
+                self._show_popup(response["warning"])
+                if timer_active:    self.internal_timer.start()
 
-            #   All instructions were executed - notify user about finishing program
-            case 'finish':
+            case -1:
                 self.internal_timer.stop()
                 self.code_field.setHighlight([])
-                self.nextLineButton.setEnabled(True)
                 self.nextLineButton.setDisabled(True)
                 self.startExecutionButton.setText(names[self.language]["start_stop_2"])
                 self.startExecutionButton.setStyleSheet(
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
+                return
+            
+            case -12:
+                self._show_popup(response["warning"])
+                self.internal_timer.stop()
+                self.code_field.setHighlight([])
+                self.nextLineButton.setDisabled(True)
+                self.startExecutionButton.setText(names[self.language]["start_stop_2"])
+                self.startExecutionButton.setStyleSheet(
+                    f'color: {colors[self.theme]["start_stop_button_stopped"]};')
+                self.program_running = False
+                return
 
-            #################    SYSTEM INTERRUP HANDLING    ###################
+        terminal_operation = response.get("terminal", None)
+        if terminal_operation:
+            self._perform_terminal_aciton(terminal_operation)
+        self.code_field.setHighlight(response["highlight"])
+        self._refresh()
+        self.stackSection.refresh_table()
+        self.variableSection.refresh_table()
 
-        if "write_char_to_terminal" in response:
-            self.terminal.write_char(response["write_char_to_terminal"])
-        if "action_for_terminal" in response:
-            self.terminal.perform_action(response["action_for_terminal"])
+    def _perform_terminal_aciton(self, action : str):
+
+        ...
+
+    def _show_popup(self, dialog : dict):
+        show_custom_popup(self.language, dialog)
+        ...
 
     @pyqtSlot()
     def _refresh(self):

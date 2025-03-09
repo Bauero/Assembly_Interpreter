@@ -708,7 +708,7 @@ class VariableTable(QTableWidget):
         super().__init__()
         self.language = language
         self.theme = theme
-        self.data = engine.data
+        self.data = engine.DS
         self.data_copy = []
         self.engine = engine
         self.allow_change = False

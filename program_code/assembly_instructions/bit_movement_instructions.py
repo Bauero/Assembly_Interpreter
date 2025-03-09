@@ -2,7 +2,6 @@
 This file contains operations which perform locical operations
 """
 
-from program_code.errors import ExecutionOfOperationInLineError, IncorrectParamForBitMovError
 from program_code.helper_functions import (convert_number_to_bit_list,
                                            save_value_in_destination,
                                            eval_no_of_1)
@@ -10,21 +9,23 @@ from program_code.helper_functions import (convert_number_to_bit_list,
 def SHL(**kwargs):
     """SHIFT LOGICAL LEFT"""
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -50,7 +51,7 @@ def SHL(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -67,21 +68,23 @@ def SHL(**kwargs):
 def SHR(**kwargs):
     """SHIFT LOGICAL RIGHT"""
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -107,7 +110,7 @@ def SHR(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -124,21 +127,23 @@ def SHR(**kwargs):
 def SAL(**kwargs):
     """SHIFT ARITHMETIC LEFT"""
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -164,7 +169,7 @@ def SAL(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -181,21 +186,23 @@ def SAL(**kwargs):
 def SAR(**kwargs):
     """SHIFT ARITHMETIC RIGHT"""
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -220,7 +227,7 @@ def SAR(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -246,21 +253,23 @@ def ROL(**kwargs):
         1. 01011011 CL = 1  OF = 1
     """
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
-    FS = kwargs['final_size']
+    FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -279,7 +288,7 @@ def ROL(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -305,21 +314,23 @@ def ROR(**kwargs):
         1. 11010110 CL = 1  OF = 0
     """
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
-    FS = kwargs['final_size']
+    FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -338,7 +349,7 @@ def ROR(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -377,21 +388,23 @@ def RCL(**kwargs):
         1. 01011010 CL = 1  OF = 1
     """
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
-    FS = kwargs['final_size']
+    FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -410,7 +423,7 @@ def RCL(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -449,21 +462,23 @@ def RCR(**kwargs):
         1. 01111111 CL = 1  OF = 1
     """
 
-    if kwargs['param_types'][1] == "register" and \
-        kwargs['source_params'][1].upper() != "CL":
-        raise ExecutionOfOperationInLineError(
-            IncorrectParamForBitMovError()
-        )
-
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
     VAR = kwargs["variables"]
-    PT  = kwargs['param_types'][0]
+    PT  = kwargs['param_types']
+    SOP = kwargs["source_params"]
     DST = kwargs["destination"]
-    FS = kwargs['final_size']
+    FS  = kwargs['final_size']
     RAW = kwargs["args_values_raw"][0]
     INT = kwargs["args_values_int"][1]
+
+    if PT[1] == "register" and SOP[1].upper() != "CL":
+        return {"error" : {
+            "popup" : "incorrect_param_bit_movement",
+            "line" : kwargs["line"] + 1,
+            "source_error" : None
+        }}
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -482,7 +497,7 @@ def RCR(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT, DST)
+    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [

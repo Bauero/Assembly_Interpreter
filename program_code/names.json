@@ -20,6 +20,11 @@
         "segment_col" :  ["Addr.", "Binary num.", "Dec."],
         "variables_col" : ["Name","Addr.", "Size", "Format", "Content"],
         "line" : "Line",
+        "param_memory" : "memory",
+        "param_register" : "register",
+        "param_value" : "value",
+        "connector" : " and ",
+        "no_params" : "no params",
         
         "AX_hint" : "<b>General purpose register</b> used also for performing arithmetic equations and calling interruptions",
         "BX_hint" : "<b>General purpose register</b> used for accessing memory",
@@ -130,6 +135,11 @@
         "segment_col" :  ["Adr.", "Licz. Bin.", "Dec."],
         "variables_col" : ["Nazwa","Adr.", "Rozm.", "Format", "Zawartość"],
         "line" : "Linia",
+        "param_memory" : "pamięć",
+        "param_register" : "rejestr",
+        "param_value" : "wartość",
+        "connector" : " i ",
+        "no_params" : "brak parametrów",
         
         "AX_hint" : "<b>Rejestr ogólnego przeznaczenia</b> używany zwłaszcza przy działaniach arytmetycznych i przechowywyjący parametr oznaczający typ przerwań systemowych",
         "BX_hint" : "<b>Rejestr ogólnego przeznaczenia</b> używany zwłaszcza przy dostępie do pamięci",
