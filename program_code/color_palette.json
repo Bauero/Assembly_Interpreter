@@ -1,0 +1,14 @@
+{
+    "dark_mode" : {
+        "start_stop_button_running" : "#78DB01",
+        "start_stop_button_stopped" : "#F1CA17",
+        "multipurpose_registers" : "#3099FF",
+        "functional_registers" : "orange",
+        "instruction_pointer" : "#CC3F0C",
+        "flags_section" : "#30BB73",
+        "hints" : "#EEEEEE",
+        "line_highlight" : "#0000FF",
+        "code_text" : "#FFFFFF",
+        "change_highlight" : [255, 255, 0, 83]
+    }
+}
