@@ -447,13 +447,12 @@ ret
 ;equation wpisywane przez uzytkownika
 instr dw 25
       dw 0
-      ;times 26 dw "$"
-      dw 26 DUP ($)
+      times 26 dw "$"
       
 ;total dzialania naszego programu
 total dw 30
       dw 0
-      dw 31 DUP ($)
+      times 31 dw "$"
 
 ;przechowywanie levelu zagniezdzenia nawiasow
 level db 0

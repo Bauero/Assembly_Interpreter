@@ -18,8 +18,8 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,QApplication)
 import json
 
-with open('program_code/color_palette.json') as f:  colors = json.load(f)
-with open('program_code/names.json') as f:
+with open('program_code/configs/color_palette.json') as f:  colors = json.load(f)
+with open('program_code/configs/names.json') as f:
     all_conumicates = json.load(f)
     supported_languages = all_conumicates["supported_languages"]
     lang_names_each_other = all_conumicates["lang_names_each_other"]

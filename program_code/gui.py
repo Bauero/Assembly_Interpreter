@@ -17,8 +17,8 @@ from .code_handler import CodeHandler
 from .custom_message_boxes import show_custom_popup
 from screeninfo import get_monitors
 
-with open('program_code/color_palette.json') as f:  colors = json.load(f)
-with open('program_code/names.json') as f:
+with open('program_code/configs/color_palette.json') as f:  colors = json.load(f)
+with open('program_code/configs/names.json') as f:
     all_conumicates = json.load(f)
     supported_languages = all_conumicates["supported_languages"]
     lang_names_each_other = all_conumicates["lang_names_each_other"]
@@ -465,9 +465,9 @@ class MainWindow(QWidget):
                     self._act_on_response(response)
             case 'previous_instruction':
                 response = self.code_handler.executeCommand('previous_instruction')
-                self._act_on_response(response)
                 self.instructionCounter -= 1
                 if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
+                self._act_on_response(response)
 
     @pyqtSlot()
     def _act_on_response(self, response : dict):
@@ -507,7 +507,7 @@ class MainWindow(QWidget):
                 self._refresh()
                 self.code_field.setHighlight([])
                 self.nextLineButton.setDisabled(True)
-                self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+                self.startExecutionButton.setText(self.names_lang["start_stop_1"])
                 self.startExecutionButton.setStyleSheet(
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
@@ -519,7 +519,7 @@ class MainWindow(QWidget):
                 self._show_popup(response["warning"])
                 self.code_field.setHighlight([])
                 self.nextLineButton.setDisabled(True)
-                self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+                self.startExecutionButton.setText(self.names_lang["start_stop_1"])
                 self.startExecutionButton.setStyleSheet(
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
@@ -610,12 +610,12 @@ class MainWindow(QWidget):
             self.open_session_button.setText(self.names_lang["interactive"])
             
             # Welcome Screen - Toggle Language
+            self.toggle_language.blockSignals(True)
+            self.toggle_language.clear()
             lang_list = []
             for name in lang_names_each_other[self.language]:
                 lang_list.append(lang_names_each_other[self.language][name])
-            self.toggle_language.addItems(lang_names_each_other[self.language])
-            self.toggle_language.blockSignals(True)
-            self.toggle_language.clear()
+            self.toggle_language.addItems(lang_list)
             self.toggle_language.setCurrentIndex(option)
             self.toggle_language.blockSignals(False)
             self.load_file_button.setFocus()

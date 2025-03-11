@@ -261,7 +261,7 @@ class Engine():
         else:
             if tmp:         elements.append(tmp)
 
-        response = self._define_arg_types_and_value(self, elements)
+        response = self._define_arg_types_and_value(elements)
         if response == None:
             return self._gen_err("unrecognized_elem_mem_call")
         else:
@@ -330,7 +330,7 @@ class Engine():
         """It is allowed to have values which - in general - are known at assembly
         time"""
 
-        response = self._define_arg_types_and_value(self, elements)
+        response = self._define_arg_types_and_value(elements)
         
         if response == None:
             return self._gen_err("unrecognized_value_compl_val")

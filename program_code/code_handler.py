@@ -184,11 +184,13 @@ class CodeHandler():
                 lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
                 self.currentlyExecutedLine[self.currentlyExecutedFile] = [next_line, lines_in_source_file]
                 output["highlight"] = lines_in_source_file
+                output["status"] = 0
             else:
                 self.history.add_new_instruction(curr_line, output, "")
                 self.engine.HR.writeIntoRegister("IP", 0)
                 self.currentlyExecutedLine[self.currentlyExecutedFile] = ["", ""]
                 output["highlight"] = []
+                output["status"] = -1
             
             return output
 

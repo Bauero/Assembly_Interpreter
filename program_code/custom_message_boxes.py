@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMessageBox
 import json
 
-with open('program_code/names.json') as f:
+with open('program_code/configs/names.json') as f:
     all_conumicates = json.load(f)
     supported_languages = all_conumicates["supported_languages"]
     lang_names_each_other = all_conumicates["lang_names_each_other"]
