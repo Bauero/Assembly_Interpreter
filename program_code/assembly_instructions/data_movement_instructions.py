@@ -14,7 +14,7 @@ def MOV(**kwargs):
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
-    v = kwargs['args_values_raw'][1]
+    v = kwargs['args_values_int'][1]
     
     output = list(convert_number_to_bit_list(v, FS))
     m = save_value_in_destination(HR, DS, VAR, output, PT, DST)

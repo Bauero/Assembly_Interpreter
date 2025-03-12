@@ -80,6 +80,7 @@ class Engine():
         for i, arg in enumerate(args_types):
             if arg == "complex value":      args_types[i] = "value"
             elif arg == "memory call":      args_types[i] = "memory"
+            elif arg == "text":             args_types[i] = "value"
 
         final_standardized_sizes = self._standardise_sizes_check_if_legal(args_types, 
                                                                           final_sizes, 
@@ -183,13 +184,15 @@ class Engine():
 
         for arg in list_of_arguments:
             contain_arithm = any(filter(is_arithmetic, arg))
-            contain_brack = any(filter(is_rect_bracket, arg)) 
+            contain_brack = any(filter(is_rect_bracket, arg))
             if contain_brack:
                 types_of_args.append("memory call")
             elif contain_arithm:
                 types_of_args.append("complex value")
             elif arg in self.variables:
                 types_of_args.append("complex value")
+            elif is_valid_text(arg):
+                types_of_args.append("text")
             elif arg in self.labels:
                 types_of_args.append('label')
             elif arg.upper() in self.HR.listRegisters():
@@ -419,6 +422,18 @@ class Engine():
                     source_values.append(data_in_bits_str + "b")
                     conv_data = int(data_in_bits_str, 2)
                     converted_values.append(conv_data)
+                case "text":
+                    arg = arg[1:-1]
+                    no_bytes = (len(arg))
+                    if no_bytes > 2: self.warnings.append(self._gen_warn("value_exceeds_bound"))
+                    no_bytes = min(2, len(arg))
+                    source_values.append(arg)
+                    conv_bytes = [hex(ord(b))[2:].zfill(2) for b in  arg][:no_bytes]
+                    conv_bytes.reverse()
+                    hex_no = "".join(conv_bytes)
+                    value = int("0x" + hex_no, 16)
+                    converted_values.append(value)
+                    final_sizes.append(no_bytes * 8)
             if len(source_values) == 1:
                 destination = arg
                 if atype == "memory call":
@@ -466,7 +481,7 @@ class Engine():
                 reg_det_size = sizes[1]
 
                 if reg_exp_size and reg_exp_size < reg_det_size:
-                    self.warnings.append("explicite_size_ignored")
+                    self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 final_reg_size = max(reg_exp_size, reg_det_size) if reg_exp_size else reg_det_size
 
@@ -486,10 +501,13 @@ class Engine():
 
                 if (reg_exp_size and reg_exp_size < reg_det_size) or \
                     (reg_det_size < var_det_size):
-                    self.warnings.append("explicite_size_ignored")
+                    self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if var_exp_size and reg_det_size > var_exp_size:
                     return self._gen_err("explicite_sizes_mismatch")
+                
+                if max(var_exp_size or 0, var_det_size or 0) > reg_det_size:
+                    self.warnings.append(self._gen_warn("value_exceeds_bound"))
 
                 return reg_det_size
             
@@ -503,7 +521,7 @@ class Engine():
                 mem_det_size = sizes[1]
                 
                 if reg_exp_size and reg_det_size != reg_exp_size:
-                    self.warnings.append("explicite_size_ignored")
+                    self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if mem_exp_size and reg_det_size != mem_exp_size:
                     return self._gen_err("explicite_sizes_mismatch")
@@ -540,7 +558,7 @@ class Engine():
                 reg_det_size = sizes[0]
 
                 if reg_exp_size and reg_det_size != reg_exp_size:
-                    self.warnings.append("explicite_size_ignored")
+                    self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 return reg_det_size
 
@@ -579,3 +597,18 @@ class Engine():
             "values" : values,
             "source_error" : exc
         }}
+    
+    def _gen_warn(self, 
+                 name : str, 
+                 param_no : int | None = None, 
+                 params : list | None = None,
+                 values : str | None = None,
+                 exc : Exception | None = None) -> dict:
+        return {
+            "popup" : name,
+            "line" : self.curr_line + 1,
+            "param_no" : param_no,
+            "params" : params,
+            "values" : values,
+            "source_error" : exc
+        }

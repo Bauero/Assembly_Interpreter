@@ -146,6 +146,8 @@ class CodeHandler():
 
         if already_executed:
             next_line, change = already_executed
+            if next_line == None:
+                return {"status" : -1, "highlight" : []}
             self.engine.load_new_state_after_change(change, forward = True)
             self.engine.HR.writeIntoRegister("IP", next_line)
             lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
@@ -168,7 +170,7 @@ class CodeHandler():
             else:
                 if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
                     next_line = curr_line + 1
-                    output["status"] = 0
+                    output["status"] = 0 if not output.get("warnings") else 2
                 else:
                     next_line = -1
                     exec_with_warnings = bool(output.get("warnings"))
@@ -184,13 +186,11 @@ class CodeHandler():
                 lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
                 self.currentlyExecutedLine[self.currentlyExecutedFile] = [next_line, lines_in_source_file]
                 output["highlight"] = lines_in_source_file
-                output["status"] = 0
             else:
-                self.history.add_new_instruction(curr_line, output, "")
+                self.history.add_new_instruction(curr_line, output, None)
                 self.engine.HR.writeIntoRegister("IP", 0)
-                self.currentlyExecutedLine[self.currentlyExecutedFile] = ["", ""]
+                self.currentlyExecutedLine[self.currentlyExecutedFile] = [None, None]
                 output["highlight"] = []
-                output["status"] = -1
             
             return output
 
@@ -253,6 +253,10 @@ class CodeHandler():
             HR, FR, DS, VAR, path_to_file, raw_file, \
                 preprocessed_instructions = output
 
+            self.engine.HR = HR
+            self.engine.FR = FR
+            self.engine.DS = DS
+            self.engine.variables = VAR
             self.pass_variable_to_engine(preprocessed_instructions)
             self.rawfiles[path_to_file] = raw_file
             self.currentlyExecutedFile = path_to_file

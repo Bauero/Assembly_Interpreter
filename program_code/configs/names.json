@@ -89,6 +89,7 @@
             "two_reg_same_type" : "Oba rejestry tego samego typu",
             "wrong_first_reg" : "Niepoprawny pierwszy rejestr",
             "cant_use_sp" : "Nie można użyć SP",
+            "value_too_big" : "Wartość za duża",
             
             "only_1_0_allowed" : "Wprowadź poprawny number binary - składający się z 1 i 0",
             "value_0_255" : "Wartość poza zakresem 0 - 255",
@@ -123,7 +124,8 @@
             "param_comb_not_all" : "To połączenie parametrów jest niedopuszczalne dla tej instrukcji",
             "ret_same_type" : "W odwołaniu do pamięci, oba rejestry są tego samego typu, co jest zabronione",
             "first_reg_bx" : "Przy odwołaniu do pamięci, przy użyciu dwóch rejestrów, rejestr BX musi być pierwszym w odwołaniu",
-            "sp_not_callable" : "Zabronione jest wykorzystanie SP jako rejestru z wartością przy odwołaniach do pamięci"
+            "sp_not_callable" : "Zabronione jest wykorzystanie SP jako rejestru z wartością przy odwołaniach do pamięci",
+            "val_exceeds_bounds" : "Podana wartość przekracza rozmiar docelowy. Wszystkie znaki które nie zmieszczą się zostana pominięte"
         },
         "EN": {
             "window_title" : "16 bit Assembly Interpreter",
@@ -204,6 +206,7 @@
             "two_reg_same_type" : "Both registers of one type",
             "wrong_first_reg" : "Incorrect first register",
             "cant_use_sp" : "Cannot use SP",
+            "value_too_big" : "Value too big",
             
             "only_1_0_allowed" : "Enter valid binary number - only 1's and 0's",
             "value_0_255" : "Value outside range 0 - 255",
@@ -237,7 +240,8 @@
             "param_comb_not_all" : "This param combination is not allowed for this instruction",
             "ret_same_type" : "In memory call, both registers are the same type - use different types.",
             "first_reg_bx" : "In memory call, first register must be BX",
-            "sp_not_callable" : "It's forbidden to use SP in direct memory call"
+            "sp_not_callable" : "It's forbidden to use SP in direct memory call",
+            "val_exceeds_bounds" : "Provided text value is too big, and exceeds destinaiton size. All chars above those which would fit will be ignored"
         }
     }
 }

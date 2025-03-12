@@ -24,6 +24,7 @@ def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     assembly_code = _divideCodeToSection(assembly_code)
     assembly_code = _replaceEquateValues(assembly_code)
     assembly_code = _replaceTimesValues(assembly_code)
+    # assembly_code = _replaceCharWithInt(assembly_code)
     # assembly_code = _replaceDUPValues(assembly_code)
     # assembly_code = _wrapMultiLineData(assembly_code)
     assembly_code = _storeVariablesInData(assembly_code)
@@ -155,39 +156,6 @@ def _replaceEquateValues(assembly_code : list):
 
     return assembly_code
 
-def _replaceDUPValues(assembly_code : list):
-    """
-    Within .data section it is possible to define variable with 'DUP' directive which 
-    will duplicate value provided within paranthesis:
-
-    EX.
-
-    10 DUP (*) -> **********
-    """
-
-    #   Filter values like "number DUP (some_value)"
-    pattern = r"\b\d+\s+[dD][uU][pP]\s*\(\s*([\da-fA-F]+|\?|[a-zA-Z]|\W)\s*\)"
-    
-    #   Filter all rows with data
-    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
-
-    for id in data_rows:
-        
-        content = assembly_code['lines'][id]['content']
-        matched = re.search(pattern, content)
-        
-        if matched:
-        
-            start   = matched.start()
-            end     = matched.end()
-            value   = matched.group()
-
-            repeat, _, what = value.split(" ")
-            new_line_part = "".join((what[1:-1] for _ in range(int(repeat))))
-            assembly_code['lines'][id]['content'] = content[:start] + new_line_part + content[end:]
-
-    return assembly_code
-
 def _replaceTimesValues(assembly_code : list):
     """This funciton replaces values which are multiplied using `times` directive.
     ```
@@ -220,6 +188,44 @@ def _replaceTimesValues(assembly_code : list):
 
     return assembly_code
 
+def _replaceCharWithInt(assembly_code : list):
+    """This function parses values in code, and substitues each """
+    
+    
+    ...
+
+def _replaceDUPValues(assembly_code : list):
+    """
+    Within .data section it is possible to define variable with 'DUP' directive which 
+    will duplicate value provided within paranthesis:
+
+    EX.
+
+    10 DUP (*) -> **********
+    """
+
+    #   Filter values like "number DUP (some_value)"
+    pattern = r"\b\d+\s+[dD][uU][pP]\s*\(\s*([\da-fA-F]+|\?|[a-zA-Z]|\W)\s*\)"
+    
+    #   Filter all rows with data
+    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
+
+    for id in data_rows:
+        
+        content = assembly_code['lines'][id]['content']
+        matched = re.search(pattern, content)
+        
+        if matched:
+        
+            start   = matched.start()
+            end     = matched.end()
+            value   = matched.group()
+
+            repeat, _, what = value.split(" ")
+            new_line_part = "".join((what[1:-1] for _ in range(int(repeat))))
+            assembly_code['lines'][id]['content'] = content[:start] + new_line_part + content[end:]
+
+    return assembly_code
 
 def _wrapMultiLineData(assembly_code : list):
     """

@@ -22,6 +22,10 @@ def is_special_first(char):         return char in ['_', '@']
 def is_rect_bracket(char):          return char in ['[', ']']
 def is_arithmetic(char):            return char in ['+', '-', '/', '*']
 def is_allowed_arithmetic(char):    return char in ['+', '*']
+def is_valid_text(text):
+    pattern = r"^(['\"])(?:\\.|(?!\1).)*\1$"
+    output = re.match(pattern, text)
+    return output != None
 
 def is_allowed_var_name(char, count):
     if count == 0:
@@ -31,7 +35,7 @@ def is_allowed_var_name(char, count):
 
 def return_if_base_16_value(element : str) -> None | str:
     """Returns value if is a base 16 number, otherwise None"""
-    if re.search(r"\b(0[xX][0-9a-fA-F]+|[0-9a-fA-F]+h)\b", element):
+    if re.search(r"\b-?(0[xX][0-9a-fA-F]+|[0-9][0-9a-fA-F]*h)\b", element):
         if element.endswith('h'):
             negative = element.startswith("-")
             if negative:    element = element[1:]
@@ -41,17 +45,17 @@ def return_if_base_16_value(element : str) -> None | str:
     
 def return_if_base_10_value(element : str) -> None | str:    
     """Return value if is a base 10 number, otherwise None"""
-    if re.search(r"\b(0|[1-9][0-9]*)\b", element):
+    if re.search(r"\b-?[0-9]+d?\b", element):
         return element
 
 def return_if_base_8_value(element : str) -> None | str:    
     """Return value if is a base 8 number, otherwise None"""
-    if re.search(r"\b(0|[1-9][0-9]*)\b", element):
+    if re.search(r"^(0[oO][0-7]+|[0-7]+[oOqQ])$", element):
         return element
     
 def return_if_base_2_value(element : str) -> None | str:
     """Return value if is a base 2 number, otherwise None"""
-    if re.search(r"\b[01]+[bB]\b", element):
+    if re.search(r"\b-?[01]+[bB]\b", element):
         element = '0b' + element[:-1]
         return element
 

@@ -468,6 +468,7 @@ class MainWindow(QWidget):
                 self.instructionCounter -= 1
                 if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
                 self._act_on_response(response)
+                self.nextLineButton.setDisabled(False)
 
     @pyqtSlot()
     def _act_on_response(self, response : dict):
@@ -475,11 +476,13 @@ class MainWindow(QWidget):
         This funciton is suppose to handle answers from CodeHandler - when we request to
         perform some action with code, CodeHandler, tries to do it using Engine, and 
         returns status of this action
+        ```
         -   0 = success
         -   1 = defined error
         -   2 = success, with warnings
         -  -1 = finish execution
         - -12 = finish execution, with warnings
+        ```
         Response is returned in form of dictionary which contains mandatory filed - "status"
         """
 
@@ -499,7 +502,7 @@ class MainWindow(QWidget):
             case 2:
                 timer_active = self.internal_timer.isActive()
                 if timer_active:    self.internal_timer.stop()
-                self._show_popup(response["warning"])
+                for warn in response.get("warnings"):    self._show_popup(warn)
                 if timer_active:    self.internal_timer.start()
 
             case -1:
@@ -516,7 +519,7 @@ class MainWindow(QWidget):
             
             case -12:
                 if timer_active:    self.internal_timer.stop()
-                self._show_popup(response["warning"])
+                for warn in response.get("warnings"):    self._show_popup(warn)
                 self.code_field.setHighlight([])
                 self.nextLineButton.setDisabled(True)
                 self.startExecutionButton.setText(self.names_lang["start_stop_1"])
