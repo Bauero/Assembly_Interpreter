@@ -8,7 +8,7 @@ from .hardware_memory import DataSegment
 from .flag_register import FlagRegister
 from .helper_functions import return_name_from_size, color_txt
 from .custom_message_boxes import show_custom_popup
-from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal
+from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal, QEventLoop
 from PyQt6.QtGui import (
     QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette,
     QKeyEvent)
@@ -18,8 +18,8 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,QApplication)
 import json
 
-with open('program_code/color_palette.json') as f:  colors = json.load(f)
-with open('program_code/names.json') as f:
+with open('program_code/configs/color_palette.json') as f:  colors = json.load(f)
+with open('program_code/configs/names.json') as f:
     all_conumicates = json.load(f)
     supported_languages = all_conumicates["supported_languages"]
     lang_names_each_other = all_conumicates["lang_names_each_other"]
@@ -445,16 +445,21 @@ class CodeEditor(QPlainTextEdit):
         width = self.number_area_width
         self.lineNumberArea.setGeometry(QRect(left, top, width, height))
 
-    def setHighlight(self, line_numbers,
+    def setHighlight(self, line_numbers : list | None,
                      background_color : str | None = "", 
                      text_color : str | None = ""
                      ):
         """
         Podświetla wybrane linie i przewija widok, aby podświetlona linia była na ekranie.
         """
+        extraSelections = []
+
+        if not line_numbers:
+            self.highlighted_lines = line_numbers
+            self.setExtraSelections(extraSelections)
+
         if not background_color:    background_color = colors[self.theme]["line_highlight"]
         if not text_color:  text_color = colors[self.theme]["code_text"]
-        extraSelections = []
 
         for line_number in line_numbers:
             if line_number <= 0:    continue
@@ -880,59 +885,119 @@ class VariableTable(QTableWidget):
 
 
 class LimitedInputTextEdit(QTextEdit):
-    """SubClass of Terminal"""
-    
     inputFinished = pyqtSignal(str)
 
-    def __init__(self, char_limit = 1000):
+    def __init__(self, char_limit):
         super().__init__()
         self.char_limit = char_limit
-        self.current_input = ""
+        self.current_input = 0
+        self.is_editable = True  # Flag to track editability
+        self.input_mode = False  # Whether we are in controlled input mode
+        self.max_input_chars = 0  # Maximum allowed input chars in input mode
+        self.start_input_position = 0  # Cursor position when input mode starts
         self.setUndoRedoEnabled(False)
         self.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
 
-    def keyPressEvent(self, event: QKeyEvent):
-        key = event.key()
-        
-        if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
-            self.append("")
-            self.inputFinished.emit(self.current_input)
-            self.current_input = ""
-            return
-        elif key == Qt.Key.Key_Backspace:
-            if len(self.current_input) > 0:
-                self.current_input = self.current_input[:-1]
-                self.textCursor().deletePreviousChar()
-            return
-        elif event.text() and len(self.current_input) < self.char_limit:
-            self.current_input += event.text()
-            self.insertPlainText(event.text())
+    def keyPressEvent(self, event):
+        """Handle key events with input restrictions."""
+        if not self.is_editable:
+            return  # Ignore all key presses when read-only
 
-    def reset_char_limit(self):     self.char_limit = 1000
+        key = event.key()
+
+        if self.input_mode:
+            if key == Qt.Key.Key_Return or key == Qt.Key.Key_Enter:
+                self.input_mode = False
+                new_text = self.toPlainText()[self.start_input_position:]
+                self.inputFinished.emit(new_text)
+
+                if self.event_loop:
+                    self.event_loop.quit()
+
+                return  # Prevent Enter from inserting new lines
+
+            elif key == Qt.Key.Key_Backspace:
+                cursor = self.textCursor()
+                if cursor.position() <= self.start_input_position:
+                    return  # Prevent deletion of existing text
+                else:
+                    self.current_input -= 1
+                    cursor.deletePreviousChar()
+                return
+
+            elif event.text():
+                if self.current_input < self.max_input_chars:
+                    self.current_input += 1
+                    self.insertPlainText(event.text())  # Only insert if within limit
+                return  # Prevent default behavior
+        
+        super().keyPressEvent(event)
+
+    def request_input(self, max_chars: int) -> str:
+        """Enable limited input mode and block execution until input is received."""
+        self.input_mode = True
+        self.max_input_chars = max_chars
+        self.current_input = 0
+        self.start_input_position = len(self.toPlainText())  
+
+        self.event_loop = QEventLoop()
+        self.event_loop.exec()
+
+        return self.toPlainText()[-self.current_input:]
+
+    def setEditable(self, editable: bool):
+        """Enable or disable user input."""
+        self.is_editable = editable
+        self.setReadOnly(not editable)
+
+    def write_at_position(self, line: int, column: int, text: str):
+        """Write text at a specific (line, column) position."""
+        cursor = self.textCursor()
+        doc = self.document()
+
+        while doc.blockCount() <= line:
+            self.append("")
+
+        block = doc.findBlockByNumber(line)
+        cursor.setPosition(block.position())
+
+        for _ in range(column):
+            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
+
+        cursor.insertText(text)
 
 
 class Terminal(QWidget):
-    """This class represents terminal"""
-    
     def __init__(self):
         super().__init__()
-
         layout = QVBoxLayout()
-
-        self.terminal = LimitedInputTextEdit(20)  # Limit to 20 chars
+        self.terminal = LimitedInputTextEdit(1000)
         self.terminal.setFont(font_15)
         self.terminal.setMinimumHeight(100)
-
-        self.terminal.inputFinished.connect(self.handle_input)
-
         layout.addWidget(self.terminal)
         self.setLayout(layout)
 
-    def handle_input(self, user_input: str):
-        """Handle input when user presses Enter."""
-        print(f"User input: {user_input}")
-
-    def write_char(self, char: int):
+    def write_char(self, char : int):
         """Write characters to terminal programmatically."""
         text = self.terminal.toPlainText()
         self.terminal.setPlainText(text + chr(char))
+
+    def write_string(self, string : str):
+        """Allow to write value to terminal"""
+        text = self.terminal.toPlainText()
+        self.terminal.setPlainText(text + string)
+
+    def setEditable(self, editable: bool):
+        """Toggle editability of the terminal."""
+        self.terminal.setEditable(editable)
+    
+    def request_user_input(self, max_chars: int):
+        """Trigger user input request with character limit."""
+        self.terminal.setEditable(True)
+        output = self.terminal.request_input(max_chars)
+        self.terminal.setEditable(False)
+        return output
+    
+    def clear(self):
+        """Remove all chars from terminal"""
+        self.terminal.setText("")

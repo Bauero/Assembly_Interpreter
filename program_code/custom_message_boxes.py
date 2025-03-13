@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QMessageBox
 import json
 
-with open('program_code/names.json') as f:
+with open('program_code/configs/names.json') as f:
     all_conumicates = json.load(f)
     supported_languages = all_conumicates["supported_languages"]
     lang_names_each_other = all_conumicates["lang_names_each_other"]
@@ -276,6 +276,15 @@ def _explicite_sizes_mismatch(**kwargs):
     msg.setIcon(QMessageBox.Icon.Critical)
     msg.setWindowTitle(names[language]["expli_size_diff"])
     msg.setText(names[language]["expli_size_mimatch"])
+    return msg.exec()
+
+def _value_exceeds_bound(**kwargs):
+    """Defined value is too big for the destination - aditional values are ignored"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_too_big"])
+    msg.setText(names[language]["val_exceeds_bounds"])
     return msg.exec()
 
 def _explicite_size_ignored(**kwargs):

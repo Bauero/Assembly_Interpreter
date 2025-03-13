@@ -99,7 +99,24 @@ class ImproperJumpMarker (DetailedException):
         return self.__str__()
     
     def line(self):     return self._line_number
+    def message(self):  return self._message
 
+
+class ImproperVariableName (DetailedException):
+    """
+    This error is generated when a variable with improper name is declared
+    """
+    def __init__(self, number : int | None = None, message : str = ""):
+        self._message = message
+        self._line_number = number
+
+    def __str__(self):
+        return str(self._line_number) + self._message
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def line(self):     return self._line_number
     def message(self):  return self._message
 
 
@@ -134,7 +151,6 @@ class FileTypeNotAllowed (Exception):
         self.allowed = allowed
     def __str__(self):
         return f"extension {self.message} not allowed - allowed extnsions: {self.allowed}"
-    
 
 
 ################################################################################

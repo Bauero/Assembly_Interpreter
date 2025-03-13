@@ -41,7 +41,7 @@ class DataSegment:
         return starting_byte
 
     def get_data(self, starting_byte = 0, no_of_bytes = 1):
-        """Returns data in form of list with numbers representin values of successive bytes"""
+        """Returns data in form of list with numbers representing values of successive bytes"""
         
         try:
             start = starting_byte
@@ -54,3 +54,7 @@ class DataSegment:
         """Returns data in form of string with 1's or 0's - represents raw binary data"""
         
         return "".join(bin(c)[2:] for c in self.get_data(starting_byte, no_of_bytes))
+    
+    def reset(self):
+        self.data = array('B', (0 for _ in range(2**16)))
+        self.byte_counter = 0

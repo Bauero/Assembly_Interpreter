@@ -42,9 +42,7 @@ class HardwareRegisters():
         }
 
         self._regList = list(self._listOfRegisters.keys())
-        self.cleanAllRegisters()
-        self.writeIntoRegister("SP", 2**16-1)
-        self.writeIntoRegister("BP", 2**16-1)
+        self.reset()
 
     def writeIntoRegister(self, register, value):
         """This method inputs value into register bit by bit"""
@@ -126,3 +124,10 @@ class HardwareRegisters():
                 case "H":   return "multipurpose"
                 case "L":   return "multipurpose"
                 case _:     return ""
+
+    def reset(self):
+        """Set HardwareRegister to values at init"""
+
+        self.cleanAllRegisters()
+        self.writeIntoRegister("SP", 2**16-1)
+        self.writeIntoRegister("BP", 2**16-1)

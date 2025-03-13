@@ -14,10 +14,10 @@ class History():
     programm running, which allows for clean acces from the main program
     """
 
-    def __init__(self, path_to_file, raw_file, preprocessed_instructions):
+    def __init__(self, path_to_file, raw_file, preprocessed_instrucitons):
         self._path_to_file = path_to_file
         self._raw_file = raw_file
-        self._preprocessed_instructions = preprocessed_instructions
+        self._preprocessed_instrucitons = preprocessed_instrucitons
         self._history = []
         self._current_instruction = -1
 
@@ -77,7 +77,7 @@ class History():
 
         return_all =  (self.HR, self.FR, self.data, self.variables,
                         self._path_to_file, self._raw_file, 
-                        self._preprocessed_instructions)
+                        self._preprocessed_instrucitons)
 
         del self.HR
         del self.FR

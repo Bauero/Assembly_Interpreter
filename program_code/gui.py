@@ -17,8 +17,8 @@ from .code_handler import CodeHandler
 from .custom_message_boxes import show_custom_popup
 from screeninfo import get_monitors
 
-with open('program_code/color_palette.json') as f:  colors = json.load(f)
-with open('program_code/names.json') as f:
+with open('program_code/configs/color_palette.json') as f:  colors = json.load(f)
+with open('program_code/configs/names.json') as f:
     all_conumicates = json.load(f)
     supported_languages = all_conumicates["supported_languages"]
     lang_names_each_other = all_conumicates["lang_names_each_other"]
@@ -44,6 +44,7 @@ class MainWindow(QWidget):
         self.code_handler = code_handler
         self.interactive_mode = False
         self.program_running = False
+        self.program_finished = False
         self.internal_timer = QTimer()
         self.timer_interval = 1000
         self.internal_timer.setInterval(self.timer_interval)
@@ -270,6 +271,7 @@ class MainWindow(QWidget):
         self.terminal_label.setFont(font_bold_15)
 
         self.terminal = Terminal()
+        self.terminal.setEditable(False)
         self.terminal_layout.addWidget(self.terminal_label)
         self.terminal_layout.addWidget(self.terminal)
         self.terminal_widget.setLayout(self.terminal_layout)
@@ -307,12 +309,13 @@ class MainWindow(QWidget):
         self.registers_label.setDisabled(False)
         self.terminal_label.setVisible(True)
         self.terminal_label.setEnabled(True)
+        
 
     @pyqtSlot()
-    def _set_interactive_mode(self, interactive_active : bool = False):
+    def _set_interactive_mode(self):
         for element in self.register_section_elements:
             setattr(self, element.get_name(), element)
-            element.set_interactive(interactive_active)
+            element.set_interactive(self.interactive_mode)
 
     @pyqtSlot()
     def on_frequency_change(self):
@@ -372,12 +375,12 @@ class MainWindow(QWidget):
             except ImproperDataDefiniton as e:
                 ans = self._show_popup({"popup" : "data_section_error"})
                 if ans == 2:
-                    self._load_file(file_path, ignore_size_limit, ignore_file_type, e)
+                    self._load_file_to_interactive(file_path)
                 return
             except ImproperJumpMarker as e:
                 ans = self._show_popup({"popup" : "improper_label_error"})
                 if ans == 2:
-                    self._load_file(file_path, ignore_size_limit, ignore_file_type, e)
+                    self._load_file_to_interactive(file_path)
                 return
             except Exception as e:
                 ans = self._show_popup({"popup" : "unrecognized_error_popup",
@@ -394,18 +397,31 @@ class MainWindow(QWidget):
         self.nextLineButton.setFocus()
 
     @pyqtSlot()
-    def _load_file(self, file_path : str, ignore_size_limit : bool,
-                           ignore_file_type : bool, e : Exception):
-        raw_file = loadFileFromPath(file_path, ignore_size_limit, ignore_file_type)
-        assert type(raw_file) == str
+    def _load_file_to_interactive(self, file_path : str):
+        start, raw_file = self.code_handler.load_file_interactive(file_path)
         self.code_field.setText("".join(raw_file))
-        self.code_field.setHighlight([e.line()], background_color=Qt.GlobalColor.red)
+        self.code_field.setHighlight([start])
         self._open_interactive_mode()
+
+    def _highlight_problematic_line(self, lines : list):
+        self.code_field.setHighlight(lines,
+                                     colors[self.theme]["error_in_line"])
 
     @pyqtSlot()
     def _open_interactive_mode(self):
-        self._set_interactive_mode(True)
-        self.pagesStack.setCurrentIndex(1)
+        self.welcomeScreen.close()
+        self.stackSection.generate_table()
+        self.variableSection.generate_table()
+        self.programScreen.showMaximized()
+        
+        self._set_active_state(False)
+        self.interactive_mode = True
+        self._set_interactive_mode()
+        
+        self.code_field.setEnabled(True)
+        self.code_field.setFocus()
+        self.code_field.setEditable(True)
+        self.code_field.setText('')
 
     @pyqtSlot()
     def _toggle_automatic_execution(self):
@@ -413,7 +429,8 @@ class MainWindow(QWidget):
     
     @pyqtSlot()
     def _run_next_instruction_or_stop(self):
-        if self.program_running and self.startAutoExecCheckbox.isChecked():
+        if self.program_running and self.startAutoExecCheckbox.isChecked() and \
+            not self.program_finished:
             self._executeCommand("next_instruction")
             self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
 
@@ -423,23 +440,13 @@ class MainWindow(QWidget):
         match command:
             case 'start_stop':
                 if self.program_running:
-                    self._set_active_state(False)
-                    self.nextLineButton.setEnabled(False)
-                    self.previousLineButton.setEnabled(False)
-                    self.startExecutionButton.setText(self.names_lang["start_stop_1"])
-                    self.startExecutionButton.setStyleSheet(
-                        f'color: {colors[self.theme]["start_stop_button_running"]};')
+                    self._suspend_program()
                 else:
-                    self.nextLineButton.setEnabled(True)
-                    self._set_active_state(True)
-                    if self.instructionCounter > 0:
-                        self.previousLineButton.setEnabled(True)
-                    self.startExecutionButton.setText(self.names_lang["start_stop_2"])
-                    self.startExecutionButton.setStyleSheet(
-                        f'color: {colors[self.theme]["start_stop_button_stopped"]};')
+                    self._start_program()
                 self.program_running = not self.program_running
                 if self.startAutoExecCheckbox.isChecked():
-                    self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
+                    self.internal_timer.singleShot(self.timer_interval,
+                                                   self._run_next_instruction_or_stop)
             case 'next_instruction':
                 try:
                     response = self.code_handler.executeCommand('next_instruction')
@@ -459,10 +466,14 @@ class MainWindow(QWidget):
                     }
                     self._act_on_response(response)
             case 'previous_instruction':
+                if not self.program_running:
+                    self.program_running= True
+                    self._set_active_state(True)
                 response = self.code_handler.executeCommand('previous_instruction')
-                self._act_on_response(response)
                 self.instructionCounter -= 1
                 if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
+                self._act_on_response(response)
+                self.nextLineButton.setDisabled(False)
 
     @pyqtSlot()
     def _act_on_response(self, response : dict):
@@ -470,11 +481,13 @@ class MainWindow(QWidget):
         This funciton is suppose to handle answers from CodeHandler - when we request to
         perform some action with code, CodeHandler, tries to do it using Engine, and 
         returns status of this action
+        ```
         -   0 = success
         -   1 = defined error
         -   2 = success, with warnings
         -  -1 = finish execution
         - -12 = finish execution, with warnings
+        ```
         Response is returned in form of dictionary which contains mandatory filed - "status"
         """
 
@@ -494,28 +507,32 @@ class MainWindow(QWidget):
             case 2:
                 timer_active = self.internal_timer.isActive()
                 if timer_active:    self.internal_timer.stop()
-                self._show_popup(response["warning"])
+                for warn in response.get("warnings"):    self._show_popup(warn)
                 if timer_active:    self.internal_timer.start()
 
             case -1:
                 self.internal_timer.stop()
+                self._refresh()
                 self.code_field.setHighlight([])
                 self.nextLineButton.setDisabled(True)
-                self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+                self.startExecutionButton.setText(self.names_lang["start_stop_1"])
                 self.startExecutionButton.setStyleSheet(
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
+                self.program_finished = True
                 return
             
             case -12:
-                self._show_popup(response["warning"])
-                self.internal_timer.stop()
+                if timer_active:    self.internal_timer.stop()
+                for warn in response.get("warnings"):    self._show_popup(warn)
                 self.code_field.setHighlight([])
                 self.nextLineButton.setDisabled(True)
-                self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+                self.startExecutionButton.setText(self.names_lang["start_stop_1"])
                 self.startExecutionButton.setStyleSheet(
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
+                self.code_field.setHighlight([])
+                if timer_active:    self.internal_timer.start()
                 return
 
         terminal_operation = response.get("terminal", None)
@@ -525,10 +542,20 @@ class MainWindow(QWidget):
         self._refresh()
 
     @pyqtSlot()
-    def _perform_terminal_aciton(self, action : str):
+    def _perform_terminal_aciton(self, request : dict):
         """This method performs aciton requireing user interaction with terminal"""
         
-        ...
+        match request.get("action"):
+            
+            case "input_string_limited_width":
+                self._set_active_state(False)
+                self.terminal_widget.setEnabled(True)
+                max_length = int(request.get("length"), 2)
+                dest = int(request.get("destination"), 2)
+                user_input = self.terminal.request_user_input(max_length)
+                raw_bits = list("".join([bin(ord(c))[2:].zfill(8) for c in user_input]))
+                self.code_handler.engine.DS.modify_data(dest, raw_bits)
+                self._set_active_state(True)
 
     @pyqtSlot()
     def _show_popup(self, dialog : dict):
@@ -544,6 +571,40 @@ class MainWindow(QWidget):
             element.update()    
         self.stackSection.refresh_table()
         self.variableSection.refresh_table()
+
+    @pyqtSlot()
+    def _start_program(self):
+        if not self.program_finished:
+            self.nextLineButton.setEnabled(True)
+        self._set_active_state(True)
+        if self.instructionCounter > 0:
+            self.previousLineButton.setEnabled(True)
+        self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+        self.startExecutionButton.setStyleSheet(
+            f'color: {colors[self.theme]["start_stop_button_stopped"]};')
+
+        if self.interactive_mode:
+            self.terminal.clear()
+            self.code_field.setEditable(False)
+            new_lines = self.code_handler.startInteractive(self.code_field.toPlainText())
+            self.code_field.setHighlight(new_lines)
+            if new_lines:
+                self.instructionCounter = 0
+                self.code_handler.engine.reset()
+                self._refresh()
+
+    @pyqtSlot()
+    def _suspend_program(self):
+        self._set_active_state(False)
+        self.nextLineButton.setDisabled(True)
+        self.previousLineButton.setEnabled(False)
+        self.startExecutionButton.setText(self.names_lang["start_stop_1"])
+        self.startExecutionButton.setStyleSheet(
+            f'color: {colors[self.theme]["start_stop_button_running"]};')
+        
+        if self.interactive_mode:
+            self.code_field.setDisabled(False)
+            self.code_field.setEditable(True)
 
     @pyqtSlot()
     def _lang_change(self):
@@ -568,12 +629,12 @@ class MainWindow(QWidget):
             self.open_session_button.setText(self.names_lang["interactive"])
             
             # Welcome Screen - Toggle Language
+            self.toggle_language.blockSignals(True)
+            self.toggle_language.clear()
             lang_list = []
             for name in lang_names_each_other[self.language]:
                 lang_list.append(lang_names_each_other[self.language][name])
-            self.toggle_language.addItems(lang_names_each_other[self.language])
-            self.toggle_language.blockSignals(True)
-            self.toggle_language.clear()
+            self.toggle_language.addItems(lang_list)
             self.toggle_language.setCurrentIndex(option)
             self.toggle_language.blockSignals(False)
             self.load_file_button.setFocus()

@@ -30,44 +30,71 @@ class CodeHandler():
         """This function, reads file and prepare it's content for processing"""
 
         raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
-
-        self.rawfiles[path_to_file] = raw_file                                              # Zapisanie ścieżki dostępu do pliku
-        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.DS)         # Wstępna analiza z użyciem preprocesor.py
-        self.pass_variable_to_engine(preprocessed_instrucitons)                             # Przekazanie listy zmiennych do silinika
-
-        self.currentlyExecutedFile = path_to_file                                           # Zapisanie jaki obecnie wykonywany jest plik (umożliwienie dodania wsparcia do wielu plików)
-        self.currentlyExecutedLine[path_to_file] = start                                    # Zapisanie jaka linijka w jakim pliku jest wykonywana (umożliwienie dodania wsparcia do wielu plików)
-        self.openFiles.append(path_to_file)                                                 # Zapisanie pełnej ścieżii do pliku w liści plików na których pracujemy
-        self.files[path_to_file] = preprocessed_instrucitons                                # Zapisanie przygotowanych instrkucji wśród plików
+        output = self.preprocessFile(path_to_file, raw_file)
         
-        # Inicjalizacja modułu do zapisywania historii
         self.history = History(
             path_to_file,
             raw_file,
-            preprocessed_instrucitons
+            self.files[path_to_file]
         )
 
-        # W przypadku pustego pliku zwrócenie wartości 0 - lista oznacza które linie program ma podkreślić - możliwość pracy na instrukcjach wielolinijkow
-        output = start[1] if start != (-1, [-1]) else [0]
-        
         return output
 
-    def readInteractive(self, data : str) -> list[int]:
+    def load_file_interactive(self, file_path : str) -> list[int]:
         """This funciton """
 
-        text_in_linex = data.split("\n")
+        raw_file = loadFileFromPath(file_path, True, True)
         
-        #   Prepare data
-        start, preprocessed_instrucitons = loadMainFile(text_in_linex)
+        self.rawfiles["interactive"] = raw_file
+        start = -1
+        preprocessed_instrucitons = []
+
+        self.currentlyExecutedFile = "interactive"
+        self.currentlyExecutedLine["interactive"] = start
+        self.openFiles.append("interactive")
+        self.files["interactive"] = preprocessed_instrucitons
+        
+        self.history = History(
+            "interactive",
+            raw_file,
+            preprocessed_instrucitons
+        )
+        
+        return start, raw_file
+
+    def preprocessFile(self, path_to_file : str, raw_file : list):
+        self.rawfiles[path_to_file] = raw_file
+        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.DS)
         self.pass_variable_to_engine(preprocessed_instrucitons)
 
-        #   Save variables inside Code Handler
-        self.start = start
-        self.files["interactive"] = preprocessed_instrucitons
-        self.currentlyExecutedFile = "interactive"
+        self.currentlyExecutedFile = path_to_file
+        self.currentlyExecutedLine[path_to_file] = start
+        self.openFiles.append(path_to_file)
+        self.files[path_to_file] = preprocessed_instrucitons
 
-        if start != (-1, [-1]): return start[1]
-        
+        output = start[1] if start != (-1, [-1]) else [0]
+
+        return output
+
+    def startInteractive(self, code : str):
+        """This function is run, when program is activated. It checks if the 
+        code is valid, are there any changes, and returns None or list with new
+        lines for highlight"""
+
+        code_lines = [line + "\n" for line in code.split("\n")]
+        previous_lines = self.rawfiles.get("interactive")
+
+        if not previous_lines or code_lines != previous_lines:
+
+            start = self.preprocessFile("interactive", code_lines)
+            self.history = History(
+                "interactive",
+                code_lines,
+                self.files["interactive"]
+            )
+
+            return start
+
     def pass_variable_to_engine(self, preprocessed_instrucitons):
         assert type(preprocessed_instrucitons) == dict
         self.engine.informAboutLabels(preprocessed_instrucitons['labels'])
@@ -119,6 +146,8 @@ class CodeHandler():
 
         if already_executed:
             next_line, change = already_executed
+            if next_line == None:
+                return {"status" : -1, "highlight" : []}
             self.engine.load_new_state_after_change(change, forward = True)
             self.engine.HR.writeIntoRegister("IP", next_line)
             lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
@@ -132,33 +161,39 @@ class CodeHandler():
             line_content = curr_inst['content']
             output = self.engine.executeInstruction(curr_line, line_content)
             
-            if output.get("error", None):
+            if output and output.get("error", None):
                 output["status"] = 1
                 return output
-            if output.get("warnings", None):
-                output["status"] = 2
             
-            if output == None or not "next_instruction" in output:
-                if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
-                    next_line = curr_line + 1
-                else:
-                    if output.get("status", None):
-                        output["status"] = -12
-                        return output
-                    else:
-                        return {"status" : -12}
             elif "next_instruction" in output:
                 next_line = output["next_instruction"]
+            
+            else:
+                if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
+                    next_line = curr_line + 1
+                    output["status"] = 0 if not output.get("warnings") else 2
+                else:
+                    next_line = -1
+                    exec_with_warnings = bool(output.get("warnings"))
+                    if exec_with_warnings:
+                        self.currentlyExecutedLine[self.currentlyExecutedFile] = -1
+                        output["status"] = -12
+                    else:
+                        output["status"] = -1
 
-            self.history.add_new_instruction(curr_line, output, next_line)
-            self.engine.HR.writeIntoRegister("IP", next_line)
+            if next_line != -1:
+                self.history.add_new_instruction(curr_line, output, next_line)
+                self.engine.HR.writeIntoRegister("IP", next_line)
+                lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
+                self.currentlyExecutedLine[self.currentlyExecutedFile] = [next_line, lines_in_source_file]
+                output["highlight"] = lines_in_source_file
+            else:
+                self.history.add_new_instruction(curr_line, output, None)
+                self.engine.HR.writeIntoRegister("IP", 0)
+                self.currentlyExecutedLine[self.currentlyExecutedFile] = [None, None]
+                output["highlight"] = []
             
-            lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
-            self.currentlyExecutedLine[self.currentlyExecutedFile] = [next_line, lines_in_source_file]
-        
-            status = {"status" : 0, "highlight" : lines_in_source_file}
-            
-            return status
+            return output
 
     def _run_previous_instruction(self, **kwargs):
         """
@@ -219,6 +254,10 @@ class CodeHandler():
             HR, FR, DS, VAR, path_to_file, raw_file, \
                 preprocessed_instructions = output
 
+            self.engine.HR = HR
+            self.engine.FR = FR
+            self.engine.DS = DS
+            self.engine.variables = VAR
             self.pass_variable_to_engine(preprocessed_instructions)
             self.rawfiles[path_to_file] = raw_file
             self.currentlyExecutedFile = path_to_file

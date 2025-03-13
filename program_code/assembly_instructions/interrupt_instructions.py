@@ -82,7 +82,15 @@ def _int_21h_76(**kwargs):
 
 def _int_21h_10(**kwargs):
 
-    return {"action_for_terminal" : "int_21h_10"}
+    HR = kwargs["HR"]
+    max_length = HR.readFromRegister("DH")
+    destination = HR.readFromRegister("DI")
+
+    return {"terminal" : {
+        "action" : "input_string_limited_width",
+        "length" : max_length,
+        "destination" : destination
+    }}
 
 INT.params_range = [1]
 INT.allowed_params_combinations = [ ("value",) ]
