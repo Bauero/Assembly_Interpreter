@@ -161,12 +161,13 @@ class CodeHandler():
             line_content = curr_inst['content']
             output = self.engine.executeInstruction(curr_line, line_content)
             
-            if output.get("error", None):
+            if output and output.get("error", None):
                 output["status"] = 1
                 return output
             
-            if "next_instruction" in output:
+            elif "next_instruction" in output:
                 next_line = output["next_instruction"]
+            
             else:
                 if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
                     next_line = curr_line + 1

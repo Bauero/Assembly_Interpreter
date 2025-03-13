@@ -271,6 +271,7 @@ class MainWindow(QWidget):
         self.terminal_label.setFont(font_bold_15)
 
         self.terminal = Terminal()
+        self.terminal.setEditable(False)
         self.terminal_layout.addWidget(self.terminal_label)
         self.terminal_layout.addWidget(self.terminal)
         self.terminal_widget.setLayout(self.terminal_layout)
@@ -308,6 +309,7 @@ class MainWindow(QWidget):
         self.registers_label.setDisabled(False)
         self.terminal_label.setVisible(True)
         self.terminal_label.setEnabled(True)
+        
 
     @pyqtSlot()
     def _set_interactive_mode(self):
@@ -464,6 +466,9 @@ class MainWindow(QWidget):
                     }
                     self._act_on_response(response)
             case 'previous_instruction':
+                if not self.program_running:
+                    self.program_running= True
+                    self._set_active_state(True)
                 response = self.code_handler.executeCommand('previous_instruction')
                 self.instructionCounter -= 1
                 if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
@@ -537,10 +542,20 @@ class MainWindow(QWidget):
         self._refresh()
 
     @pyqtSlot()
-    def _perform_terminal_aciton(self, action : str):
+    def _perform_terminal_aciton(self, request : dict):
         """This method performs aciton requireing user interaction with terminal"""
         
-        ...
+        match request.get("action"):
+            
+            case "input_string_limited_width":
+                self._set_active_state(False)
+                self.terminal_widget.setEnabled(True)
+                max_length = int(request.get("length"), 2)
+                dest = int(request.get("destination"), 2)
+                user_input = self.terminal.request_user_input(max_length)
+                raw_bits = list("".join([bin(ord(c))[2:].zfill(8) for c in user_input]))
+                self.code_handler.engine.DS.modify_data(dest, raw_bits)
+                self._set_active_state(True)
 
     @pyqtSlot()
     def _show_popup(self, dialog : dict):
@@ -569,6 +584,7 @@ class MainWindow(QWidget):
             f'color: {colors[self.theme]["start_stop_button_stopped"]};')
 
         if self.interactive_mode:
+            self.terminal.clear()
             self.code_field.setEditable(False)
             new_lines = self.code_handler.startInteractive(self.code_field.toPlainText())
             self.code_field.setHighlight(new_lines)

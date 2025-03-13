@@ -41,7 +41,7 @@ class DataSegment:
         return starting_byte
 
     def get_data(self, starting_byte = 0, no_of_bytes = 1):
-        """Returns data in form of list with numbers representin values of successive bytes"""
+        """Returns data in form of list with numbers representing values of successive bytes"""
         
         try:
             start = starting_byte

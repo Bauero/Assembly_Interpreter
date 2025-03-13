@@ -11,7 +11,7 @@ from .helper_functions import (return_size_from_name,
                                return_if_base_8_value,
                                return_if_base_2_value,
                                return_size_from_name)
-from .errors import ImproperJumpMarker, ImproperDataDefiniton
+from .errors import ImproperJumpMarker, ImproperDataDefiniton, ImproperVariableName
 
 def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     """
@@ -24,9 +24,6 @@ def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     assembly_code = _divideCodeToSection(assembly_code)
     assembly_code = _replaceEquateValues(assembly_code)
     assembly_code = _replaceTimesValues(assembly_code)
-    # assembly_code = _replaceCharWithInt(assembly_code)
-    # assembly_code = _replaceDUPValues(assembly_code)
-    # assembly_code = _wrapMultiLineData(assembly_code)
     assembly_code = _storeVariablesInData(assembly_code)
     
     start = _decideWhereExecutioinStarts(assembly_code)
@@ -319,6 +316,10 @@ def _storeVariablesInData(assembly_code : list):
         except Exception:
             raise ImproperDataDefiniton(i + 1, line)
         
+        proper_var_pattern = "^[a-zA-Z_@][a-zA-Z0-9_@]*$"
+        if not re.match(proper_var_pattern, var_name):
+            raise ImproperVariableName(i + 1, line)
+
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()
 
