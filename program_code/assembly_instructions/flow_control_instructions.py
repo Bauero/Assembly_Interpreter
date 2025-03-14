@@ -9,20 +9,23 @@ from program_code.helper_functions import (save_value_in_destination,
                                            convert_number_to_int_with_binary_capacity)
 
 def LOOP(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0;
+    """
+    # LOOP
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0;
     
     1. Substract 1 from CX
     2. Compare if CX > 0
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `... where statementLabel is the label of a statement that is a short displacement (128 bytes backward or 
     127 bytes forward) from the loop instruction.`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -45,19 +48,22 @@ def LOOP(**kwargs):
             return { m[0] : [ m[1] ] }
 
 def LOOPZ(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=1;
+    """
+    # LOOPZ
+    ## Description
+    # This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=1
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopz/loope instruction jumps if the new value in ECX is nonzero and the zero flag is set (ZF=1).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -81,19 +87,22 @@ def LOOPZ(**kwargs):
             return { m[0] : [ m[1] ] }
 
 def LOOPE(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=1;
+    """
+    # LOOPE
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=1
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopz/loope instruction jumps if the new value in ECX is nonzero and the zero flag is set (ZF=1).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -117,19 +126,22 @@ def LOOPE(**kwargs):
             return { m[0] : [ m[1] ] }
 
 def LOOPNZ(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=0;
+    """
+    # LOOPNZ
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=0
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopnz/loopne instruction jumps if the new value in ECX is nonzero and the zero flag is clear (ZF=0).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -153,19 +165,22 @@ def LOOPNZ(**kwargs):
             return { m[0] : [ m[1] ] }
 
 def LOOPNE(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=0;
+    """
+    # LOOPNE
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
     1. Substract 1 from CX
     2. Compare if CX > 0 and ZF=0
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopnz/loopne instruction jumps if the new value in ECX is nonzero and the zero flag is clear (ZF=0).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -189,9 +204,12 @@ def LOOPNE(**kwargs):
             return { m[0] : [ m[1] ] }
 
 def CALL(**kwargs):
-    
-    """This instructions perfoms call, which is quite similar to unconditional jump
-    with push SP - instructions backups last line """
+    """
+    # CALL
+    ## Description
+    This instructions perfoms call, which is quite similar to unconditional jump
+    with push SP - instructions backups last line. It doesn't affect any flags.
+    """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]

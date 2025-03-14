@@ -9,7 +9,14 @@ from program_code.helper_functions import (save_value_in_destination,
                                            binary_xor)
 
 def AND(**kwargs):
-    """Performs logical and operation on two numbers"""
+    """
+    # LOGICAL AND
+    ## Description
+    Performs logical AND operation on two numbers. For each bit of two numbers logical
+    AND operation is performed, and result is stored in appropriate place in the result
+    value. At the end, result value is stored in destination.
+    Affectes flags OF, SF, ZF, PF, CF.
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -44,7 +51,14 @@ def AND(**kwargs):
     return all_changes
 
 def OR(**kwargs):
-    """Performs logical and operation on two numbers"""
+    """
+    # LOGICAL OR
+    ## Description
+    Performs logical OR operation on two numbers. For each bit of two numbers logical
+    OR operation is performed, and result is stored in appropriate place in the result
+    value. At the end, result value is stored in destination.
+    Affectes flags OF, SF, ZF, PF, CF.
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -81,7 +95,14 @@ def OR(**kwargs):
     return all_changes
 
 def XOR(**kwargs):
-    """Performs logical and operation on two numbers"""
+    """
+    # LOGICAL XOR
+    ## Description
+    Performs logical XOR operation on two numbers. For each bit of two numbers logical
+    XOR operation is performed, and result is stored in appropriate place in the result
+    value. At the end, result value is stored in destination.
+    Affectes flags OF, SF, ZF, PF, CF.
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -118,7 +139,13 @@ def XOR(**kwargs):
     return all_changes
 
 def NOT(**kwargs):
-    """Performs logical and operation on two numbers"""
+    """
+    # LOGICAL NOT
+    ## Description
+    Performs logical NOT operation on defined number. For each bit it stores it's opposite
+    in appropriate place in the output number, and at the end stores final value in the
+    desitinatin. Doesn't affect any flags.
+    """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
@@ -140,14 +167,23 @@ def NOT(**kwargs):
     return all_changes
 
 def NOP(**kwargs):
-    """This function does nothing - just takes time"""
+    """
+    # NOTHING OPERATION
+    ## Description
+    This function does nothing - just takes time
+    """
 
     return {}
 
 def TEST(**kwargs):
-    """Logical compare between elements
+    """
+    # TEST
+    ## Description
+    This operation works exacly like AND operation, but doesn't store value anywhere. 
+    This instruciton sets flags OF, SF, ZF, PF, CF.
     
-    Argumen1 ^ Argument2
+    ## Summary
+    Argumen1 ^ Argument2 -> Set flags accordingly
     """
     
     FR  = kwargs["FR"]
@@ -176,8 +212,11 @@ def TEST(**kwargs):
 
     return all_changes
 
+#
+#   Assign params range and allowed params combination for funcitons
+#
+
 for fn in [AND, OR, XOR, TEST]:
-    """Assign all functions the same attributes"""
     fn.params_range = [2]
     fn.allowed_params_combinations = [
         ("memory", "value"), ("memory", "register"), ("register", "register"), 

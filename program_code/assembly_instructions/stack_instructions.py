@@ -9,7 +9,10 @@ from program_code.helper_functions import (convert_number_to_bit_list,
 list_of_registers = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
 
 def PUSH(**kwargs):
-    """This function is responsible for writing value to stack. It works like this:
+    """
+    # PUSH VALUE TO STACK
+    ## Description
+    This function is responsible for writing value to stack. It works like this:
     
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write byte of data
@@ -80,11 +83,14 @@ def PUSH(**kwargs):
     return output
 
 def PUSHF(**kwargs):
-    """This function is responsible for writing flag register to stack. It works like this:
-    
+    """
+    # PUSH VALUE OF FLAG REGISTER TO STACK
+    ## Description
+    This function is responsible for writing flag register to stack. It works like this:
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write flag register into stack
-    3. Decrement SP by one (2 bytes in total)"""
+    3. Decrement SP by one (2 bytes in total)
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -124,7 +130,10 @@ def PUSHF(**kwargs):
     return output
 
 def PUSHA(**kwargs):
-    """This function is responsible for writing all registers to stack. It works like this:
+    """
+    # PUSH VALUE OF ALL REGISTERS TO STACK
+    ## Description
+    This function is responsible for writing all registers to stack. It works like this:
     
     IMPORTANT:
     `The pushad instruction pushes EAX, ECX, EDX, EBX, ESP, EBP, ESI and EDI, in this order ...
@@ -183,19 +192,21 @@ def PUSHA(**kwargs):
     return output
 
 def POP(**kwargs):
-    """This functins pops value from stack. Inside it does the following:
+    """
+    # POP VALUE FROM STACK
+    ## Description
+    This functins pops value from stack. Inside it does the following:
     
     1. Read x bytes from the top of the stack (x, as it depends on the destinaiton)
     2. Store this value in the destination
     3. Incremenet value of the SP, by the amount of bytes red - this instruction
-    doesn't "DELETE" the data - those bits are still phisically on the stack, but they
-    are considered empty
+    doesn't "DELETE" the data - those bits are still physically on the stack
     
-    IMPORTANT
+    ## IMPORTANT
 
     Based on my experience with NASM, when we are POP'ing value from stack we need to store
     it in any place which would accept 16 bits - if we put in memory, in place where we
-    store 8 bit variable, pop would return and store 16 bit, effectively ovverrriting any
+    store 8 bit variable, pop would return and store 16 bit, effectively overriting any
     byte which is stored in memory after the initial byte. Doing so in this simulator, if
     we push to 8 bit variable which is last in our data, would propably throw an error, as
     (in terms of memory) program reserves only the space which is declared by variables, while
@@ -248,7 +259,13 @@ def POP(**kwargs):
     return all_changes
 
 def POPF(**kwargs):
-    """This functins pops last to bits from stack, and stores it in flag register"""
+    """
+    # POP VALUE FROM STACK TO FLAG REGISTER
+    ## Description
+    This funciton reads first two bytes starting from the byte to which SP is currently
+    pointing, and store those value in flag register. Flags are set accoring to values
+    of corespoding bits.
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -285,8 +302,19 @@ def POPF(**kwargs):
     return all_changes
 
 def POPA(**kwargs):
-    """This functins pops top 16 bits of data into the registers in this order:
-    'DI', 'SI', 'BP', 'SP', 'BX', 'DX', 'CX', 'AX' """
+    """
+    # POP STACK VALUES INTO REGISTERS
+    ## Description
+    This functins pops top 16 bits of data into the registers in this order:
+    1. DI
+    2. SI
+    3. BP
+    4. SP
+    5. BX
+    6. DX
+    7. CX
+    8. AX
+    """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
@@ -320,20 +348,16 @@ def POPA(**kwargs):
 
     return all_changes
 
+#
+#   Assign params range and allowed params combination for funcitons
+#
+
 PUSH.params_range = [1]
 PUSH.allowed_params_combinations = [ ("memory",), ("register",), ("value",)]
-
-PUSHF.params_range = [0]
-PUSHF.allowed_params_combinations = [()]
-
-PUSHA.params_range = [0]
-PUSHA.allowed_params_combinations = [()]
 
 POP.params_range = [1]
 POP.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-POPF.params_range = [0]
-POPF.allowed_params_combinations = [()]
-
-POPA.params_range = [0]
-POPA.allowed_params_combinations = [()]
+for fn in [PUSHF, PUSHA, POPF, POPF]:
+    fn.params_range = [0]
+    fn.allowed_params_combinations = [ tuple() ]

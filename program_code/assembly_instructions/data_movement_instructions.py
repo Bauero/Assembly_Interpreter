@@ -6,7 +6,12 @@ change flags, nor perform any operations on stack
 from program_code.helper_functions import convert_number_to_bit_list, save_value_in_destination
 
 def MOV(**kwargs):
-    """This function perfoms movement of data from place to place"""
+    """
+    # MOVE
+    ## Description
+    This function copies values from the source to the destination. It doesn't change
+    any flag, nor modify the source.
+    """
     
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
@@ -25,7 +30,11 @@ def MOV(**kwargs):
     return all_changes
 
 def XCHG(**kwargs):
-    """This function swaps values between source and destination"""
+    """
+    # EXCHANGE
+    ## Description
+    This function swaps values between source and destination. It doesn't change any flags.
+    """
     
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
@@ -51,6 +60,10 @@ def XCHG(**kwargs):
         } 
     
     return all_changes
+
+#
+#   Assign params range and allowed params combination for funcitons
+#
 
 MOV.params_range = [2]
 MOV.allowed_params_combinations = [

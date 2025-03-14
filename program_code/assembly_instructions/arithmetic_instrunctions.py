@@ -11,18 +11,29 @@ from program_code.helper_functions import (eval_no_of_1,
                                            convert_number_to_bit_list, 
                                            convert_number_to_int_with_binary_capacity)
 
-
 def AAA(**kwargs):
-    """ADJUST AFTER ADDITION.
+    """
+    # ADJUST AFTER ADDITION.
+    ## Description
     This function is designed to ajdust score after addition on number stored in BCD code.
+    The purpose of this operation is to separate number stored in AL in binary form to 
+    number stored in AH and AL in BCD form. What it does, is check if number in AL is greater
+    than 9, or overflow to upper nible of AL occured (AF == 1), and if so, it adds one to 
+    to AH, adds 6 to AL, sets both AF to 1 and CF to 1, and clears bits of upper nibble in 
+    AL. This operation doesn't affect other flags.
     
-    TLDR:
-    if (AL ^ 0Fh) > 9 or AF == 1 do the following:
-        1. AL = AL + 6;
-        2. AH = AH + 1;
-        3. AF = 1
-        4. CF = 1
-        5. AL = AL ^ 0Fh
+    ## Summary:
+    If (AL ^ 0Fh) > 9 or AF == 1 do the following:
+    1. AL = AL + 6
+    2. AH = AH + 1
+    3. AF = 1
+    4. CF = 1
+    5. AL = AL ^ 0Fh
+
+    ## EX:
+    - AL = 00010110, AF = 1 -> AH += 1 -> AL += 6 (00011100) -> CF = 1, AF = 1 -> AL = AL ^ 15 -> AL = 12 (00001100)
+    - AL = 10101010, AF = ? -> AH += 1 -> AL += 6 (10110000) -> CF = 1, AF = 1 -> AL = AL ^ 15 -> AL = 0  (00000000)
+    - AL = 00001000, AF = 0 -> Nothing (conditions aren't met)
     """
     
     HR = kwargs["HR"]
@@ -74,16 +85,29 @@ def AAA(**kwargs):
     return all_changes
 
 def AAS(**kwargs):
-    """ADJUST AFTER SUBSTRACTION.
+    """
+    # ADJUST AFTER SUBSTRACTION.
+    ## Description
     This function is designed to ajdust score after substraction on number stored in BCD code.
     
-    TLDR:
-    if (AL ^ 0Fh) > 9 or AF == 1 do the following:
-        1. AL = AL - 6;
-        2. AH = AH - 1;
-        3. AF = 1
-        4. CF = 1
-        5. AL = AL ^ 0Fh
+    The purpose of this operation is to separate number stored in AL in binary form to 
+    number stored in AH and AL in BCD form. What it does, is check if number in AL is greater
+    than 9, or overflow to upper nible of AL occured (AF == 1), and if so, it subtracts one to 
+    from AH, subtracts 6 from AL, sets both AF to 1 and CF to 1, and clears bits of upper nibble in 
+    AL. This operation doesn't affect other flags.
+    
+    ## Summary:
+    If (AL ^ 0Fh) > 9 or AF == 1 do the following:
+    1. AL = AL - 6
+    2. AH = AH - 1
+    3. AF = 1
+    4. CF = 1
+    5. AL = AL ^ 0Fh
+
+    ## EX:
+    - AL = 01001010, AF = 1 -> AH -= 1 -> AL -= 6 (01000100) -> CF = 1, AF = 1 -> AL = AL ^ 15 -> AL = 4  (00000100)
+    - AL = 10101010, AF = ? -> AH -= 1 -> AL -= 6 (10100100) -> CF = 1, AF = 1 -> AL = AL ^ 15 -> AL = 4  (00000100)
+    - AL = 00001000, AF = 0 -> Nothing (conditions aren't met)
     """
     
     HR = kwargs["HR"]
@@ -135,16 +159,27 @@ def AAS(**kwargs):
     return all_changes
 
 def DAS(**kwargs):
-    """DECIMAL ADJUST FOR SUBSTRACTION
+    """
+    # DECIMAL ADJUST FOR SUBSTRACTION
+    ## Description
+    Decimal adjustr after binary substraction in BCD code. This function performs the following
+    operation. If lower nibble in AL is greater than 9 or AF is set, function substracts 6 from
+    AL, and sets AF to 1. Then funciton check if AL is greater than 9Fh (159) or if the CF is set.
+    If any of those conditions is met, funciton substracts 60h (96) from AL and sets CF to 1.
+    This function influences flags SF, ZF, AF, PF, CF.
     
-    TLDR:
-    if (AL ^ 0Fh) > 9 or AF == 1 do the following:
+    ## Summary:
+    0. if (AL ^ 0Fh) > 9 or AF == 1 do the following:
         1. AL = AL - 6;
         2. AF = 1
-        
-        if AL > 9Fh or CF = 1
-            3.1. AL = AL - 60h
-            3.2. CF = 1
+        3. if AL > 9Fh or CF = 1
+            4. AL = AL - 60h
+            5. CF = 1
+
+    ## EX:
+    - AL = 00000011, AF = 1 -> AL -= 6 (11111101) -> AF = 1 -> (AL > 9Fh) -> AL -= 96 (10100111) -> CF = 1
+    - AL = 11101011, AF = 0 -> AL -= 6 (11100101) -> AF = 1 -> (AL > 9Fh) -> AL -= 96 (10000101) -> CF = 1
+    - AL = 00001000, AF = 0 -> Nothing (conditions aren't met)
     """
     
     HR = kwargs["HR"]
@@ -200,16 +235,27 @@ def DAS(**kwargs):
         return all_changes
 
 def DAA(**kwargs):
-    """DECIMAL ADJUST FOR ADDITION
+    """
+    # DECIMAL ADJUST FOR ADDITION
+    ## Description
+    Decimal adjustr after binary addition in BCD code. This function performs the following
+    operation. If lower nibble in AL is greater than 9 or AF is set, function adds 6 to
+    AL, and sets AF to 1. Then funciton check if AL is greater than 9Fh (159) or if the CF is set.
+    If any of those conditions is met, funciton adds 60h (96) to AL and sets CF to 1.
+    This function influences flags SF, ZF, AF, PF, CF.
     
-    TLDR:
-    if (AL ^ 0Fh) > 9 or AF == 1 do the following:
+    ## Summary:
+    0. if (AL ^ 0Fh) > 9 or AF == 1 do the following:
         1. AL = AL + 6;
         2. AF = 1
-        
-        if AL > 9Fh or CF = 1
-            3.1. AL = AL + 60h
-            3.2. CF = 1
+        3. if AL > 9Fh or CF = 1
+            4. AL = AL + 60h
+            5. CF = 1
+
+    ## EX:
+    - AL = 00000011, AF = 1 -> AL += 6 (00001001) -> AF = 1 -> (AL < 9Fh)
+    - AL = 11101011, AF = 0 -> AL += 6 (11110001) -> AF = 1 -> (AL > 9Fh) -> AL += 96 (01010001) -> CF = 1
+    - AL = 00001000, AF = 0 -> Nothing (conditions aren't met)
     """
     
     HR = kwargs["HR"]
@@ -263,12 +309,17 @@ def DAA(**kwargs):
         return all_changes
 
 def AAM(**kwargs):
-    """ADJUST FOR MULTIPLY
-    
-    TLDR;
-    AH = AL / 10
+    """
+    # ADJUST FOR MULTIPLY
+    ## Description
+    This function makes correction after multiplicaiton of two digits in BCD code.
+    Internally this funciton divides AL by 10 and stores quotient in AH, while 
+    reminder is stored in AL. Function sets flags SF, ZF, PF according to AX 
+    value at the end of the operation.
+
+    ## Summary:
+    AH = AL // 10
     AL = AL mod 10
-    Sets flags SF, ZF, PF according to AL value at the beginning of the operation
     """
     
     HR = kwargs["HR"]
@@ -287,15 +338,16 @@ def AAM(**kwargs):
 
     ready_quotient = bin(converted_quotient)[2:].zfill(8)
     ready_reminder = bin(converted_reminder)[2:].zfill(8)
+    ax_in_bits = ready_quotient + ready_reminder
 
     HR.writeIntoRegister("AH", converted_quotient)
     HR.writeIntoRegister("AL", converted_reminder)
 
     backup_flags = list(FR.readFlags())
 
-    FR.setFlag("ZF", not "1" in AL)
-    FR.setFlag("SF", AL[0] == "1")
-    FR.setFlag("PF", eval_no_of_1(AL))
+    FR.setFlag("ZF", not "1" in ax_in_bits)
+    FR.setFlag("SF", ax_in_bits[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(ax_in_bits))
 
     new_flags = list(FR.readFlags())
 
@@ -321,12 +373,16 @@ def AAM(**kwargs):
     return all_changes
 
 def AAD(**kwargs):
-    """ADJUST FOR DIVISION
-    
-    TLDR:
+    """
+    # ADJUST FOR DIVISION
+    ## Description
+    This funciton allows to prepare BCD number for division. This operation adds value of
+    AH, multiplied by 10 to AL, and then sets AH to 0 (equivalent to XOR AH, AH). Function 
+    sets flags SF, ZF, PF according to AX value at the end of the operation.
+
+    ## Summary:
     AL = AL + AH * 10
     AH = 0
-    Sets SF, ZF and PF accoring to final value in AL
     """
     
     HR = kwargs["HR"]
@@ -341,15 +397,16 @@ def AAD(**kwargs):
 
     new_al = output
     new_ah = ['0' for _ in range(8)]
+    ax_as_str = "".join(new_al) + "".join(new_ah)
 
     HR.writeIntoRegister("AH", new_ah)
     HR.writeIntoRegister("AL", new_al)
     
     backup_flags = list(FR.readFlags())
     
-    FR.setFlag("ZF", not "1" in new_al)
-    FR.setFlag("SF", new_al[0] == "1")
-    FR.setFlag("PF", eval_no_of_1(new_al))
+    FR.setFlag("ZF", not "1" in ax_as_str)
+    FR.setFlag("SF", ax_as_str[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(ax_as_str))
 
     new_flags = list(FR.readFlags())
 
@@ -375,7 +432,18 @@ def AAD(**kwargs):
     return all_changes
 
 def ADD(**kwargs):
-    """This function performs addition"""
+    """
+    # ADD
+    ## Description
+    This function performs binary additon of two number, and then sets flags
+    accoridingly. This influences flags OF, SF, ZF, AF, PF, CF.
+    
+    ## Summary
+    Arg1 += Arg2
+
+    ## EX.
+    - ADD AX, 10 (for AX == 27) -> AX += 10 (00100101)
+    """
     
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -417,7 +485,19 @@ def ADD(**kwargs):
     return all_changes
 
 def ADC(**kwargs):
-    """This funciton performs ADD with carry"""
+    """
+    # ADC
+    ## Description
+    This funciton works like ADD but after initial addition of two numbers, to 
+    the destiation value of CF is added. This influences flags OF, SF, ZF, AF, PF, CF.
+    
+    ## Summary
+    Arg1 += Arg2
+    Arg1 += CF
+
+    ## EX.
+    - ADC AX, 10 (for AX == 27, CF = 1) -> AX += 11 (00100110)
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -460,7 +540,19 @@ def ADC(**kwargs):
     return all_changes
 
 def SUB(**kwargs):
-    """This function performs substraction (A - B)"""
+    """
+    # SUB
+    ## Description
+    This function performs binary additon of two number as A - B is equivalent
+    to A + B', where B' is two's compliment of B.
+    This influences flags OF, SF, ZF, AF, PF, CF.
+    
+    ## Summary
+    Arg1 -= Arg2
+
+    ## EX.
+    - SUB AX, 10 (for AX == 27) -> AX -= 10 (00010001)
+    """
     
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -503,7 +595,23 @@ def SUB(**kwargs):
     return all_changes
 
 def SBB(**kwargs):
-    """This function performs substraction with borrow (A - B - CF)"""
+    """
+    # SUB
+    ## Description
+    This funciton works like SUB, but it substracts value of CF form the result
+    of A - B. Therefore it's equivalent to A - B - C, or A - (B + C). As in SUB
+    function, we use the informaiton, that A-B is equal to A-B' if B' is two's
+    compliment of B. Therefore SBB adds CF to B, calculates two's compliment of
+    this value, and then performs addition of result to A.
+    This influences flags OF, SF, ZF, AF, PF, CF.
+    
+    ## Summary
+    Arg1 -= Arg2
+    Arg1 -= CF
+
+    ## EX.
+    - SBB AX, 10 (for AX == 27, CF = 1) -> AX -= 11 (00010000)
+    """
     
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -551,9 +659,16 @@ def SBB(**kwargs):
     return all_changes
 
 def CMP(**kwargs):
-    """This function performs comparison between two operands to set flags
+    """
+    # COMPARE
+    ## Description
+    This function performs comparison between two operands to set flags
     accordingly. It is equivalend to SUB instruction, but in contrast to it, 
-    CMP doesn't save output anywhere"""
+    CMP doesn't save output anywhere. Affects flags OF, SF, ZF, AF, PF, CF.
+    
+    ## Summary
+    Calculate Arg1 - Arg2 -> set flags accoring to output
+    """
 
     FR  = kwargs["FR"]
     FS  = kwargs['final_size']
@@ -588,12 +703,13 @@ def CMP(**kwargs):
     return all_changes
 
 def CBW(**kwargs):
-    """CONVERT BYTE WORD
+    """
+    # CONVERT BYTE WORD
+    ## Descritpion
+    Extends bit on position 7 in AL to AH, by taking it's value and filling each
+    bit of AH with that value. Content of AL remains unchanged. Doesn't affect flags.
     
-    Extends bit on position 7 in AL to AH.
-    
-    EX:
-    
+    ## EX:
     - AL = 01101010 -> AL [0] == 0 -> AX = 0000000001101010
     - AL = 10011101 -> AL [0] == 1 -> AX = 1111111110011101
     """
@@ -618,12 +734,13 @@ def CBW(**kwargs):
     return all_changes
 
 def CWD(**kwargs):
-    """CONVERT WORD DOUBLEWORD
+    """
+    # CONVERT WORD DOUBLEWORD
+    ## Description
+    Extends bit on position 15 in AX to DX, by taking it's value and filling each
+    bit of DX with that value. Content of AX remains unchanged. Doesn't affect flags.
     
-    Extends bit on position 15 in AX to DX.
-    
-    EX:
-    
+    ## EX:
     - AX = 0110101010110010 -> AX [0] == 0 -> DX:AX = 0000000000000000:0110101010110010
     - AX = 1001110110100111 -> AX [0] == 1 -> DX:AX = 1111111111111111:1001110110100111
     """
@@ -647,8 +764,15 @@ def CWD(**kwargs):
     return all_changes
 
 def DEC(**kwargs):
-    """This instruction substract 1 from the argument, and store the new value inside
-    source value. Affects flags OF, SF, ZF, AF, and PF accordingly"""
+    """
+    # DECREMENT
+    ## Description
+    This instruction substract 1 from the argument, and store the new value inside
+    source value. Affects flags OF, SF, ZF, AF, and PF accordingly.
+    
+    ## Summary
+    Arg1 -= 1
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -689,8 +813,15 @@ def DEC(**kwargs):
     return all_changes
 
 def INC(**kwargs):
-    """This instruction adds 1 to the argument, and store the new value inside
-    source value. Affects flags OF, SF, ZF, AF, and PF accordingly"""
+    """
+    # INCREMENT
+    ## Description
+    This instruction adds 1 to the argument, and store the new value inside
+    source value. Affects flags OF, SF, ZF, AF, and PF accordingly.
+    
+    ## Summary
+    Arg1 += 1
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -730,7 +861,22 @@ def INC(**kwargs):
     return all_changes
 
 def MUL(**kwargs):
-    """This function performs addition"""
+    """
+    # MULTIPLICATION
+    ## Description
+    This operation performs multiplication, which internally is equivalent to addition of
+    multiple values of AX or AL, each left-shifted by the offset of another bit from the
+    right. This function sets flags CF and OF if upper part of resutl - DX or AH depending
+    on operaiton size - is not equal to 0; otherwise CF and OF is set to 0. Doesn't affect
+    other flags.
+
+    ## Summary
+    ### Case 1 - multiply by 8 bit value
+    `MUL byte 10` -> AX *= 10 -> if AH == 0 -> CF = 0 and OF = 0
+    
+    ### Case 2 - multiply by 16 bit value
+    `MUL word 10` -> DX:AX *= 10 -> if DX == 0 -> CF = 0 and OF = 0
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -805,7 +951,25 @@ def MUL(**kwargs):
     return all_changes
 
 def IMUL(**kwargs):
-    """This function performs addition"""
+    """
+    # INTEGERS MULTIPLICATION
+    ## Description
+    This operation performs multiplication but takes into account sigh of the numbers.
+    First, funciton finds two's compliment of argumenst (DX:AX or AX and funciton Argument)
+    of those values which are negative. Then, it performs normal mutiplication. Then if sigs
+    of numbers were not equal it calculates two's compliment of the result. Final value is
+    stored in AX (for 8 bit multiplication) or DX:AX (for 16 bit multiplicaiton). Flags CF
+    and OF are set if upper half doesn't only contains bits with value of the sign of lower
+    half. (for 8 bit, if AH != 00000000 if AL 0??????? or AH != 11111111 if AL 1???????).
+    Other flags are not changed.
+
+    ## Summary
+    ### Case 1 - multiply by 8 bit value
+    `IMUL byte 10` -> AX *= 10; CBW AL != current AX value, set CF = 1 and OF = 1
+    
+    ### Case 2 - multiply by 16 bit value
+    `IMUL word 10` -> DX:AX *= 10; CWD AX != current DX:AX value, set CF = 1 and OF = 1
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -893,7 +1057,21 @@ def IMUL(**kwargs):
     return all_changes
 
 def DIV(**kwargs):
-    """This operation performs division on unsigned numbers"""
+    """
+    # DIVISION
+    ## Description
+    This funciton performs standard division treading both argumens as unsigned nubmers.
+    First argument is always AX (for divisioin with byte-size value) or 
+    DX:AX (for divisioin with word-size value). Quotient is stored in lover half, of first
+    argument (AL or AX) and reminder in the upper half (AH or DX). This operation doesn't 
+    affect any flags.
+
+    ## Summary
+    ### Case 1 - division with 8 bit number
+    DIV byte 10 (for AX = 147) -> AH = 7 (00000111), AL = 14 (00001110)
+    ### Case 2 - division with 16 bit number
+    DIV word 10 (for DX:AX = 147) -> DX = 7 (0000000000000111), AX = 14 (0000000000001110)
+    """
 
     HR  = kwargs["HR"]
     FS  = kwargs['final_size']
@@ -938,7 +1116,22 @@ def DIV(**kwargs):
     return all_changes
 
 def IDIV(**kwargs):
-    """This operation performs division on signed numbers"""
+    """
+    # INTIGER DIVISION
+    ## Description
+    This funciton performs division operation, while keeping sign of operation.
+    First, funciton converts numbers to their's two's compliment equivalents if
+    they are negative. Then typical division (as with DIV operation) is performed.
+    At the end, if signs of numbers are not equal, two's compliment of the resutl
+    is calculated, and stored inside AX or DX:AX. Other information are the same
+    as in DIV instruciton. Funciton doesn't modify any flags.
+
+    ## Summary
+    ### Case 1 - division with 8 bit number
+    DIV byte 10 (for AX = 147) -> AH = 7 (00000111), AL = 14 (00001110)
+    ### Case 2 - division with 16 bit number
+    DIV word 10 (for DX:AX = 147) -> DX = 7 (0000000000000111), AX = 14 (0000000000001110)
+    """
 
     HR = kwargs["HR"]
     FS  = kwargs['final_size']
@@ -1002,7 +1195,17 @@ def IDIV(**kwargs):
     return all_changes
 
 def NEG(**kwargs):
-    """This instruction saves up negated value of argument passed in destination"""
+    """
+    # NEGATE
+    ## Description
+    This operation calculates two's compliment value of the arugment, and stores
+    it in argument
+
+    ## Summary
+    Arg = 2's compliment value of the argument
+    also equal to
+    Arg = 0 - Arg + 1
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -1049,8 +1252,11 @@ def NEG(**kwargs):
 
     return all_changes
 
+#
+#   Assign params range and allowed params combination for funcitons
+#
+
 for fn in [ADD, ADC, SUB, SBB, CMP]:
-    """Assign all functions the same attributes"""
     fn.params_range = [2]
     fn.allowed_params_combinations = [
     ("memory", "value"), ("memory", "register"), ("register", "register"), 
@@ -1058,11 +1264,9 @@ for fn in [ADD, ADC, SUB, SBB, CMP]:
 ]
 
 for fn in [INC, DEC, MUL, IMUL, DIV, IDIV, NEG]:
-    """Assign all functions the same attributes"""
     fn.params_range = [1]
     fn.allowed_params_combinations = [ ("memory",), ("register",) ]
 
 for fn in [AAA, AAS, DAA, DAS, AAM, AAD, CBW, CWD]:
-    """Assign all functions the same attributes"""
     fn.params_range = [0]
     fn.allowed_params_combinations = [ tuple() ]
