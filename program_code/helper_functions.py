@@ -65,7 +65,8 @@ def return_if_base_2_value(element: str) -> None | str:
     if re.fullmatch(r"(-?[ \t]?[1][01]*|0)[bB]", element):
         return element[:-1]
 
-def return_size_from_name(name : str):
+def return_size_from_name(name : str) -> None | int:
+    """This funciton takes name (like db) as an argument, and returns size as an int"""
 
     match name.lower():
         case "byte":    return 8
@@ -76,16 +77,23 @@ def return_size_from_name(name : str):
         case 'dd':      return 32
         case "qword":   return 64
         case 'dq':      return 64
-        case _:         return -1
+        case _:         return
 
-def return_name_from_size(size : int) -> str:
+def return_name_from_size(size : int) -> None | str:
+    """
+    This function takes int as an argument, and returns coresponding size:
+    - 8  -> `byte`
+    - 16 -> `word`
+    - 32 -> `dword`
+    - 64 -> `qword`
+    """
 
     match size:
         case 8:     return "byte"
         case 16:    return "word"
         case 32:    return "dword"
         case 64:    return "qword"
-        case _:     return ""
+        case _:     return
 
 def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     """This function converts number to list of bits. It accepts either str, int or list
