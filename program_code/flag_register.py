@@ -1,6 +1,6 @@
 """
 This module define class representing flag register - it allows to perform read and 
-write operations to flag register, and holds definions for meaning of each flag
+write operations to flag register, and holds definitions for meaning of each flag
 """
 
 class FlagRegister():

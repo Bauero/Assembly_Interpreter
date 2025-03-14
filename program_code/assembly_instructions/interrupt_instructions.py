@@ -94,10 +94,10 @@ def INT(**kwargs):
     ## Description
     This function performs system interruption. To perform interruption, proper value of
     interruption and arguments (AH and sometimes DL) must be specified. Calling proper
-    interruption allows to execute action. Since this functionalityty is mostly crucial
+    interruption allows to execute action. Since this functionality is mostly crucial
     with actual interaction with machine, and it's quite complicated to implement
     while being trivial to understand (look up proper AH and INT values, set and execute)
-    interrupt functionalityty was implemented in basic form, although allowing for further
+    interrupt functionality was implemented in basic form, although allowing for further
     development for anyone interested. Depending on implementation, interrupt can do nothing
     or change quite a lot. 
 

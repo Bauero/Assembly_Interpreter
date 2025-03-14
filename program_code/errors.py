@@ -173,11 +173,11 @@ class ImproperDataDefiniton (DetailedException):
 
     EX.
 
-    - Good definion
+    - Good definition
     
     hello BYTE    "Good morning", 0
 
-    - Bad definion
+    - Bad definition
 
     hello    "Good morning", 0
 

@@ -83,7 +83,7 @@ class HardwareRegisters():
     def cleanAllRegisters(self):
         """Set value of each register to 0"""
 
-        for regiser in self._regList:   self.cleanRegister(regiser)
+        for register in self._regList:   self.cleanRegister(register)
 
     def printRegisters(self):
         """Write in console value of each register"""
