@@ -12,7 +12,6 @@ from .errors import (
     FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, ImproperJumpMarker,
     ImproperDataDefiniton
     )
-from .helper_functions import loadFileFromPath
 from .code_handler import CodeHandler
 from .custom_message_boxes import show_custom_popup
 from screeninfo import get_monitors
