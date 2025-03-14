@@ -1,0 +1,5 @@
+PyQt6==6.8.1
+PyQt6_sip==13.8.0
+pytest==8.3.5
+screeninfo==0.8.1
+simpleeval==1.0.3
