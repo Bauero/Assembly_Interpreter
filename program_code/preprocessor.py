@@ -15,7 +15,7 @@ from .errors import ImproperJumpMarker, ImproperDataDefiniton, ImproperVariableN
 
 def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     """
-    This function tries to read and load file specified in the path - this is main funciton
+    This function tries to read and load file specified in the path - this is main function
     responsible for reading code - executing it with success, shoudl allow to run code from
     file.
     """
@@ -134,7 +134,7 @@ def _replaceEquateValues(assembly_code : list):
             'matches' : 0
         }
 
-    #   if no values were found for replacement end funciton here
+    #   if no values were found for replacement end function here
     if not symbol_value:    return  assembly_code
     
     filter_pattern = lambda x: fr'(?<!["\'])(\b{x}\b)(?!["\'])'
@@ -154,7 +154,7 @@ def _replaceEquateValues(assembly_code : list):
     return assembly_code
 
 def _replaceTimesValues(assembly_code : list):
-    """This funciton replaces values which are multiplied using `times` directive.
+    """This function replaces values which are multiplied using `times` directive.
     ```
     INPUT:      var times 4 db "Value"
     OUTPUT:     var db "ValueValueValueValue"

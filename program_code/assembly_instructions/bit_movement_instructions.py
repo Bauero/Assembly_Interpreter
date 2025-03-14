@@ -580,7 +580,7 @@ def RCR(**kwargs):
     return all_changes
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 for fn in [SAL, SAR, SHL, SHR, ROL, ROR, RCL, RCR]:

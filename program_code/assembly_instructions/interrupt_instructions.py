@@ -83,7 +83,7 @@ def _int_21h_10(**kwargs):
     }}
 
 #
-#   Define funciton visible for the user
+#   Define function visible for the user
 #
 
 all_instructions = locals()
@@ -134,7 +134,7 @@ def INT(**kwargs):
     return specific_interrupt(**kwargs)
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 INT.params_range = [1]

@@ -137,14 +137,15 @@ def PUSHA(**kwargs):
     
     IMPORTANT:
     `The pushad instruction pushes EAX, ECX, EDX, EBX, ESP, EBP, ESI and EDI, in this order ...
-    the push all and pop all instructions, including the pusha and popa instructions that push and pop the 16-bit registers.`
+    the push all and pop all instructions, including the pusha and popa instructions that 
+    push and pop the 16-bit registers.`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
     -> This means, that register are pushed to the stack in the following order:
 
-    AX, CX, DX, BX, SP, BP, SI, DI - SP, contains value it had before PUSHA instruction was executed
+    AX, CX, DX, BX, SP, BP, SI, DI - SP, contains value it had before PUSHA was executed
 
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write flag register into stack
@@ -262,7 +263,7 @@ def POPF(**kwargs):
     """
     # POP VALUE FROM STACK TO FLAG REGISTER
     ## Description
-    This funciton reads first two bytes starting from the byte to which SP is currently
+    This function reads first two bytes starting from the byte to which SP is currently
     pointing, and store those value in flag register. Flags are set accoring to values
     of corespoding bits.
     """
@@ -349,7 +350,7 @@ def POPA(**kwargs):
     return all_changes
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 PUSH.params_range = [1]

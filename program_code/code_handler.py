@@ -41,7 +41,7 @@ class CodeHandler():
         return output
 
     def load_file_interactive(self, file_path : str) -> list[int]:
-        """This funciton """
+        """This function """
 
         raw_file = loadFileFromPath(file_path, True, True)
         

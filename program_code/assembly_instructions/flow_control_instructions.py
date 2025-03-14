@@ -19,8 +19,8 @@ def LOOP(**kwargs):
     3. If so, jump to label; if not, continue
     
     ## IMPORTANT:
-    `... where statementLabel is the label of a statement that is a short displacement (128 bytes backward or 
-    127 bytes forward) from the loop instruction.`
+    `... where statementLabel is the label of a statement that is a short displacement
+    (128 bytes backward or 127 bytes forward) from the loop instruction.`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8

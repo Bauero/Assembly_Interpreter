@@ -213,7 +213,7 @@ def TEST(**kwargs):
     return all_changes
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 for fn in [AND, OR, XOR, TEST]:

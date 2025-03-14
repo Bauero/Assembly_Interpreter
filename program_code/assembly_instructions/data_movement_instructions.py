@@ -62,7 +62,7 @@ def XCHG(**kwargs):
     return all_changes
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 MOV.params_range = [2]

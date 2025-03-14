@@ -186,7 +186,7 @@ def STI(**kwargs):
     return response
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 for fn in [CLC, CLD, CLI, CMC, STC, STD, STI]:

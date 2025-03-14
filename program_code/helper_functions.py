@@ -66,7 +66,7 @@ def return_if_base_2_value(element: str) -> None | str:
         return element[:-1]
 
 def return_size_from_name(name : str) -> None | int:
-    """This funciton takes name (like db) as an argument, and returns size as an int"""
+    """This function takes name (like db) as an argument, and returns size as an int"""
 
     match name.lower():
         case "byte":    return 8
@@ -158,7 +158,7 @@ def convert_number_to_bits_in_str(value : str | int | list, size = 8):
 
 def convert_number_to_int_with_binary_capacity(value : str | int | list, size = 8):
     """
-    This funciton returns int which is converted after directly translating either str, 
+    This function returns int which is converted after directly translating either str, 
     int or list, to bits. This operation, although sligthly inefficent for int input
     or deicmal string, allows to confirm, that resulted value would fit in bit limit.
     """
@@ -212,7 +212,7 @@ def inverse_Twos_Compliment_Number(value : str):
 
 def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, value : list, 
                               destination_type : str, destination_value : str = ""):
-    """This funciton saves value in destinaiton, and prepares response with change made"""
+    """This function saves value in destinaiton, and prepares response with change made"""
 
     oryginal_val : list | str = []
 
@@ -243,7 +243,7 @@ def sign_changed(n1 : str, n2 : str, output : list):
     return False
 
 def binary_addition(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
-    """This funciton performs binary addition of two numbers, and returns result with values of 
+    """This function performs binary addition of two numbers, and returns result with values of 
     carry flag and auxiliary carry flag after addition"""
     
     output = []
@@ -261,7 +261,7 @@ def binary_addition(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxilia
     return output, carry, auxiliary_carry
 
 def binary_or(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
-    """This funciton performs binary OR of two numbers, and returns result with values of 
+    """This function performs binary OR of two numbers, and returns result with values of 
     carry flag and auxiliary carry flag after addition"""
     
     output = []
@@ -279,7 +279,7 @@ def binary_or(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_car
     return output, carry, auxiliary_carry
 
 def binary_xor(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
-    """This funciton performs binary XOR of two numbers, and returns result with values of 
+    """This function performs binary XOR of two numbers, and returns result with values of 
     carry flag and auxiliary carry flag after addition"""
     
     output = []

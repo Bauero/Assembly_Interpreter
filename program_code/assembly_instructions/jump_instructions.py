@@ -420,7 +420,7 @@ def JCXZ(**kwargs):
     if cx_int != 0: return {"next_instruction" : LBL}
 
 #
-#   Assign params range and allowed params combination for funcitons
+#   Assign params range and allowed params combination for functions
 #
 
 for fn_name in list(filter(lambda n: n.upper() == n, dir())):

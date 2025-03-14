@@ -1,5 +1,5 @@
 """
-This file contains main funciton responsible for handling a gui app
+This file contains main function responsible for handling a gui app
 """
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
@@ -57,7 +57,7 @@ class MainWindow(QWidget):
         self.welcomeScreen.show()
 
     def _createUserInterface(self):
-        """This funciton creates whole UI interface"""
+        """This function creates whole UI interface"""
 
         self._createMainMenuPage()
         self._createMainProgramPage()
@@ -478,7 +478,7 @@ class MainWindow(QWidget):
     @pyqtSlot()
     def _act_on_response(self, response : dict):
         """
-        This funciton is suppose to handle answers from CodeHandler - when we request to
+        This function is suppose to handle answers from CodeHandler - when we request to
         perform some action with code, CodeHandler, tries to do it using Engine, and 
         returns status of this action
         ```

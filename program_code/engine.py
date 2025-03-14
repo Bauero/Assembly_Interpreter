@@ -214,7 +214,7 @@ class Engine():
         return types_of_args
     
     def _define_arg_types_and_value(self, elements : list):
-        """This funciton parses list with elements detected in expression, 
+        """This function parses list with elements detected in expression, 
         assigns types to elements, and extract values stores in elements"""
 
         types, values = [], []
@@ -247,7 +247,7 @@ class Engine():
         return types, values
 
     def _check_standardize_mem_call(self, mem_call : str) -> str:
-        """This funciton standardizes call for memory localtion, anlayzes it's syntax for
+        """This function standardizes call for memory localtion, anlayzes it's syntax for
         errors and if everything is fine, then returns standardized argument"""
         
         processed = mem_call.replace("[", "+").replace("]","").replace(" ","").replace("\t","")
@@ -567,7 +567,7 @@ class Engine():
 
     def _check_if_operation_allowed(self, keyword : str, params : list):
         """This operation would ensure that function have the required
-        amount of params passed - it assumes that each funciton defined and used
+        amount of params passed - it assumes that each function defined and used
         in the program have """
 
         if not len(params) in funtionNameLink[keyword].params_range:
@@ -577,7 +577,7 @@ class Engine():
             return self._gen_err("wrong_combination_params", params=params)
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
-        """This funciton ensures that all calls for register are in capital names"""
+        """This function ensures that all calls for register are in capital names"""
 
         for i in range(len(elements)):
             mp = mapped_params[i]
