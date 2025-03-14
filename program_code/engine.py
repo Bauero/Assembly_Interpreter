@@ -109,7 +109,11 @@ class Engine():
         except Exception as e:
             return self._gen_err("instruction_error", e)
 
-        if self.warnings:   output["warnings"] = self.warnings
+        if self.warnings:
+            if not output.get("warnings"):
+                output["warnings"] = self.warnings
+            else:
+                output["warnings"].extend(self.warnings)
 
         return output
 
