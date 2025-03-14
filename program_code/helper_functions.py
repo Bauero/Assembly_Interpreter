@@ -101,9 +101,11 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
 
     def _convert_str(value):
         if new_value := return_if_base_16_value(value):
-            conv_value = bin(int(new_value, base=16))[2:]
-        elif return_if_base_10_value(value):
-            conv_value = bin(int(value))[2:]
+            conv_value = bin(int(new_value, 16))[2:]
+        elif new_value := return_if_base_10_value(value):
+            conv_value = bin(int(new_value))[2:]
+        elif new_value := return_if_base_8_value(int(value, 8)):
+            conv_value = bin(int(new_value))[2:]
         elif  new_value := return_if_base_2_value(value):
             conv_value = new_value[2:]
         else:
