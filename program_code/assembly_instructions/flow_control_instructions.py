@@ -29,7 +29,6 @@ def LOOP(**kwargs):
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX = HR.readFromRegister("CX")
     CRL = kwargs['line']
     DSL = kwargs['args_values_raw'][0]
@@ -40,7 +39,7 @@ def LOOP(**kwargs):
     if CRL - DSL <= 128 and CRL - DSL >= -127:
         CX_value -= 1
         CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
+        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
         
         if CX_value > 0:
             return { m[0] : [ m[1] ] }
@@ -66,7 +65,6 @@ def LOOPZ(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX  = HR.readFromRegister("CX")
     ZF  = FR.readFlag("ZF")
     CRL = kwargs['line']
@@ -77,7 +75,7 @@ def LOOPZ(**kwargs):
     if CRL - DSL <= 128 and CRL - DSL >= -127:
         CX_value -= 1
         CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
+        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
         
         if CX_value > 0 and ZF:
             return { m[0] : [ m[1] ] }
@@ -103,7 +101,6 @@ def LOOPE(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX  = HR.readFromRegister("CX")
     ZF  = FR.readFlag("ZF")
     CRL = kwargs['line']
@@ -114,7 +111,7 @@ def LOOPE(**kwargs):
     if CRL - DSL <= 128 and CRL - DSL >= -127:
         CX_value -= 1
         CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
+        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
         
         if CX_value > 0 and ZF:
             return { m[0] : [ m[1] ] }
@@ -140,7 +137,6 @@ def LOOPNZ(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX = HR.readFromRegister("CX")
     ZF = FR.readFlag("ZF")
     CRL = kwargs['line']
@@ -151,7 +147,7 @@ def LOOPNZ(**kwargs):
     if CRL - DSL <= 128 and CRL - DSL >= -127:
         CX_value -= 1
         CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
+        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
         
         if CX_value > 0 and not ZF:
             return { m[0] : [ m[1] ] }
@@ -177,7 +173,6 @@ def LOOPNE(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX = HR.readFromRegister("CX")
     ZF = FR.readFlag("ZF")
     CRL = kwargs['line']
@@ -188,7 +183,7 @@ def LOOPNE(**kwargs):
     if CRL - DSL <= 128 and CRL - DSL >= -127:
         CX_value -= 1
         CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
+        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
         
         if CX_value > 0 and not ZF:
             return { m[0] : [ m[1] ] }

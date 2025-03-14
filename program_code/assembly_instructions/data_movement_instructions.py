@@ -10,14 +10,13 @@ def MOV(**kwargs):
     
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
     v = kwargs['args_values_int'][1]
     
     output = list(convert_number_to_bit_list(v, FS))
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
     
     all_changes = {
         m[0] : [ m[1] ]
@@ -30,7 +29,6 @@ def XCHG(**kwargs):
     
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -39,8 +37,8 @@ def XCHG(**kwargs):
     values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
     save_in_des, save_in_sour = list(values_in_binary[1]), list(values_in_binary[0])
 
-    m1 = save_value_in_destination(HR, DS, VAR, save_in_des, PT, DST)
-    m2 = save_value_in_destination(HR, DS, VAR, save_in_sour, PT, DST)
+    m1 = save_value_in_destination(HR, DS, save_in_des, PT, DST)
+    m2 = save_value_in_destination(HR, DS, save_in_sour, PT, DST)
     
     if m1[0] == m2[0]:
         all_changes = {

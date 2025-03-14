@@ -347,7 +347,7 @@ def AAD(**kwargs):
     
     backup_flags = list(FR.readFlags())
     
-    FR.setFlag("ZF", not "1" in new_al)   # if any "1", ZF if OFF
+    FR.setFlag("ZF", not "1" in new_al)
     FR.setFlag("SF", new_al[0] == "1")
     FR.setFlag("PF", eval_no_of_1(new_al))
 
@@ -380,7 +380,6 @@ def ADD(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -403,7 +402,7 @@ def ADD(**kwargs):
                                   output))
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -423,7 +422,6 @@ def ADC(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -447,7 +445,7 @@ def ADC(**kwargs):
                                   output))
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -467,7 +465,6 @@ def SUB(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -491,7 +488,7 @@ def SUB(**kwargs):
                                   output))
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
     
     all_changes = {
         m[0] : [
@@ -511,7 +508,6 @@ def SBB(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -540,7 +536,7 @@ def SBB(**kwargs):
                                   output))
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [
@@ -657,7 +653,6 @@ def DEC(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -681,7 +676,7 @@ def DEC(**kwargs):
                                   output))
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [ m[1] ],
@@ -700,7 +695,6 @@ def INC(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -723,7 +717,7 @@ def INC(**kwargs):
                                   output))
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [ m[1] ],
@@ -1013,7 +1007,6 @@ def NEG(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -1044,7 +1037,7 @@ def NEG(**kwargs):
     FR.setFlag("OF", 0)
 
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],

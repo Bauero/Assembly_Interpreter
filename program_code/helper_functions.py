@@ -200,8 +200,9 @@ def inverse_Twos_Compliment_Number(value : str):
 
     return output
 
-def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variables : dict,
-                              value : list, destination_type : str, destination_value : str = ""):
+def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, value : list, 
+                              destination_type : str, destination_value : str = ""):
+    """This funciton saves value in destinaiton, and prepares response with change made"""
 
     oryginal_val : list | str = []
 

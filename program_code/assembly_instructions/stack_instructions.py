@@ -205,7 +205,6 @@ def POP(**kwargs):
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     SP = HR.readFromRegister("SP")
@@ -219,7 +218,7 @@ def POP(**kwargs):
     procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, values)))
     comb_value = list("".join(procc))
     
-    m = save_value_in_destination(HR, DS, VAR, comb_value, PT, DST)
+    m = save_value_in_destination(HR, DS, comb_value, PT, DST)
     
     SP_value += no_of_bytes
     HR.writeIntoRegister("SP", SP_value)

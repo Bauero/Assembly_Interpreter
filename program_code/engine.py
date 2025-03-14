@@ -97,7 +97,6 @@ class Engine():
                 HR = self.HR,
                 FR = self.FR,
                 DS = self.DS,
-                variables = self.variables,
                 labels = self.labels,
                 destination = destination,
                 source_params = elements_in_line[1:],

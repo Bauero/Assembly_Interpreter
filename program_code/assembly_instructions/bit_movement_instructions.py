@@ -12,7 +12,6 @@ def SHL(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -51,7 +50,7 @@ def SHL(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -71,7 +70,6 @@ def SHR(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -110,7 +108,7 @@ def SHR(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -130,7 +128,6 @@ def SAL(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -169,7 +166,7 @@ def SAL(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -189,7 +186,6 @@ def SAR(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -227,7 +223,7 @@ def SAR(**kwargs):
     FR.setFlag("PF", eval_no_of_1(value_to_shift))
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -256,7 +252,6 @@ def ROL(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -288,7 +283,7 @@ def ROL(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -317,7 +312,6 @@ def ROR(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -349,7 +343,7 @@ def ROR(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -391,7 +385,6 @@ def RCL(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -423,7 +416,7 @@ def RCL(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [
@@ -465,7 +458,6 @@ def RCR(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types']
     SOP = kwargs["source_params"]
     DST = kwargs["destination"]
@@ -497,7 +489,7 @@ def RCR(**kwargs):
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
-    m = save_value_in_destination(HR, DS, VAR, value_to_shift, PT[0], DST)
+    m = save_value_in_destination(HR, DS, value_to_shift, PT[0], DST)
 
     all_changes = {
         m[0] : [

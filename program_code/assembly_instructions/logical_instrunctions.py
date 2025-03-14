@@ -14,7 +14,6 @@ def AND(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -32,7 +31,7 @@ def AND(**kwargs):
     FR.setFlag("OF", 0)
     
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -50,7 +49,6 @@ def OR(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -70,7 +68,7 @@ def OR(**kwargs):
     FR.setFlag("OF", 0)
     
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -88,7 +86,6 @@ def XOR(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -108,7 +105,7 @@ def XOR(**kwargs):
     FR.setFlag("OF", 0)
     
     new_flags = list(FR.readFlags())
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
@@ -125,7 +122,6 @@ def NOT(**kwargs):
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     FS  = kwargs['final_size']
@@ -135,7 +131,7 @@ def NOT(**kwargs):
     
     output = list(map(lambda x: str(int(not bool(int(x)))), values_in_binary[0]))[-FS:]
 
-    m = save_value_in_destination(HR, DS, VAR, output, PT, DST)
+    m = save_value_in_destination(HR, DS, output, PT, DST)
 
     all_changes = {
         m[0] : [m[1]],
