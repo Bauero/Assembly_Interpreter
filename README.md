@@ -43,7 +43,6 @@ Assembly_interpreter
    │  ├─ logical_instrunctions.py
    │  └─ stack_instructions.py
    ├─ code_handler.py
-   ├─ code_warnings.py
    ├─ configs
    │  ├─ color_palette.json
    │  └─ names.json
