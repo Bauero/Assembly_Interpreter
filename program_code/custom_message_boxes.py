@@ -1,3 +1,7 @@
+"""
+This file contains functions for displaying custom messages to the user
+"""
+
 from PyQt6.QtWidgets import QMessageBox
 import json
 
