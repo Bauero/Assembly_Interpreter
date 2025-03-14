@@ -10,8 +10,7 @@ from .helper_functions import return_name_from_size, color_txt
 from .custom_message_boxes import show_custom_popup
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal, QEventLoop
 from PyQt6.QtGui import (
-    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette,
-    QKeyEvent)
+    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette)
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QLabel, QHBoxLayout, QLineEdit, QTextEdit,
     QMessageBox, QPlainTextEdit, QTableWidget, QHeaderView, QTableWidgetItem, 
@@ -121,12 +120,15 @@ class MultipurposeRegister(QWidget):
         self.register_decimal_value.setText(f"{int(value, base=2)}")
 
     def update(self):
+        """Refresh displayed value of the regiter"""
         self._setRegisterValue(self.HR.readFromRegister(self.register_name))
 
     def get_name(self) -> str:
+        """Return name of the register which content should be diplayed"""
         return self.register_name
     
     def set_interactive(self, value : bool = False):
+        """Set MultipurposeRegister objece, as editable"""
         self.register_high_bits.setReadOnly(not value)
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
