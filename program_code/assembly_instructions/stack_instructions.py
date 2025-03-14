@@ -323,7 +323,7 @@ def POPA(**kwargs):
     
     SP_value = int(SP, base=2)
 
-    register_backups = [HR.readFromRegister(r) for r in list_of_registers][-1:]
+    register_backups = [HR.readFromRegister(r) for r in list_of_registers][-1::-1]
 
     all_bytes = DS.get_data(SP_value, 16)
     new_registers_values = []
@@ -338,7 +338,7 @@ def POPA(**kwargs):
         "register" : []
     }
 
-    for n, register in enumerate(list_of_registers[-1:]):
+    for n, register in enumerate(list_of_registers[-1::-1]):
         all_changes["register"].append(
             {
                 "location" :        register,
@@ -359,6 +359,6 @@ PUSH.allowed_params_combinations = [ ("memory",), ("register",), ("value",)]
 POP.params_range = [1]
 POP.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-for fn in [PUSHF, PUSHA, POPF, POPF]:
+for fn in [PUSHF, PUSHA, POPF, POPA]:
     fn.params_range = [0]
     fn.allowed_params_combinations = [ tuple() ]

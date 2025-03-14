@@ -13,7 +13,10 @@ def _int_21h_2(**kwargs):
     HR = kwargs["HR"]
     DL = int(HR.readFromRegister("DL"), 2)
 
-    return {"write_char_to_terminal" : DL}
+    return {"terminal" : {
+        "action" : "write_char_to_terminal",
+        "char" : DL
+    }}
 
 def _int_21h_44(**kwargs):
     """This interrupt stores current time in CX and DX in the following format:
@@ -32,12 +35,12 @@ def _int_21h_44(**kwargs):
     hours = now.tm_hour
     minutes = now.tm_min
     seconds = now.tm_sec
-    mls = int((time.time() - int(time.time())) * 100)
+    miliseconds = int((time.time() - int(time.time())) * 100)
 
     hours_bits = bin(hours)[2:].zfill(8)
     min_bits = bin(minutes)[2:].zfill(8)
     sec_bits = bin(seconds)[2:].zfill(8)
-    msec_bits = bin(mls)[2:].zfill(8)
+    msec_bits = bin(miliseconds)[2:].zfill(8)
 
     hours_minutes_combined = list(hours_bits + min_bits)
     sec_milisec_combined = list(sec_bits + msec_bits)

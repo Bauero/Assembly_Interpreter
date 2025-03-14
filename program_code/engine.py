@@ -386,16 +386,16 @@ class Engine():
                     final_sizes.append(size if size else 16)
                 case "value":
                     if sv := return_if_base_16_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv, 16))
                     elif sv := return_if_base_10_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv))
                     elif sv := return_if_base_8_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv, 8))
                     elif sv := return_if_base_2_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv, 2))
                     if size:
                         final_sizes.append(size)

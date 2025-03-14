@@ -167,7 +167,7 @@ class CodeHandler():
             
             elif "next_instruction" in output:
                 next_line = output["next_instruction"]
-            
+                output["status"] = 0
             else:
                 if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
                     next_line = curr_line + 1

@@ -556,6 +556,11 @@ class MainWindow(QWidget):
                 self.code_handler.engine.DS.modify_data(dest, raw_bits)
                 self._set_active_state(True)
 
+            case "write_char_to_terminal":
+                char = request.get("char", "")
+                print(f"Char: '{char}'")
+                self.terminal.write_char(char)
+
     @pyqtSlot()
     def _show_popup(self, dialog : dict):
         """This method request showing popup for the current language and message"""

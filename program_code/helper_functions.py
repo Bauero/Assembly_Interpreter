@@ -62,7 +62,7 @@ def return_if_base_2_value(element: str) -> None | str:
     
     if " " in element[-2:] or "\t" in element[-2:]: return
     element = element.replace(" ", "").replace("\t", "")
-    if re.fullmatch(r"(-?[ \t]?[1][01]*|0)[bB]", element):
+    if re.fullmatch(r"-?[ \t]*[01]+[bB]", element):
         return element[:-1]
 
 def return_size_from_name(name : str) -> None | int:
@@ -112,10 +112,10 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
             conv_value = bin(int(new_value, 16))[2:]
         elif new_value := return_if_base_10_value(value):
             conv_value = bin(int(new_value))[2:]
-        elif new_value := return_if_base_8_value(int(value, 8)):
-            conv_value = bin(int(new_value))[2:]
+        elif new_value := return_if_base_8_value(value):
+            conv_value = bin(int(new_value, 8))[2:]
         elif  new_value := return_if_base_2_value(value):
-            conv_value = new_value[2:]
+            conv_value = new_value
         else:
             raise WrongNumberBase(f"Number '{value}' seems to not belong to binary," +\
                                 " decimal or hexadecimal numbers")
@@ -252,11 +252,10 @@ def binary_addition(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxilia
         b1 = int(n1[bit])
         b2 = int(n2[bit])
         result = b1 + b2 + carry
-        carry = result > 1
+        carry = int(result > 1)
         output.insert(0, str(result % 2))
         if abs(bit) == 4:   auxiliary_carry = carry
-
-    output = output[-bit_no:]
+        output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
 
@@ -273,8 +272,7 @@ def binary_or(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_car
         carry = result == 1
         output.insert(0, str(result))
         if abs(bit) == 4:   auxiliary_carry = carry
-
-    output = output[-bit_no:]
+        output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
 
@@ -291,7 +289,6 @@ def binary_xor(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_ca
         carry = b1 and b2
         output.insert(0, str(result))
         if abs(bit) == 4:   auxiliary_carry = carry
-
-    output = output[-bit_no:]
+        output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
