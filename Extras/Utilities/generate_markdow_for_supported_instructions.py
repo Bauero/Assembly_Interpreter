@@ -3,7 +3,7 @@ This file generates .md files for all instructions which are available in interp
 
 One should copy this file into root folder for this project (the same folder in which `main.py` is
 located) and execute:
-- `python3.11 print_instructions.py`
+- `python3.11 generate_markdow_for_supported_instructions.py`
 """
 
 import os
