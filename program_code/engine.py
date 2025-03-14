@@ -1,5 +1,5 @@
 """
-This file contains Engine Class, which is responsible for simluation of operations on memory
+This file contains Engine Class, which is responsible for simulation of operations on memory
 """
 
 from simpleeval import simple_eval
@@ -16,7 +16,7 @@ funtionNameLink = {k:v for k,v in locals().items() if k.isupper()}
 class Engine():
     """
     This class is responsible for execution of instructions within program. It has access
-    to virutal hardware, and given the instruction, it executes it, and modifies the registers
+    to virtual hardware, and given the instruction, it executes it, and modifies the registers
     and flags accordingly
     """
 
@@ -120,7 +120,7 @@ class Engine():
     def load_new_state_after_change(self, change : dict, forward : bool):
         """The purpose of this method is to directly change state of the simulated
         HR, FR, DATA or manipulate date, allowing to undo/redo instruction, and
-        ommit resource-intensive processing, when running already processed instructions
+        omit resource-intensive processing, when running already processed instructions
         """
 
         source = "new_value" if forward else "oryginal_value"
@@ -247,7 +247,7 @@ class Engine():
         return types, values
 
     def _check_standardize_mem_call(self, mem_call : str) -> str:
-        """This function standardizes call for memory localtion, anlayzes it's syntax for
+        """This function standardizes call for memory localtion, analyzes it's syntax for
         errors and if everything is fine, then returns standardized argument"""
         
         processed = mem_call.replace("[", "+").replace("]","").replace(" ","").replace("\t","")
@@ -369,7 +369,7 @@ class Engine():
             self, args : list,
             args_types : list,
             sizes : list) -> tuple[list[str], list[int]]:
-        """This function read arguments and gets their values. As an output it returns oryginal
+        """This function read arguments and gets their values. As an output it returns original
         values, and values converted to int, as well as sizes"""
 
         source_values = []
@@ -447,9 +447,9 @@ class Engine():
     def _standardise_sizes_check_if_legal(self, arg_types : list, sizes : list, expli_sizes : list,
                                           args_values_int : list) -> list:
         """This function asks for list with detected sizes and list with detected types and
-        werifies that sizes are correctly defined (should be equal)
+        verifies that sizes are correctly defined (should be equal)
 
-        Posible combinations, and general ideas:
+        possible combinations, and general ideas:
 
         - memory, value   -   [memory, ____ value] : explicite size diff. req. in ____
         - memory, reg     -   allowed regardless of reg value

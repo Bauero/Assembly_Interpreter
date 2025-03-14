@@ -1,5 +1,5 @@
 """
-This file contains operations which perform locical operations
+This file contains operations which perform logical operations
 """
 
 from program_code.helper_functions import (convert_number_to_bit_list,
@@ -10,8 +10,8 @@ def SHL(**kwargs):
     """
     # SHIFT LOGICAL LEFT
     ## Description
-    This operation shifts whole numer to the left. Each shift movest most significant bit
-    to CF, removes most siginificant bit from the number, and at the end, as the least 
+    This operation shifts whole number to the left. Each shift moves most significant bit
+    to CF, removes most significant bit from the number, and at the end, as the least 
     significant bit puts 0. Sets all flags except AF, based on the end result.
 
     ## Summary
@@ -82,8 +82,8 @@ def SHR(**kwargs):
     """
     # SHIFT LOGICAL RIGHT
     ## Description
-    This operation shifts whole numer to the right. Each shift movest least significant bit
-    to CF, removes most siginificant bit from the number, in place of the most signivicant
+    This operation shifts whole number to the right. Each shift moves least significant bit
+    to CF, removes most significant bit from the number, in place of the most significant
     bit puts 0. Sets all flags except AF, based on the end result.
 
     ## Summary
@@ -154,8 +154,8 @@ def SAL(**kwargs):
     """
     # SHIFT ARITHMETIC LEFT
     ## Description
-    This operation shifts whole numer to the left. Each shift movest most significant bit
-    to CF, removes most siginificant bit from the number, and at the end, as the least 
+    This operation shifts whole number to the left. Each shift moves most significant bit
+    to CF, removes most significant bit from the number, and at the end, as the least 
     significant bit puts 0. Sets all flags except AF, based on the end result.
 
     ## Summary
@@ -226,7 +226,7 @@ def SAR(**kwargs):
     """
     # SHIFT ARITHMETIC RIGHT
     ## Description
-    This operation shifts whole numer (except most significant bit) to the right.
+    This operation shifts whole number (except most significant bit) to the right.
     Least significant bit is moved to CF, while in place of second most significant
     bit 0 is placed. Affects all flags except AF.
 
@@ -339,12 +339,12 @@ def ROL(**kwargs):
     for shift in range(rotation_counter):
         value_to_shift.append(value_to_shift[0])
         carry = value_to_shift[0]
-        overfolow = value_to_shift[0] != value_to_shift[1]
+        overflow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[1:]
 
     backup_flags = FR.readFlags()
 
-    FR.setFlag("OF", overfolow)
+    FR.setFlag("OF", overflow)
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
@@ -408,12 +408,12 @@ def ROR(**kwargs):
     for shift in range(rotation_counter):
         value_to_shift.insert(0, value_to_shift[-1])
         carry = value_to_shift[-1]
-        overfolow = value_to_shift[0] != value_to_shift[1]
+        overflow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[:-1]
 
     backup_flags = FR.readFlags()
 
-    FR.setFlag("OF", overfolow)
+    FR.setFlag("OF", overflow)
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
@@ -442,7 +442,7 @@ def RCL(**kwargs):
     0    +    0 0 0 0 0 0 0 1 1 1 0 1 0 1 1 1
     ```
     After one rotation bit form last position is moved into CF, previous value of CF is moved
-    into 'f' and each other bit is shifte one right
+    into 'f' and each other bit is shifted one right
     ```
     CF   +    f e d c b a 9 8 7 6 5 4 3 2 1 0
 
@@ -482,12 +482,12 @@ def RCL(**kwargs):
     for shift in range(rotation_counter):
         value_to_shift.append(carry)
         carry = value_to_shift[0]
-        overfolow = value_to_shift[0] != value_to_shift[1]
+        overflow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[1:]
 
     backup_flags = FR.readFlags()
 
-    FR.setFlag("OF", overfolow)
+    FR.setFlag("OF", overflow)
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()
@@ -507,7 +507,7 @@ def RCL(**kwargs):
 
 def RCR(**kwargs):
     """
-    # ROTATE THROUGH CARRY RIGH
+    # ROTATE THROUGH CARRY RIGHT
     ## Description
     Perform rotation as if carry flag was an additional, least significant bit of number
     ```
@@ -556,12 +556,12 @@ def RCR(**kwargs):
     for shift in range(rotation_counter):
         value_to_shift.insert(0, carry)
         carry = value_to_shift[-1]
-        overfolow = value_to_shift[0] != value_to_shift[1]
+        overflow = value_to_shift[0] != value_to_shift[1]
         value_to_shift = value_to_shift[:-1]
 
     backup_flags = FR.readFlags()
 
-    FR.setFlag("OF", overfolow)
+    FR.setFlag("OF", overflow)
     FR.setFlag("CF", carry == "1")
 
     new_flags = FR.readFlags()

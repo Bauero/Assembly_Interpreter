@@ -73,7 +73,7 @@ class MainWindow(QWidget):
         self.programScreen.setGeometry(pos_x, pos_y, monitor_width, monitor_height)
 
     def _createMainMenuPage(self):
-        """Defines Main Menu page visible when user lanuches program"""
+        """Defines Main Menu page visible when user launches program"""
 
         self.welcomeScreen = QWidget()
         welcomeLayout = QVBoxLayout()
@@ -543,7 +543,7 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _perform_terminal_aciton(self, request : dict):
-        """This method performs aciton requireing user interaction with terminal"""
+        """This method performs action requiring user interaction with terminal"""
         
         match request.get("action"):
             
@@ -565,7 +565,7 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _refresh(self):
-        """This method refreshes elemetns in the main program"""
+        """This method refreshes elements in the main program"""
 
         for element in self.register_section_elements:
             element.update()    
@@ -608,7 +608,7 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _lang_change(self):
-        """This method is repsonsible for reloading elements in GUI to show
+        """This method is responsible for reloading elements in GUI to show
         test in selected language"""
         
         option = self.toggle_language.currentIndex()

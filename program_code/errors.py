@@ -1,7 +1,7 @@
 """
-This moduele holds all defined errors with it's definitions
+This module holds all defined errors with it's definitions
 
-Each error should contain it's own definition, with descriptio abot what hapened
+Each error should contain it's own definition, with description about what happend
 which triggered en error
 """
 
@@ -9,7 +9,7 @@ from abc import abstractmethod
 
 class DetailedException(Exception):
     """
-    This is abstract class for methods which should rise specific exeption which
+    This is abstract class for methods which should rise specific exception which
     could later be used to prompt user with warning
     """
 
@@ -63,7 +63,7 @@ class ValueIsNotANumber (Exception):
 
 class IncorectValueInListOfBits (Exception):
     """
-    This error is raised if program is asked to ensure that list containst values which
+    This error is raised if program is asked to ensure that list contains values which
     suppose to be bits (like ['1', '1', '0']) but detects that one of the element is not
     '0' or '1'
     """
@@ -79,7 +79,7 @@ class IncorectValueInListOfBits (Exception):
 
 class ImproperJumpMarker (DetailedException):
     """
-    This error is raised when program detects statemenet which seems to be a 
+    This error is raised when program detects statement which seems to be a 
     marker for jump. Allowed loop names examples:
 
     - "JumpHere:" or "_Loop:" or "Loop1:"
@@ -131,10 +131,10 @@ class FileDoesntExist (Exception):
 
 class FileSizeMightBeTooBig (Exception):
     """
-    This error is raise if file which is beign open is too big (above 1MB). It is
+    This error is raise if file which is opened is too big (above 1MB). It is
     to prevent opening files which would force interpreter to use extended resource.
 
-    It can be ommited if needed.
+    It can be omitted if needed.
     """
     def __init__(self, message = ""): self.message = message
     def __str__(self): return f"file {self.message} too big"
@@ -143,7 +143,7 @@ class FileSizeMightBeTooBig (Exception):
 class FileTypeNotAllowed (Exception):
     """
     This error is raised if during processing a file with not allowed extension
-    is pased for processing
+    is passed for processing
     """
 
     def __init__(self, extension = "", allowed = ['.s','.asm']):
@@ -175,15 +175,15 @@ class ImproperDataDefiniton (DetailedException):
 
     - Good definion
     
-    powit BYTE    "Witajcie w moich skromnych prograch :)", 0
+    hello BYTE    "Good morning", 0
 
     - Bad definion
 
-    powit    "Witajcie w moich skromnych prograch :)", 0
+    hello    "Good morning", 0
 
-    powit = "Witajcie w moich skromnych prograch :)", 0
+    hello = "Good morning", 0
 
-    powit  8  "Witajcie w moich skromnych prograch :)", 0
+    hello  8  "Good morning", 0
     """
     def __init__(self, line_num : int | None = None, line_content : str = ''):
         # super().__init__()

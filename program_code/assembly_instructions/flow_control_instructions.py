@@ -14,7 +14,7 @@ def LOOP(**kwargs):
     ## Description
     This function perfoms jump to the specified location if value in CX>0;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0
     3. If so, jump to label; if not, continue
     
@@ -53,7 +53,7 @@ def LOOPZ(**kwargs):
     ## Description
     # This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=1
     3. If so, jump to label; if not, continue
     
@@ -92,7 +92,7 @@ def LOOPE(**kwargs):
     ## Description
     This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=1
     3. If so, jump to label; if not, continue
     
@@ -131,7 +131,7 @@ def LOOPNZ(**kwargs):
     ## Description
     This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=0
     3. If so, jump to label; if not, continue
     
@@ -170,7 +170,7 @@ def LOOPNE(**kwargs):
     ## Description
     This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=0
     3. If so, jump to label; if not, continue
     

@@ -15,10 +15,10 @@ def AAA(**kwargs):
     """
     # ADJUST AFTER ADDITION.
     ## Description
-    This function is designed to ajdust score after addition on number stored in BCD code.
+    This function is designed to adjust score after addition on number stored in BCD code.
     The purpose of this operation is to separate number stored in AL in binary form to 
     number stored in AH and AL in BCD form. What it does, is check if number in AL is greater
-    than 9, or overflow to upper nible of AL occured (AF == 1), and if so, it adds one to 
+    than 9, or overflow to upper nibble of AL occurred (AF == 1), and if so, it adds one to 
     to AH, adds 6 to AL, sets both AF to 1 and CF to 1, and clears bits of upper nibble in 
     AL. This operation doesn't affect other flags.
     
@@ -86,13 +86,13 @@ def AAA(**kwargs):
 
 def AAS(**kwargs):
     """
-    # ADJUST AFTER SUBSTRACTION.
+    # ADJUST AFTER subtraction.
     ## Description
-    This function is designed to ajdust score after substraction on number stored in BCD code.
+    This function is designed to adjust score after subtraction on number stored in BCD code.
     
     The purpose of this operation is to separate number stored in AL in binary form to 
     number stored in AH and AL in BCD form. What it does, is check if number in AL is greater
-    than 9, or overflow to upper nible of AL occured (AF == 1), and if so, it subtracts one to 
+    than 9, or overflow to upper nibble of AL occurred (AF == 1), and if so, it subtracts one to 
     from AH, subtracts 6 from AL, sets both AF to 1 and CF to 1, and clears bits of upper nibble in 
     AL. This operation doesn't affect other flags.
     
@@ -160,13 +160,13 @@ def AAS(**kwargs):
 
 def DAS(**kwargs):
     """
-    # DECIMAL ADJUST FOR SUBSTRACTION
+    # DECIMAL ADJUST FOR subtraction
     ## Description
-    Decimal adjustr after binary substraction in BCD code. This function performs 
+    Decimal adjust after binary subtraction in BCD code. This function performs 
     the following operation. If lower nibble in AL is greater than 9 or AF is set, 
-    function substracts 6 from AL, and sets AF to 1. Then function check if AL is 
+    function subtracts 6 from AL, and sets AF to 1. Then function check if AL is 
     greater than 9Fh (159) or if the CF is set. If any of those conditions is met, 
-    function substracts 60h (96) from AL and sets CF to 1.
+    function subtracts 60h (96) from AL and sets CF to 1.
     This function influences flags SF, ZF, AF, PF, CF.
     
     ## Summary:
@@ -239,7 +239,7 @@ def DAA(**kwargs):
     """
     # DECIMAL ADJUST FOR ADDITION
     ## Description
-    Decimal adjustr after binary addition in BCD code. This function performs the 
+    Decimal adjust after binary addition in BCD code. This function performs the 
     following operation. If lower nibble in AL is greater than 9 or AF is set, 
     function adds 6 to AL, and sets AF to 1. Then function check if AL is greater 
     than 9Fh (159) or if the CF is set. If any of those conditions is met, function 
@@ -314,7 +314,7 @@ def AAM(**kwargs):
     """
     # ADJUST FOR MULTIPLY
     ## Description
-    This function makes correction after multiplicaiton of two digits in BCD code.
+    This function makes correction after multiplication of two digits in BCD code.
     Internally this function divides AL by 10 and stores quotient in AH, while 
     reminder is stored in AL. Function sets flags SF, ZF, PF according to AX 
     value at the end of the operation.
@@ -438,7 +438,7 @@ def ADD(**kwargs):
     """
     # ADD
     ## Description
-    This function performs binary additon of two number, and then sets flags
+    This function performs binary addition of two number, and then sets flags
     accoridingly. This influences flags OF, SF, ZF, AF, PF, CF.
     
     ## Summary
@@ -492,7 +492,7 @@ def ADC(**kwargs):
     # ADC
     ## Description
     This function works like ADD but after initial addition of two numbers, to 
-    the destiation value of CF is added. This influences flags OF, SF, ZF, AF, PF, CF.
+    the destination value of CF is added. This influences flags OF, SF, ZF, AF, PF, CF.
     
     ## Summary
     Arg1 += Arg2
@@ -546,7 +546,7 @@ def SUB(**kwargs):
     """
     # SUB
     ## Description
-    This function performs binary additon of two number as A - B is equivalent
+    This function performs binary addition of two number as A - B is equivalent
     to A + B', where B' is two's compliment of B.
     This influences flags OF, SF, ZF, AF, PF, CF.
     
@@ -601,7 +601,7 @@ def SBB(**kwargs):
     """
     # SUB
     ## Description
-    This function works like SUB, but it substracts value of CF form the result
+    This function works like SUB, but it subtracts value of CF form the result
     of A - B. Therefore it's equivalent to A - B - C, or A - (B + C). As in SUB
     function, we use the informaiton, that A-B is equal to A-B' if B' is two's
     compliment of B. Therefore SBB adds CF to B, calculates two's compliment of
@@ -627,7 +627,7 @@ def SBB(**kwargs):
     
     values_in_binary = [convert_number_to_bit_list(v, FS) for v in RAW]
 
-    # Convert substracted value using the observation that: A - B - CF = A + ( -(B + CF) )
+    # Convert subtracted value using the observation that: A - B - CF = A + ( -(B + CF) )
     tmp = int("".join(values_in_binary[1]), base=2) + CF
     values_in_binary[1] = bin(tmp)[2:].zfill(32)[-32:]
     values_in_binary[1] = inverse_Twos_Compliment_Number(values_in_binary[1])
@@ -666,11 +666,11 @@ def CMP(**kwargs):
     # COMPARE
     ## Description
     This function performs comparison between two operands to set flags
-    accordingly. It is equivalend to SUB instruction, but in contrast to it, 
+    accordingly. It is equivalent to SUB instruction, but in contrast to it, 
     CMP doesn't save output anywhere. Affects flags OF, SF, ZF, AF, PF, CF.
     
     ## Summary
-    Calculate Arg1 - Arg2 -> set flags accoring to output
+    Calculate Arg1 - Arg2 -> set flags according to output
     """
 
     FR  = kwargs["FR"]
@@ -708,7 +708,7 @@ def CMP(**kwargs):
 def CBW(**kwargs):
     """
     # CONVERT BYTE WORD
-    ## Descritpion
+    ## Description
     Extends bit on position 7 in AL to AH, by taking it's value and filling each
     bit of AH with that value. Content of AL remains unchanged. Doesn't affect flags.
     
@@ -770,7 +770,7 @@ def DEC(**kwargs):
     """
     # DECREMENT
     ## Description
-    This instruction substract 1 from the argument, and store the new value inside
+    This instruction subtract 1 from the argument, and store the new value inside
     source value. Affects flags OF, SF, ZF, AF, and PF accordingly.
     
     ## Summary
@@ -870,7 +870,7 @@ def MUL(**kwargs):
     This operation performs multiplication, which internally is equivalent to 
     addition of multiple values of AX or AL, each left-shifted by the offset of 
     another bit from the right. This function sets flags CF and OF if upper part 
-    of resutl - DX or AH depending on operaiton size - is not equal to 0; otherwise 
+    of result - DX or AH depending on operation size - is not equal to 0; otherwise 
     CF and OF is set to 0. Doesn't affect other flags.
 
     ## Summary
@@ -958,11 +958,11 @@ def IMUL(**kwargs):
     # INTEGERS MULTIPLICATION
     ## Description
     This operation performs multiplication but takes into account sigh of the 
-    numbers. First, function finds two's compliment of argumenst (DX:AX or AX and
+    numbers. First, function finds two's compliment of arguments (DX:AX or AX and
     function Argument) of those values which are negative. Then, it performs normal
-    mutiplication. Then if sigs of numbers were not equal it calculates two's 
+    mutiplication. Then if signs of numbers were not equal it calculates two's 
     compliment of the result. Final value is stored in AX (for 8 bit multiplication) or
-    DX:AX (for 16 bit multiplicaiton). Flags CF and OF are set if upper half 
+    DX:AX (for 16 bit multiplication). Flags CF and OF are set if upper half 
     doesn't only contains bits with value of the sign of lower half. (for 8 bit, 
     if AH != 00000000 if AL 0??????? or AH != 11111111 if AL 1???????).
     Other flags are not changed.
@@ -1064,9 +1064,9 @@ def DIV(**kwargs):
     """
     # DIVISION
     ## Description
-    This function performs standard division treading both argumens as unsigned nubmers.
-    First argument is always AX (for divisioin with byte-size value) or 
-    DX:AX (for divisioin with word-size value). Quotient is stored in lover half, of first
+    This function performs standard division treading both arguments as unsigned nubmers.
+    First argument is always AX (for division with byte-size value) or 
+    DX:AX (for division with word-size value). Quotient is stored in lover half, of first
     argument (AL or AX) and reminder in the upper half (AH or DX). This operation doesn't 
     affect any flags.
 
@@ -1121,14 +1121,14 @@ def DIV(**kwargs):
 
 def IDIV(**kwargs):
     """
-    # INTIGER DIVISION
+    # INTEGER DIVISION
     ## Description
     This function performs division operation, while keeping sign of operation.
     First, function converts numbers to their's two's compliment equivalents if
     they are negative. Then typical division (as with DIV operation) is performed.
-    At the end, if signs of numbers are not equal, two's compliment of the resutl
+    At the end, if signs of numbers are not equal, two's compliment of the result
     is calculated, and stored inside AX or DX:AX. Other information are the same
-    as in DIV instruciton. Funciton doesn't modify any flags.
+    as in DIV instruction. Function doesn't modify any flags.
 
     ## Summary
     ### Case 1 - division with 8 bit number

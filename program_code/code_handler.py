@@ -1,7 +1,7 @@
 """
-This file is responsible for managing opened file - loading it, and then passin instruction
-to engine. It can communicate with engine to provide functionali like calling functions,
-or jumps. It is also responible for managing history or operations done by program
+This file is responsible for managing opened file - loading it, and then passing instruction
+to engine. It can communicate with engine to provide functionality like calling functions,
+or jumps. It is also responsible for managing history or operations done by program
 """
 
 from .preprocessor import loadMainFile
@@ -12,8 +12,8 @@ import pickle
 
 class CodeHandler():
     """
-    This class is responsible for handlind opened files - it passes lines for execution, 
-    handles opened file and loades instruction for engine
+    This class is responsible for handling opened files - it passes lines for execution, 
+    handles opened file and loads instruction for engine
     """
 
     def __init__(self, engine : Engine):
@@ -47,30 +47,30 @@ class CodeHandler():
         
         self.rawfiles["interactive"] = raw_file
         start = -1
-        preprocessed_instrucitons = []
+        preprocessed_instructions = []
 
         self.currentlyExecutedFile = "interactive"
         self.currentlyExecutedLine["interactive"] = start
         self.openFiles.append("interactive")
-        self.files["interactive"] = preprocessed_instrucitons
+        self.files["interactive"] = preprocessed_instructions
         
         self.history = History(
             "interactive",
             raw_file,
-            preprocessed_instrucitons
+            preprocessed_instructions
         )
         
         return start, raw_file
 
     def preprocessFile(self, path_to_file : str, raw_file : list):
         self.rawfiles[path_to_file] = raw_file
-        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.DS)
-        self.pass_variable_to_engine(preprocessed_instrucitons)
+        start, preprocessed_instructions = loadMainFile(raw_file, self.engine.DS)
+        self.pass_variable_to_engine(preprocessed_instructions)
 
         self.currentlyExecutedFile = path_to_file
         self.currentlyExecutedLine[path_to_file] = start
         self.openFiles.append(path_to_file)
-        self.files[path_to_file] = preprocessed_instrucitons
+        self.files[path_to_file] = preprocessed_instructions
 
         output = start[1] if start != (-1, [-1]) else [0]
 
@@ -95,19 +95,19 @@ class CodeHandler():
 
             return start
 
-    def pass_variable_to_engine(self, preprocessed_instrucitons):
-        assert type(preprocessed_instrucitons) == dict
-        self.engine.informAboutLabels(preprocessed_instrucitons['labels'])
+    def pass_variable_to_engine(self, preprocessed_instructions):
+        assert type(preprocessed_instructions) == dict
+        self.engine.informAboutLabels(preprocessed_instructions['labels'])
         self.engine.informAboutVariables(
-            preprocessed_instrucitons['variables'],
+            preprocessed_instructions['variables'],
         )
 
     def executeCommand(self, command, **kwargs):
         """
         This function is like transition layer between Engine and Gui - from Gui, user
-        orders line exeuction, code handler passes appriopriate line to engine, and controls
-        that the excution was correct. This function is responsible for catching any errors
-        and passing appriopriate info to Gui, which would then handle notifying user about
+        orders line exeuction, code handler passes appropriate line to engine, and controls
+        that the execution was correct. This function is responsible for catching any errors
+        and passingg appropriate info to Gui, which would then handle notifying user about
         what went wrong
         """
 
@@ -197,9 +197,9 @@ class CodeHandler():
 
     def _run_previous_instruction(self, **kwargs):
         """
-        Handles action when user presses "previous instruciton" button. Regarding on the
+        Handles action when user presses "previous instruction" button. Regarding on the
         state, it load state when previous instruction was about to be executed, if, 
-        of course, we have any previous instruciton stored in history
+        of course, we have any previous instruction stored in history
         """
 
         try:

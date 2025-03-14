@@ -81,7 +81,7 @@ def return_size_from_name(name : str) -> None | int:
 
 def return_name_from_size(size : int) -> None | str:
     """
-    This function takes int as an argument, and returns coresponding size:
+    This function takes int as an argument, and returns corresponding size:
     - 8  -> `byte`
     - 16 -> `word`
     - 32 -> `dword`
@@ -103,7 +103,7 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     """
     
     assert size > 0, f"Cannot convert number to size which is less or equal to 0"
-    assert size % 8 == 0, f"Cannot convert number, as the specified size is not mutiple of 8"
+    assert size % 8 == 0, f"Cannot convert number, as the specified size is not multiple of 8"
  
     negative_value = False
 
@@ -133,7 +133,7 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
         value = abs(value)
         converted_value = bin(value)[2:]
     elif type(value) == list:
-        value = [str(e) for e in value] # ensure all elemetns in value are str
+        value = [str(e) for e in value] # ensure all elements in value are str
         for bit in value:
             if bit not in ['0', '1']:
                 raise IncorectValueInListOfBits(f"Bit '{bit}' in list '{value}' is not '1' or '0'")
@@ -159,8 +159,8 @@ def convert_number_to_bits_in_str(value : str | int | list, size = 8):
 def convert_number_to_int_with_binary_capacity(value : str | int | list, size = 8):
     """
     This function returns int which is converted after directly translating either str, 
-    int or list, to bits. This operation, although sligthly inefficent for int input
-    or deicmal string, allows to confirm, that resulted value would fit in bit limit.
+    int or list, to bits. This operation, although slightly inefficient for int input
+    or decimal string, allows to confirm, that resulted value would fit in bit limit.
     """
 
     return int(convert_number_to_bits_in_str(value, size), base = 2)
@@ -169,12 +169,12 @@ def loadFileFromPath(path_to_file : str,
               ignore_size_limit : bool = False,
               ignore_file_type : bool = False) -> list | Exception:
     """
-    This function loads file (if one exist) and returns loaded file as subscribtable
+    This function loads file (if one exist) and returns loaded file as subscriptable
     object for further processing.
 
     :param:
     - `ignore_size_limit` : bool - allow to process file above 1MB
-    - `ignore_file_type` : bool - allow to process file with extenstion other than .s or .asm
+    - `ignore_file_type` : bool - allow to process file with extension other than .s or .asm
     """
 
     if not os.path.exists(path_to_file):

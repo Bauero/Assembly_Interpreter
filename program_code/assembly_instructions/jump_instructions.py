@@ -1,5 +1,5 @@
 """
-This file contains all jump instuctions which are supported in x86 Assembly
+This file contains all jump instructions which are supported in x86 Assembly
 """
 
 from program_code.helper_functions import convert_number_to_int_with_binary_capacity
@@ -200,7 +200,7 @@ def JNLE(**kwargs):
 
 def JGE(**kwargs):
     """
-    # JUMP IF GRETER OR EQUAL
+    # JUMP IF GREATER OR EQUAL
     ## Description
     Jump if greater or equal -> SF=0F.
     """
@@ -384,7 +384,7 @@ def JO(**kwargs):
     """
     # JUMP IF OVERFLOW
     ## Description
-    Jump if overflow occured -> OF=1.
+    Jump if overflow occurred -> OF=1.
     """
 
     FR  = kwargs["FR"]
@@ -396,7 +396,7 @@ def JNO(**kwargs):
     """
     # JUMP IF NOT OVERFLOW
     ## Description
-    Jump if overflow haven't occured -> PF=0.
+    Jump if overflow haven't occurred -> PF=0.
     """
 
     FR  = kwargs["FR"]

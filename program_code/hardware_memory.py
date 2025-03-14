@@ -12,8 +12,8 @@ class DataSegment:
     """
     This class is designed to keep static data which is defined in data section, but in COM app is also
     stack. As with real computer, we assume, that static data is kept within one continues line in memory - 
-    therefore we can access values by asking for a range of memory - x amoung of bytes/words etc. 
-    which starts at a specific address. By default, all valuse are assumed to take up 1 byte in
+    therefore we can access values by asking for a range of memory - x among of bytes/words etc. 
+    which starts at a specific address. By default, all values are assumed to take up 1 byte in
     memory. This is also assumed by 'size' property - it returns amount of bytes stored in our data.
     """
 
@@ -24,7 +24,7 @@ class DataSegment:
     def modify_data(self, starting_byte = 0, list_of_new_bits : list[str] = []) -> int:
         """Modify in place X amount of bytes. Function returns value of counter
         
-        :param: `starting_byte` - no. of starting byte which marks begining of writing
+        :param: `starting_byte` - no. of starting byte which marks beginning of writing
         :param: `list_of_new_bits` - list of bits forming X amount of bytes which will
         be written into memory
         """

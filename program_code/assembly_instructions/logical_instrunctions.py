@@ -1,5 +1,5 @@
 """
-This file contains operations which perform locical operations
+This file contains operations which perform logical operations
 """
 
 from program_code.helper_functions import (save_value_in_destination,
@@ -15,7 +15,7 @@ def AND(**kwargs):
     Performs logical AND operation on two numbers. For each bit of two numbers logical
     AND operation is performed, and result is stored in appropriate place in the result
     value. At the end, result value is stored in destination.
-    Affectes flags OF, SF, ZF, PF, CF.
+    affects flags OF, SF, ZF, PF, CF.
     """
 
     HR  = kwargs["HR"]
@@ -57,7 +57,7 @@ def OR(**kwargs):
     Performs logical OR operation on two numbers. For each bit of two numbers logical
     OR operation is performed, and result is stored in appropriate place in the result
     value. At the end, result value is stored in destination.
-    Affectes flags OF, SF, ZF, PF, CF.
+    affects flags OF, SF, ZF, PF, CF.
     """
 
     HR  = kwargs["HR"]
@@ -101,7 +101,7 @@ def XOR(**kwargs):
     Performs logical XOR operation on two numbers. For each bit of two numbers logical
     XOR operation is performed, and result is stored in appropriate place in the result
     value. At the end, result value is stored in destination.
-    Affectes flags OF, SF, ZF, PF, CF.
+    affects flags OF, SF, ZF, PF, CF.
     """
 
     HR  = kwargs["HR"]
@@ -179,8 +179,8 @@ def TEST(**kwargs):
     """
     # TEST
     ## Description
-    This operation works exacly like AND operation, but doesn't store value anywhere. 
-    This instruciton sets flags OF, SF, ZF, PF, CF.
+    This operation works exactly like AND operation, but doesn't store value anywhere. 
+    This instruction sets flags OF, SF, ZF, PF, CF.
     
     ## Summary
     Argumen1 ^ Argument2 -> Set flags accordingly

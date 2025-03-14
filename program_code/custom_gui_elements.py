@@ -1,5 +1,5 @@
 """
-This file containst gustom GUI structures which are then later used in main gui
+This file contains custom GUI structures which are then later used in main gui
 file
 """
 
@@ -48,7 +48,7 @@ reg_label_width = 30
 no_spacing = 0
 
 class MultipurposeRegister(QWidget):
-    """This class creates a widget for displaying multipurpose register, splited into
+    """This class creates a widget for displaying multipurpose register, splitted into
     high and low bits as well as a dedicated field for displaying decimal value of register
     """
 
@@ -262,7 +262,7 @@ class CustomIndicator(QLabel):
 
 class Flags(QWidget):
     """
-    This class is responsible for display of flag register = it containts a text
+    This class is responsible for display of flag register = it contains a text
     field with source value, and below it, there are checkbox'es working like 
     indicators for all flags which are important for the user
     """
@@ -420,7 +420,7 @@ class LineNumberArea(QWidget):
 
 class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
-    custom text field, with numered lines, and option to highlight a certain line"""
+    custom text field, with numbered lines, and option to highlight a certain line"""
 
     def __init__(self, language : str, theme : str):
         super().__init__()

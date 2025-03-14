@@ -21,7 +21,7 @@ def _int_21h_44(**kwargs):
     - CH - Hours
     - CL - Minutes
     - DH - Seconds
-    - DL - Miliseconds
+    - DL - Milliseconds
     """
 
     HR = kwargs["HR"]
@@ -92,12 +92,12 @@ def INT(**kwargs):
     """
     # INTERRUPT
     ## Description
-    This function peforms system interruption. To perform interruption, proper value of
+    This function performs system interruption. To perform interruption, proper value of
     interruption and arguments (AH and sometimes DL) must be specified. Calling proper
-    interruption allows to execute action. Since this functionality is mostly crutial
-    with actuall interractioin with machine, and it's quite complicated to implememnt
+    interruption allows to execute action. Since this functionalityty is mostly crucial
+    with actual interaction with machine, and it's quite complicated to implement
     while being trivial to understand (look up proper AH and INT values, set and execute)
-    interrupt functionality was implemented in basic form, although allowing for further
+    interrupt functionalityty was implemented in basic form, although allowing for further
     development for anyone interested. Depending on implementation, interrupt can do nothing
     or change quite a lot. 
 
@@ -110,7 +110,7 @@ def INT(**kwargs):
     - CH - Hours
     - CL - Minutes
     - DH - Seconds
-    - DL - Miliseconds
+    - DL - Milliseconds
     ### 3. INT 21H, AH = 0   (0h)
     Terminate execution.
     ### 4. INT 21H, AH = 76  (4Ch)

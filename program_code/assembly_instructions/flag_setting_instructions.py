@@ -1,6 +1,6 @@
 """
 This file stores all instructions which are responsible for setting a specific flags in
-procesor
+processor
 """
 
 def CLC(**kwargs):

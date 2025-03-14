@@ -8,7 +8,7 @@ class FlagRegister():
     representing internal state of processor"""
     
     def __init__(self):
-        """Initialization of ther flag register"""
+        """Initialization of the flag register"""
         self.list_of_flags = ["MD", "NT", "IO"," PL", "OF", "DF", "IF", "TF", "SF", "ZF", "PF", "CF"]
         self.FLAGS = [0 for _ in range(16)]
         self.clearFlags()

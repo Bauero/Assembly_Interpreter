@@ -11,7 +11,7 @@ ok_button =     QMessageBox.StandardButton.Ok
 cancel_button = QMessageBox.StandardButton.Cancel
 
 def _unrecognized_error_popup(**kwargs):
-    """An undefined error occured"""
+    """An undefined error occurred"""
     language = kwargs["language"]
     source_error = kwargs["source_error"]
     msg = QMessageBox()
@@ -93,7 +93,7 @@ def _improper_flags_value(**kwargs):
     return msg.exec()
 
 def _invalid_binary_number(**kwargs):
-    """Binary number containg other chars other than 1's and 0's"""
+    """Binary number containing other chars other than 1's and 0's"""
     language = kwargs["language"]
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Warning)
@@ -174,7 +174,7 @@ def _unrecognized_argument(**kwargs):
     return msg.exec()
 
 def _instruction_error(**kwargs):
-    """While running instruction an error occured"""
+    """While running instruction an error occurred"""
     language = kwargs["language"]
     line = kwargs["line"]
     source_error = kwargs["source_error"]
@@ -279,7 +279,7 @@ def _explicite_sizes_mismatch(**kwargs):
     return msg.exec()
 
 def _value_exceeds_bound(**kwargs):
-    """Defined value is too big for the destination - aditional values are ignored"""
+    """Defined value is too big for the destination - additional values are ignored"""
     language = kwargs["language"]
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Warning)

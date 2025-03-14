@@ -1,5 +1,5 @@
 """
-This module is responible for handling and storing instructions, as well as permanent
+This module is responsible for handling and storing instructions, as well as permanent
 storage of state of the program if one want's to save the current state as a file, for
 later
 """
@@ -11,13 +11,13 @@ from .flag_register import FlagRegister as Fr
 class History():
     """
     History class creates and object which stores information about current progress of
-    programm running, which allows for clean acces from the main program
+    program running, which allows for clean access from the main program
     """
 
-    def __init__(self, path_to_file, raw_file, preprocessed_instrucitons):
+    def __init__(self, path_to_file, raw_file, preprocessed_instructions):
         self._path_to_file = path_to_file
         self._raw_file = raw_file
-        self._preprocessed_instrucitons = preprocessed_instrucitons
+        self._preprocessed_instructions = preprocessed_instructions
         self._history = []
         self._current_instruction = -1
 
@@ -77,7 +77,7 @@ class History():
 
         return_all =  (self.HR, self.FR, self.data, self.variables,
                         self._path_to_file, self._raw_file, 
-                        self._preprocessed_instrucitons)
+                        self._preprocessed_instructions)
 
         del self.HR
         del self.FR

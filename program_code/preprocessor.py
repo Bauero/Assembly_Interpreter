@@ -1,5 +1,5 @@
 """
-This file contains functions which purpose is to read, and preprocess file to 
+This file contains functions which purpose is to read, and process file to 
 allow for it's further use inside program.
 """
 
@@ -16,7 +16,7 @@ from .errors import ImproperJumpMarker, ImproperDataDefiniton, ImproperVariableN
 def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     """
     This function tries to read and load file specified in the path - this is main function
-    responsible for reading code - executing it with success, shoudl allow to run code from
+    responsible for reading code - executing it with success, should allow to run code from
     file.
     """
 
@@ -32,7 +32,7 @@ def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
 
 def _initialLoadAndCleanup(file : list, Data : DataSegment):
     """
-    Remove comments and empty lines - ignore directives and secitons
+    Remove comments and empty lines - ignore directives and sections
     """
     
     allowed_sections = ['code', 'stack', 'data', 'text']
@@ -57,7 +57,7 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
         if line.startswith('.') and line[1:].split(" ")[0].lower() not in allowed_sections:
             continue
 
-        #   Detect indentifiers (points where code could jump to)
+        #   Detect identifiers (points where code could jump to)
         if re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
             values = line.split(':')
             assert len(values) > 0, 'Empty ":" in line - did you forget the identifier?'
@@ -66,7 +66,7 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
                 assert len(values) < 3, 'Multiple ":" in one line detected'
                 marker_in_line, line = values
                 
-        #   Detect imporper line with ":"
+        #   Detect improper line with ":"
         if re.match(r"(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
             raise ImproperJumpMarker(number, f"\nIncorrect line with \":\" -> [{line}]'")
 
@@ -87,7 +87,7 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
 
 def _divideCodeToSection(assembly_code : list):
     """
-    This command will limit the subset of lines in code for execution, by spliting code
+    This command will limit the subset of lines in code for execution, by splitting code
     into sections. This is done to allow for initial preprocessing of functions and
     variables
     """

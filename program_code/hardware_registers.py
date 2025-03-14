@@ -1,5 +1,5 @@
 """
-This file initializes hardware registes, along with methods for it's initializaiton
+This file initializes hardware registes, along with methods for it's initialization
 """
 
 from .errors import RegisterNotImplemented
