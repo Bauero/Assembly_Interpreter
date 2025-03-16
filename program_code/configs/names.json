@@ -90,6 +90,11 @@
             "wrong_first_reg" : "Niepoprawny pierwszy rejestr",
             "cant_use_sp" : "Nie można użyć SP",
             "value_too_big" : "Wartość za duża",
+            "improper_line" : "Wykryto niepoprawną linię",
+            "multiple_colons" : "Wykryto nadmiarowe ':'",
+            "empty_file" : "Plik jest pusty!",
+            "no_instructions" : "Brak poleceń do wykonania",
+            "unrecognized_section" : "Wykryto nieobsługiwaną sekcję",
             
             "only_1_0_allowed" : "Wprowadź poprawny number binary - składający się z 1 i 0",
             "value_0_255" : "Wartość poza zakresem 0 - 255",
@@ -125,7 +130,15 @@
             "ret_same_type" : "W odwołaniu do pamięci, oba rejestry są tego samego typu, co jest zabronione",
             "first_reg_bx" : "Przy odwołaniu do pamięci, przy użyciu dwóch rejestrów, rejestr BX musi być pierwszym w odwołaniu",
             "sp_not_callable" : "Zabronione jest wykorzystanie SP jako rejestru z wartością przy odwołaniach do pamięci",
-            "val_exceeds_bounds" : "Podana wartość przekracza rozmiar docelowy. Wszystkie znaki które nie zmieszczą się zostana pominięte"
+            "val_exceeds_bounds" : "Podana wartość przekracza rozmiar docelowy. Wszystkie znaki które nie zmieszczą się zostana pominięte",
+            "improper_colon" : "Wykryto niewłaściwie użyty ':'",
+            "too_many_colons" : "Wykryto nadmiarowe dwukropki w linii!",
+            "label_line_empty" : "Wykryto linię z samym ':' - czy nie brakuje etykiety?",
+            "incorrect_var_name" : "Wykryto niepoprawną nazwę zmiennej",
+            "variable_wrongly_defined" : "Wykryto błąd w składni definicji zmiennej",
+            "empty_file_detected" : "Nie można załadować pliku bez instrukcji! Czy chcesz załadować zawartość w trybie interaktywnym?",
+            "nothing_to_do" : "Nie ma żadnych poleceń do wykonania!",
+            "improper_section" : "Wykryta nazwa sekcji nie jest obsługiwane. Obsługiwane nazwy to: '.code'. '.data'"
         },
         "EN": {
             "window_title" : "16 bit Assembly Interpreter",
@@ -207,6 +220,11 @@
             "wrong_first_reg" : "Incorrect first register",
             "cant_use_sp" : "Cannot use SP",
             "value_too_big" : "Value too big",
+            "improper_line" : "Incorrect line detected",
+            "multiple_colons" : "Additional ':' detected",
+            "empty_file" : "File is empty",
+            "no_instructions" : "No instructions to execute",
+            "unrecognized_section" : "Unsupported section detected",
             
             "only_1_0_allowed" : "Enter valid binary number - only 1's and 0's",
             "value_0_255" : "Value outside range 0 - 255",
@@ -241,7 +259,15 @@
             "ret_same_type" : "In memory call, both registers are the same type - use different types.",
             "first_reg_bx" : "In memory call, first register must be BX",
             "sp_not_callable" : "It's forbidden to use SP in direct memory call",
-            "val_exceeds_bounds" : "Provided text value is too big, and exceeds destinaiton size. All chars above those which would fit will be ignored"
+            "val_exceeds_bounds" : "Provided text value is too big, and exceeds destinaiton size. All chars above those which would fit will be ignored",
+            "improper_colon" : "Detected improper use of ':'",
+            "too_many_colons" : "Detected too many colons in line",
+            "label_line_empty" : "Line with just ':' detected - forget a label?",
+            "incorrect_var_name" : "Incorrect variable name detected",
+            "variable_wrongly_defined" : "Detected error in how variable is detected - check syntax",
+            "empty_file_detected" : "It's not possible to load file without instrucitons! Do you want to load it's content into interactive mode?",
+            "nothing_to_do" : "There are no instructions to execute!",
+            "improper_section" : "Detected section name doesn't match any of the allowed options. Allowed: '.code'. '.data'"
         }
     }
 }

@@ -457,8 +457,11 @@ class CodeEditor(QPlainTextEdit):
         extraSelections = []
 
         if not line_numbers:
-            self.highlighted_lines = line_numbers
+            self.highlighted_lines = []
             self.setExtraSelections(extraSelections)
+            return
+
+        if type(line_numbers) == int:   line_numbers = [line_numbers]
 
         if not background_color:    background_color = colors[self.theme]["line_highlight"]
         if not text_color:  text_color = colors[self.theme]["code_text"]

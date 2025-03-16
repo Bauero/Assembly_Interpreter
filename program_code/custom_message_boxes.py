@@ -25,7 +25,7 @@ def _unrecognized_error_popup(**kwargs):
     return msg.exec()
 
 #
-#   Input File Errors
+#   File Errors
 #
 
 def _file_doesnt_exist_popup(**kwargs):
@@ -62,13 +62,201 @@ def _improper_file_type(**kwargs):
     msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)     # returns 4
     return msg.exec()
 
-def _data_section_error(**kwargs):
-    """An error was detected in data section"""
+#
+#   Preprocessing Errors
+#
+
+def _improper_colon(**kwargs):
+    """This error occurs if during preprocessing, improper use of : was detected"""
     language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["improper_line"])
+    msg.setText(names[language]["improper_colon"] + f"\nLine: {line}")
+    return msg.exec()
+
+def _improper_colon_question(**kwargs):
+    """This error occurs if during preprocessing, improper use of : was detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["improper_line"])
+    msg.setText(names[language]["improper_colon"] + f"\nLine: {line}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+def _too_many_colons(**kwargs):
+    """This error occurs if during preprocessing, multiple colons in line are detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["multiple_colons"])
+    msg.setText(names[language]["too_many_colons"] + f"\nLine: {line}")
+    return msg.exec()
+
+def _too_many_colons_question(**kwargs):
+    """This error occurs if during preprocessing, multiple colons in line are detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["multiple_colons"])
+    msg.setText(names[language]["too_many_colons"] + f"\nLine: {line}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+def _unfinished_label(**kwargs):
+    """This error occurs if during preprocessing line containing only colon is detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
     msg = QMessageBox()
     msg.setIcon(QMessageBox.Icon.Critical)
     msg.setWindowTitle(names[language]["data_sec_error"])
-    msg.setText(f"{names[language]['incorrect_data_def']}")
+    msg.setText(names[language]["label_line_empty"] + f"\nLine: {line}")
+    return msg.exec()
+
+def _unfinished_label_question(**kwargs):
+    """This error occurs if during preprocessing line containing only colon is detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["data_sec_error"])
+    msg.setText(names[language]["label_line_empty"] + f"\nLine: {line}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+
+def _incorrect_var_name(**kwargs):
+    """This error occurs if during preprocessing variable with improper name is detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["data_sec_error"])
+    msg.setText(names[language]["incorrect_var_name"] + f"\nLine: {line}")
+    return msg.exec()
+
+def _incorrect_var_name_question(**kwargs):
+    """This error occurs if during preprocessing variable with improper name is detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["data_sec_error"])
+    msg.setText(names[language]["incorrect_var_name"] + f"\nLine: {line}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+
+def _incorrect_variable_syntax(**kwargs):
+    """This error occurs if during preprocessing when improperly defined variable is detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["data_sec_error"])
+    msg.setText(names[language]["variable_wrongly_defined"] + f"\nLine: {line}")
+    return msg.exec()
+
+def _incorrect_variable_syntax_question(**kwargs):
+    """This error occurs if during preprocessing when improperly defined variable is detected"""
+    language = kwargs["language"]
+    line = kwargs["line"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["data_sec_error"])
+    msg.setText(names[language]["variable_wrongly_defined"] + f"\nLine: {line}")
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+
+def _no_instruction_to_process(**kwargs):
+    """This error occurs if in interactive mode user tries to run program without
+    instructions"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["no_instructions"])
+    msg.setText(names[language]["nothing_to_do"])
+    return msg.exec()
+
+def _no_instruction_to_process_question(**kwargs):
+    """This error occurs if in interactive mode user tries to run program without
+    instructions"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["no_instructions"])
+    msg.setText(names[language]["nothing_to_do"])
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+
+def _unrecognized_section(**kwargs):
+    """This error occurs if an unsupported section is detected in interactive mode"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["unrecognized_section"])
+    msg.setText(names[language]["improper_section"])
+    return msg.exec()
+
+def _unrecognized_section_question(**kwargs):
+    """This error occurs if an unsupported section is detected in interactive mode"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["unrecognized_section"])
+    msg.setText(names[language]["improper_section"])
+    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+    return msg.exec()
+
+
+# def _improper_label_error(**kwargs):
+#     """Incorrect label name detected during preprocessing of file"""
+#     language = kwargs["language"]
+#     msg = QMessageBox()
+#     msg.setIcon(QMessageBox.Icon.Critical)
+#     msg.setWindowTitle(names[language]["improper_label"])
+#     msg.setText(f"{names[language]['incorrect_label']}")
+#     msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
+#     msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
+#     return msg.exec()
+
+
+def _empty_file(**kwargs):
+    """User tried to load empty file, or file containing only white characters"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["no_instructions"])
+    msg.setText(f"{names[language]['nothing_to_do']}")
+    return msg.exec()
+
+def _empty_file_question(**kwargs):
+    """User tried to load empty file, or file containing only white characters"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(names[language]["empty_file"])
+    msg.setText(f"{names[language]['empty_file_detected']}")
     msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
     msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
     return msg.exec()
@@ -76,17 +264,6 @@ def _data_section_error(**kwargs):
 #
 #   GUI Errors
 #
-
-def _improper_label_error(**kwargs):
-    """Incorrect label name detected during preprocessing of file"""
-    language = kwargs["language"]
-    msg = QMessageBox()
-    msg.setIcon(QMessageBox.Icon.Critical)
-    msg.setWindowTitle(names[language]["improper_label"])
-    msg.setText(f"{names[language]['incorrect_label']}")
-    msg.addButton(names[language]["load_interactive"], QMessageBox.ButtonRole.YesRole)  # returns 2
-    msg.addButton(names[language]["cancel"], QMessageBox.ButtonRole.RejectRole)         # returns 4
-    return msg.exec()
 
 def _improper_flags_value(**kwargs):
     language = kwargs["language"]
@@ -355,6 +532,8 @@ def show_custom_popup(language : str, notification : dict) -> int:
     params       = notification.get("params")
     values       = notification.get("values")
     source_error = notification.get("source_error")
+
+    if line and type(line) == list:    line = line[0]
 
     if type(params) == list:
         params_list = []

@@ -117,8 +117,7 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
         elif  new_value := return_if_base_2_value(value):
             conv_value = new_value
         else:
-            raise WrongNumberBase(f"Number '{value}' seems to not belong to binary," +\
-                                " decimal or hexadecimal numbers")
+            raise WrongNumberBase()
         return conv_value
 
     converted_value = []
@@ -188,8 +187,7 @@ def loadFileFromPath(path_to_file : str,
     raw_file = []
 
     with open(path_to_file) as file:
-        for line in file:
-            raw_file.append(line)
+        raw_file = file.readlines()
 
     return raw_file
 
@@ -292,3 +290,31 @@ def binary_xor(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_ca
         output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
+
+# def generate_error(name : str, line : int | None = None, param_no : int | None = None, 
+#                    params : list | None = None, values : str | None = None, 
+#                    exc : Exception | None = None) -> dict:
+#     """This is general funciton which produces error in standard format"""
+    
+#     return {"error" : {
+#         "popup" : name,
+#         "line" : line,
+#         "param_no" : param_no,
+#         "params" : params,
+#         "values" : values,
+#         "source_error" : exc
+#     }}
+
+def generate_warning(name : str, line : int | None = None, param_no : int | None = None, 
+                   params : list | None = None, values : str | None = None, 
+                   exc : Exception | None = None) -> dict:
+    """This is general funciton which produces warning in standard format"""
+    
+    return {"error" : {
+        "popup" : name,
+        "line" : line,
+        "param_no" : param_no,
+        "params" : params,
+        "values" : values,
+        "source_error" : exc
+    }}

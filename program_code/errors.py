@@ -5,19 +5,32 @@ Each error should contain it's own definition, with description about what happe
 which triggered en error
 """
 
-from abc import abstractmethod
-
 class DetailedException(Exception):
     """
     This is abstract class for methods which should rise specific exception which
     could later be used to prompt user with warning
     """
 
-    @abstractmethod 
-    def line(self): ...
+    def __init__(self, name : str, line : int | None = None, param_no : int | None = None, 
+                   params : list | None = None, values : str | None = None, 
+                   exc : Exception | None = None):
+        
+        self.name = name
+        self.line = line
+        self.param_no = param_no
+        self.params = params
+        self.values = values
+        self.exc = exc
 
-    @abstractmethod
-    def message(self): ...
+    def get_details(self):
+        return {
+            "popup" : self.name,
+            "line" : self.line,
+            "param_no" : self.param_no,
+            "params" : self.params,
+            "values" : self.values,
+            "source_error" : self.exc
+        }
 
 
 ################################################################################
@@ -36,29 +49,19 @@ class RegisterNotImplemented (Exception):
 ################################################################################
 
 
-class WrongNumberBase (Exception):
+class WrongNumberBase (DetailedException):
     """
     This error means that system tried to read number as one in either binary, decimal or
     hexadecimal system, but the number didn't qualify as valid.
     """
-    def __init__(self, message : str = ""):
-        self.message = message
-
-    def __str__(self):
-        return self.message
-    
-    def __repr__(self):
-        return self.__str__()
-
+    pass
 
 class ValueIsNotANumber (Exception):
     """
     This error is raised if a number which should be converted to a given base
     raises error during conversion
     """
-    
-    def __init__(self, message = ""): self.message = message
-    def __str__(self): return self.message
+    pass
 
 
 class IncorectValueInListOfBits (Exception):
@@ -67,9 +70,7 @@ class IncorectValueInListOfBits (Exception):
     suppose to be bits (like ['1', '1', '0']) but detects that one of the element is not
     '0' or '1'
     """
-    
-    def __init__(self, message = ""): self.message = message
-    def __str__(self): return self.message
+    pass
 
 
 ################################################################################
@@ -88,45 +89,20 @@ class ImproperJumpMarker (DetailedException):
 
     - "+:" or "   :" or "2x:"
     """
-    def __init__(self, number : int | None = None, message : str = ""):
-        self._message = message
-        self._line_number = number
-
-    def __str__(self):
-        return str(self._line_number) + self._message
-    
-    def __repr__(self):
-        return self.__str__()
-    
-    def line(self):     return self._line_number
-    def message(self):  return self._message
-
+    pass
 
 class ImproperVariableName (DetailedException):
     """
     This error is generated when a variable with improper name is declared
     """
-    def __init__(self, number : int | None = None, message : str = ""):
-        self._message = message
-        self._line_number = number
-
-    def __str__(self):
-        return str(self._line_number) + self._message
-    
-    def __repr__(self):
-        return self.__str__()
-    
-    def line(self):     return self._line_number
-    def message(self):  return self._message
+    pass
 
 
 class FileDoesntExist (Exception):
     """
     This error is raised if user tries to pass path to file which doesn't exist
     """
-
-    def __init__(self, message = ""): self.message = message
-    def __str__(self): return f"file {self.message} doesn't exist"
+    pass
 
 
 class FileSizeMightBeTooBig (Exception):
@@ -136,8 +112,7 @@ class FileSizeMightBeTooBig (Exception):
 
     It can be omitted if needed.
     """
-    def __init__(self, message = ""): self.message = message
-    def __str__(self): return f"file {self.message} too big"
+    pass
 
 
 class FileTypeNotAllowed (Exception):
@@ -145,12 +120,15 @@ class FileTypeNotAllowed (Exception):
     This error is raised if during processing a file with not allowed extension
     is passed for processing
     """
+    pass
 
-    def __init__(self, extension = "", allowed = ['.s','.asm']):
-        self.message = extension
-        self.allowed = allowed
-    def __str__(self):
-        return f"extension {self.message} not allowed - allowed extnsions: {self.allowed}"
+
+class EmptyFileError (Exception):
+    """
+    This error is raised if during processing an empty file, or one containing only white
+    characters is passed for processing
+    """
+    pass
 
 
 ################################################################################
@@ -160,62 +138,41 @@ class FileTypeNotAllowed (Exception):
 
 class ImproperDataDefiniton (DetailedException):
     """
+    ## Description
     This error is raised if during preprocessing of file a problem with reading data occurs.
-
     Data should be defined as:
-
-    'Name Size Value' or 'Size Value' or 'Name Size v1, v2 ...' or Size v1, v2 ...'
-
-    Allowed Sizes are: 'BYTE', 'DB', 'WORD', 'DW', 'DWORD', 'DD', 'QWORD', 'DQ'
-
-    spaces between (optional) name, size and value (or values) are ignored. Values must be
+    - 'Name Size Value' or 'Size Value' or 'Name Size v1, v2 ...' or Size v1, v2 ...'
+    
+    Allowed Sizes are: 'BYTE', 'DB', 'WORD', 'DW', 'DWORD', 'DD', 'QWORD', 'DQ'. 
+    Spaces between (optional) name, size and value (or values) are ignored. Values must be
     separated by coma ','.
 
-    EX.
+    ## EX.
 
-    - Good definition
-    
-    hello BYTE    "Good morning", 0
+    ### Good definition
+    - hello BYTE    "Good morning", 0
 
-    - Bad definition
-
-    hello    "Good morning", 0
-
-    hello = "Good morning", 0
-
-    hello  8  "Good morning", 0
+    ### Bad definition
+    - hello    "Good morning", 0
+    - hello = "Good morning", 0
+    - hello  8  "Good morning", 0
     """
-    def __init__(self, line_num : int | None = None, line_content : str = ''):
-        # super().__init__()
-        self._line_number = line_num
-        self._line_content = line_content
-    
-    def __str__(self):
-        return str(self._line_number) + self._line_content
-    
-    def __repr__(self):
-        return self.__str__()
-    
-    def line(self):     return self._line_number
-
-    def message(self):  return self._line_content
+    pass
 
 
 class SegmentationFault (Exception):
     """
+    ## Description
     This error is raised if a call for data outside .data segment is made. 
 
-    EX.
-
+    ## EX.
     *assume that this is the only data in .data*
+    - sum BYTE    "ALA" -> 3 bytes -> sum + 2 bytes
 
-    sum BYTE    "ALA" -> 3 bytes -> sum + 2 bytes
-
-    Therefore:
-
-    [sum+3] -> yields this error
+    ### Therefore:
+    - [sum+3] -> yields this error
     """
-    ...
+    pass
 
 
 class ModificationOutsideDataSection (DetailedException):
@@ -223,4 +180,4 @@ class ModificationOutsideDataSection (DetailedException):
     This error is raise if user tires to modify data outside boundaries of data
     section
     """
-    ...
+    pass

@@ -8,6 +8,7 @@ from .preprocessor import loadMainFile
 from .helper_functions import loadFileFromPath
 from .history import History
 from .engine import Engine
+from .errors import DetailedException
 import pickle
 
 class CodeHandler():
@@ -30,6 +31,10 @@ class CodeHandler():
         """This function, reads file and prepare it's content for processing"""
 
         raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
+        
+        if not any([line.strip() for line in raw_file]):
+            raise DetailedException("empty_file")
+
         output = self.preprocessFile(path_to_file, raw_file)
         
         self.history = History(
@@ -64,7 +69,8 @@ class CodeHandler():
 
     def preprocessFile(self, path_to_file : str, raw_file : list):
         self.rawfiles[path_to_file] = raw_file
-        start, preprocessed_instructions = loadMainFile(raw_file, self.engine.DS)
+        main_file_loaded = loadMainFile(raw_file, self.engine.DS)
+        start, preprocessed_instructions = main_file_loaded
         self.pass_variable_to_engine(preprocessed_instructions)
 
         self.currentlyExecutedFile = path_to_file
@@ -76,17 +82,22 @@ class CodeHandler():
 
         return output
 
-    def startInteractive(self, code : str):
+    def startInteractive(self, code : str, force_reload : bool):
         """This function is run, when program is activated. It checks if the 
         code is valid, are there any changes, and returns None or list with new
         lines for highlight"""
 
         code_lines = [line + "\n" for line in code.split("\n")]
+        
+        if not any([line.strip() for line in code_lines]):
+            raise DetailedException("empty_file")
+        
         previous_lines = self.rawfiles.get("interactive")
 
-        if not previous_lines or code_lines != previous_lines:
+        if not previous_lines or code_lines != previous_lines or force_reload:
 
             start = self.preprocessFile("interactive", code_lines)
+            
             self.history = History(
                 "interactive",
                 code_lines,
@@ -96,7 +107,6 @@ class CodeHandler():
             return start
 
     def pass_variable_to_engine(self, preprocessed_instructions):
-        assert type(preprocessed_instructions) == dict
         self.engine.informAboutLabels(preprocessed_instructions['labels'])
         self.engine.informAboutVariables(
             preprocessed_instructions['variables'],
@@ -146,9 +156,9 @@ class CodeHandler():
 
         if already_executed:
             next_line, change = already_executed
+            self.engine.load_new_state_after_change(change, forward = True)
             if next_line == None:
                 return {"status" : -1, "highlight" : []}
-            self.engine.load_new_state_after_change(change, forward = True)
             self.engine.HR.writeIntoRegister("IP", next_line)
             lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
             self.currentlyExecutedLine[self.currentlyExecutedFile] = \
@@ -161,11 +171,7 @@ class CodeHandler():
             line_content = curr_inst['content']
             output = self.engine.executeInstruction(curr_line, line_content)
             
-            if output and output.get("error", None):
-                output["status"] = 1
-                return output
-            
-            elif "next_instruction" in output:
+            if "next_instruction" in output:
                 next_line = output["next_instruction"]
                 output["status"] = 0
             else:
@@ -178,6 +184,8 @@ class CodeHandler():
                     if exec_with_warnings:
                         self.currentlyExecutedLine[self.currentlyExecutedFile] = -1
                         output["status"] = -12
+                        lines = self.files[self.currentlyExecutedFile][curr_line]["lines"]
+                        output["error"]["line"] = lines
                     else:
                         output["status"] = -1
 

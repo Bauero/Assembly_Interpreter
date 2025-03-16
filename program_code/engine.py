@@ -9,6 +9,7 @@ from .hardware_memory import DataSegment
 from .hardware_registers import HardwareRegisters
 from .flag_register import FlagRegister
 from .custom_message_boxes import *
+from .errors import DetailedException
 
 allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
 funtionNameLink = {k:v for k,v in locals().items() if k.isupper()}
@@ -52,7 +53,7 @@ class Engine():
 
         keyword, first_non_keyw_char = self._separate_keyword(command)
         if keyword not in funtionNameLink:
-            return self._gen_err("unsuported_instruction")
+            raise DetailedException("unsuported_instruction")
         
         elements_in_line.append(keyword)
         arguments = command[first_non_keyw_char:].strip().split(",")
@@ -67,11 +68,10 @@ class Engine():
             pairs = list(filter(lambda x: x[1] == "undefined", zip(args_cleaned, args_types)))
             wrong_params = "' '".join([x[0] for x in pairs])
             wrong_params = f"'{wrong_params}'"
-            return self._gen_err("unrecognized_argument", values=wrong_params)
+            raise DetailedException("unrecognized_argument", values=wrong_params)
         
         args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, 
                                                                             args_types)
-        if type(args_checked) == dict:  return args_checked
         
         extracted = self._extract_argument_value_and_size(args_checked, args_types, 
                                                           explicite_sizes)
@@ -86,11 +86,8 @@ class Engine():
                                                                           final_sizes, 
                                                                           explicite_sizes,
                                                                           args_values_int)
-        if type(final_standardized_sizes) == dict:
-            return final_standardized_sizes
         
         resp = self._check_if_operation_allowed(keyword, args_types)
-        if resp:    return resp
 
         try:
             output = funtionNameLink[ keyword ](
@@ -107,7 +104,7 @@ class Engine():
                 line = line
             )
         except Exception as e:
-            return self._gen_err("instruction_error", e)
+            raise DetailedException("instruction_error", e)
 
         if self.warnings:
             if not output.get("warnings"):
@@ -269,45 +266,45 @@ class Engine():
 
         response = self._define_arg_types_and_value(elements)
         if response == None:
-            return self._gen_err("unrecognized_elem_mem_call")
+            raise DetailedException("unrecognized_elem_mem_call")
         else:
             types, values = response
 
         if types.count("var") > 1:
-            return self._gen_err("double_memory_reference")
+            raise DetailedException("double_memory_reference")
         
         if types.count("register") > 2:
-            return self._gen_err("multiple_register_reference")
+            raise DetailedException("multiple_register_reference")
 
         if types.count("register") == 1:
             first_reg = elements[v1a := types.index("register")].upper()
             first_reg_type = self.HR.getRegisterType(first_reg)
 
             if first_reg_type == "multipurpose" and first_reg != "BX":
-                return self._gen_err("first_reg_must_be_bx")
+                raise DetailedException("first_reg_must_be_bx")
 
             if first_reg_type == "pointer" and first_reg == "SP":
-                return self._gen_err("cant_use_sp")
+                raise DetailedException("cant_use_sp")
 
         if types.count("register") == 2:
             first_reg = elements[v1a := types.index("register")].upper()
             second_reg = elements[types.index("register", v1a + len(first_reg))].upper()
             
             if first_reg == second_reg:
-                return self._gen_err("register_called_twice")
+                raise DetailedException("register_called_twice")
             
             first_reg_type = self.HR.getRegisterType(first_reg)
             second_reg_type = self.HR.getRegisterType(second_reg)
             
             if first_reg_type == second_reg_type:
-                return self._gen_err("reg_same_type")
+                raise DetailedException("reg_same_type")
             
             if first_reg_type == "multipurpose" and first_reg != "BX":
-                return self._gen_err("first_reg_must_be_bx")
+                raise DetailedException("first_reg_must_be_bx")
             
             if (first_reg_type == "pointer" and first_reg == "SP") or \
                (second_reg_type == "pointer" and second_reg == "SP"):
-                return self._gen_err("cant_use_sp")
+                raise DetailedException("cant_use_sp")
         
         standardized = "".join(values)
 
@@ -339,7 +336,7 @@ class Engine():
         response = self._define_arg_types_and_value(elements)
         
         if response == None:
-            return self._gen_err("unrecognized_value_compl_val")
+            raise DetailedException("unrecognized_value_compl_val")
         else:
             _, values = response
 
@@ -354,11 +351,9 @@ class Engine():
         for arg, atype in zip(arguments, types):
             if atype == "memory call":
                 response = self._check_standardize_mem_call(arg)
-                if type(response) == dict:  return response
                 validated_args.append(response)
             elif atype == "complex value":
                 response = self._check_standardize_complex_value(arg)
-                if type(response) == dict:  return response
                 validated_args.append(response)
             else:
                 validated_args.append(arg)
@@ -471,11 +466,11 @@ class Engine():
             case ["memory", "value"]:
                 size = None
                 if all(expli_sizes) and expli_sizes[0] != expli_sizes[1]:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("explicite_sizes_mismatch")
                 if expli_sizes[0]:      size = expli_sizes[0]
                 elif expli_sizes[1]:    size = expli_sizes[1]
                 else:
-                    return self._gen_err("no_explicite_size")
+                    raise DetailedException("no_explicite_size")
                 return size
                 
             case ['memory', 'register']:
@@ -489,12 +484,12 @@ class Engine():
                 final_reg_size = max(reg_exp_size, reg_det_size) if reg_exp_size else reg_det_size
 
                 if mem_exp_size and mem_exp_size < final_reg_size:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("explicite_sizes_mismatch")
                 
                 return final_reg_size
             
             case ['memory', 'memory']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("cant_call_mem_twice")
             
             case ["register", "value"]:
                 reg_exp_size = expli_sizes[0]
@@ -507,7 +502,7 @@ class Engine():
                     self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if var_exp_size and reg_det_size > var_exp_size:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("explicite_sizes_mismatch")
                 
                 if max(var_exp_size or 0, var_det_size or 0) > reg_det_size:
                     self.warnings.append(self._gen_warn("value_exceeds_bound"))
@@ -527,22 +522,22 @@ class Engine():
                     self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if mem_exp_size and reg_det_size != mem_exp_size:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("explicite_sizes_mismatch")
                 
                 return reg_det_size
             
             case ['value', 'value']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("cant_call_mem_twice")
             
             case ['value', 'register']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("cant_call_mem_twice")
             
             case ['value', 'memory']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("cant_call_mem_twice")
             
             case ['memory']:
                 if expli_sizes[0] == None:
-                    return self._gen_err("no_explicite_size")
+                    raise DetailedException("no_explicite_size")
                 
                 return expli_sizes[0]
 
@@ -571,10 +566,10 @@ class Engine():
         in the program have """
 
         if not len(params) in funtionNameLink[keyword].params_range:
-            return self._gen_err("wrong_no_of_params", param_no=len(params))
+            raise DetailedException("wrong_no_of_params", param_no=len(params))
         
         if not tuple(params) in funtionNameLink[keyword].allowed_params_combinations:
-            return self._gen_err("wrong_combination_params", params=params)
+            raise DetailedException("wrong_combination_params", params=params)
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
         """This function ensures that all calls for register are in capital names"""
@@ -586,32 +581,9 @@ class Engine():
 
         return elements
     
-    def _gen_err(self, 
-                 name : str, 
-                 param_no : int | None = None, 
-                 params : list | None = None,
-                 values : str | None = None,
-                 exc : Exception | None = None) -> dict:
-        return {"error" : {
-            "popup" : name,
-            "line" : self.curr_line + 1,
-            "param_no" : param_no,
-            "params" : params,
-            "values" : values,
-            "source_error" : exc
-        }}
-    
-    def _gen_warn(self, 
-                 name : str, 
-                 param_no : int | None = None, 
-                 params : list | None = None,
-                 values : str | None = None,
-                 exc : Exception | None = None) -> dict:
-        return {
-            "popup" : name,
-            "line" : self.curr_line + 1,
-            "param_no" : param_no,
-            "params" : params,
-            "values" : values,
-            "source_error" : exc
-        }
+    def _gen_warn(self,  name : str,  param_no : int | None = None, params : list | None = None,
+                 values : str | None = None, exc : Exception | None = None) -> dict:
+        """This is class funciton which calls `generate_warning` funciton with default
+        param - line - stored in class"""
+
+        return generate_warning(name, self.curr_line + 1, param_no, params, values, exc)
