@@ -1,1 +1,0 @@
-Jump if not less or equal -> SF=0F and ZF=0

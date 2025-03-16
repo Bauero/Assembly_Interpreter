@@ -1,1 +1,0 @@
-Jump if not greater or equal -> SF<=0F

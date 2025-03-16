@@ -1,1 +1,0 @@
-Jump if not above -> CF=1 or ZF=1

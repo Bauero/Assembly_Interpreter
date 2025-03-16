@@ -1,1 +1,0 @@
-Jump if parity even -> PF=1

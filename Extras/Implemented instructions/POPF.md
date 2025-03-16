@@ -1,1 +1,0 @@
-This functins pops last to bits from stack, and stores it in flag register

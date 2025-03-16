@@ -1,1 +1,0 @@
-Jump if carry flag is inactive -> CF=0

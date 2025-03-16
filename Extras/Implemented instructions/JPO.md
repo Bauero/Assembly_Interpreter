@@ -1,1 +1,0 @@
-Jump if parity is odd -> PF=0
