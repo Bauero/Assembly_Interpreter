@@ -9,9 +9,7 @@ from PyQt6.QtWidgets import (
 )
 from .custom_gui_elements import *
 from .errors import (
-    FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, ImproperJumpMarker,
-    ImproperDataDefiniton, EmptyFileError
-    )
+    FileDoesntExist, FileSizeMightBeTooBig)
 from .code_handler import CodeHandler
 from .custom_message_boxes import show_custom_popup
 from .errors import DetailedException
@@ -33,7 +31,7 @@ min_reg_row_height = 50
 max_reg_row_height = 120
 max_flags_height = 130
 
-class MainWindow(QWidget):
+class Gui(QWidget):
     """
     This class represents the main window. It stores all information about layout and functions
     which update the app depending on action by the user.
@@ -278,6 +276,10 @@ class MainWindow(QWidget):
         self.terminal_widget.setMaximumHeight(300)
 
         #
+        #   Make Stack and Variable synchronize
+        #
+
+        #
         #   Add elements to central layout
         #
 
@@ -312,8 +314,10 @@ class MainWindow(QWidget):
     @pyqtSlot()
     def _set_interactive_mode(self):
         for element in self.register_section_elements:
-            setattr(self, element.get_name(), element)
-            element.set_interactive(self.interactive_mode)
+            if element.get_name() != "IP":
+                element.set_interactive(self.interactive_mode)
+        self.stackSection.set_allow_change_content(self.interactive_mode)
+        self.variableSection.set_allow_change_content(self.interactive_mode)
 
     @pyqtSlot()
     def _on_frequency_change(self): 
@@ -559,7 +563,8 @@ class MainWindow(QWidget):
                 self._set_active_state(True)
                 self._toggle_automatic_execution()
                 if self.interactive_mode:   self.code_field.setEditable(False)
-            response = self.code_handler.executeCommand('previous_instruction')
+            response = self.code_handler.executeCommand('previous_instruction',
+                                                        interactive = self.interactive_mode)
             self.instructionCounter -= 1
             if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
             self._act_on_response(response)
