@@ -85,14 +85,6 @@ class HardwareRegisters():
 
         for register in self._regList:   self.cleanRegister(register)
 
-    def printRegisters(self):
-        """Write in console value of each register"""
-
-        # Filter out names shorter than 3 - ex. AX, AL etc.
-        for register in filter(lambda x: len(x)==3, self._regList):
-            v = self.readFromRegister(register)
-            print(f"{register} : {v} = {int('0b'+v,2)}")
-
     def listRegisters(self) -> list:
         """Return list of available registers"""
 

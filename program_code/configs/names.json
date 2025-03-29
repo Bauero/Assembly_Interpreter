@@ -138,7 +138,11 @@
             "variable_wrongly_defined" : "Wykryto błąd w składni definicji zmiennej",
             "empty_file_detected" : "Nie można załadować pliku bez instrukcji! Czy chcesz załadować zawartość w trybie interaktywnym?",
             "nothing_to_do" : "Nie ma żadnych poleceń do wykonania!",
-            "improper_section" : "Wykryta nazwa sekcji nie jest obsługiwane. Obsługiwane nazwy to: '.code'. '.data'"
+            "improper_section" : "Wykryta nazwa sekcji nie jest obsługiwane. Obsługiwane nazwy to: '.code'. '.data'",
+            "binary_num_oor_8" : "Wprowadzono wartość binarną spoza zakresu 00000000 - 11111111",
+            "binary_num_oor_16" : "Wprowadzono wartość binarną spoza zakresu 0000000000000000 - 1111111111111111",
+            "decimal_num_oor" : "Wprowadzono wartość dziesiętną spoza zakresu 0 - 65535",
+            "invalid_decimal" : "Wprowadzona wartość dziesiętna ma niepoprawny format"
         },
         "EN": {
             "window_title" : "16 bit Assembly Interpreter",
@@ -267,7 +271,11 @@
             "variable_wrongly_defined" : "Detected error in how variable is detected - check syntax",
             "empty_file_detected" : "It's not possible to load file without instrucitons! Do you want to load it's content into interactive mode?",
             "nothing_to_do" : "There are no instructions to execute!",
-            "improper_section" : "Detected section name doesn't match any of the allowed options. Allowed: '.code'. '.data'"
+            "improper_section" : "Detected section name doesn't match any of the allowed options. Allowed: '.code'. '.data'",
+            "binary_num_oor_8" : "Inputed binary number is outside allowed range or 00000000 - 11111111",
+            "binary_num_oor_16" : "Inputed binary number is outside allowed range or 0000000000000000 - 1111111111111111",
+            "decimal_num_oor" : "Inputed decimal value outside range 0 - 65535",
+            "invalid_decimal" : "Inputed decimal value have invalid format"
         }
     }
 }

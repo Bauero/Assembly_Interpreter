@@ -59,15 +59,15 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
         #   Detect identifiers (points where code could jump to)
         if re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
             values = line.split(':')
-            if len(values) == 0: raise DetailedException("unfinished_label", line_no)
+            if len(values) == 0: raise DetailedException("unfinished_label", line_no + 1)
             
             if not ' ' in values[0]:
-                if len(values) > 2: raise DetailedException("too_many_colons", line_no)
+                if len(values) > 2: raise DetailedException("too_many_colons", line_no + 1)
                 marker_in_line, line = values
                 
         #   Detect improper line with ":"
         if re.match(r"(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
-            raise DetailedException("improper_colon", line_no)
+            raise DetailedException("improper_colon", line_no + 1)
 
         #   Save results
         if marker_in_line:
@@ -105,7 +105,7 @@ def _divideCodeToSection(assembly_code : list):
             case '.code':           current_section = ".code";      alaius = False
             case '.data':           current_section = ".data";      alaius = False
             case '_':
-                raise DetailedException("unrecognized_section", id)
+                raise DetailedException("unrecognized_section", id + 1)
         
         assembly_code['lines'][id]["section"] = current_section
 

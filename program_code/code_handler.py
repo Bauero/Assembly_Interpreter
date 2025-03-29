@@ -18,12 +18,12 @@ class CodeHandler():
     """
 
     def __init__(self, engine : Engine):
+        self.engine = engine
         self.openFiles = []
         self.rawfiles = {}
         self.files = {}
         self.currentlyExecutedFile = ""
         self.currentlyExecutedLine = {}
-        self.engine = engine
         self.working_in_interactive_mode = False
 
     def readPrepareFile(self, path_to_file : str, ignore_size_limit : bool, 
@@ -151,7 +151,7 @@ class CodeHandler():
         and press 'next instruction' button, state after the instruction is executed,
         will be loaded from history - otherwise, instruction will be executed by engine.
         """
-        
+
         already_executed = self.history.load_next_instruction_if_executed()
 
         if already_executed:
@@ -220,6 +220,9 @@ class CodeHandler():
                 lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][previous_line]['lines']
                 self.currentlyExecutedLine[self.currentlyExecutedFile] = [previous_line, lines_in_source_file]
                 status = {"status" : 0, "highlight" : lines_in_source_file}
+
+                if kwargs.get("interactive"):
+                    self.history.clear_all_next_instrucitons()
 
             #   Notify user, that there aren't any previous instructions
             else:

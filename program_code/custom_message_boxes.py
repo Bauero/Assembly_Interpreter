@@ -273,6 +273,8 @@ def _improper_flags_value(**kwargs):
     msg.setText(names[language]["only_binary_value"])
     return msg.exec()
 
+
+
 def _invalid_binary_number(**kwargs):
     """Binary number containing other chars other than 1's and 0's"""
     language = kwargs["language"]
@@ -282,7 +284,16 @@ def _invalid_binary_number(**kwargs):
     msg.setText(names[language]["only_1_0_allowed"])
     return msg.exec()
 
-def _incorrect_decimal_value(**kwargs):
+def _invalid_decimal_value(**kwargs):
+    """Inputed value cannot be converted to decimal"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_not_allowed"])
+    msg.setText(names[language]["invalid_decimal"])
+    return msg.exec()
+
+def _incorrect_decimal_value_8(**kwargs):
     """Decimal value outside boundaries for 8-bit binary number"""
     language = kwargs["language"]
     msg = QMessageBox()
@@ -290,6 +301,35 @@ def _incorrect_decimal_value(**kwargs):
     msg.setWindowTitle(names[language]["value_not_allowed"])
     msg.setText(names[language]["value_0_255"])
     return msg.exec()
+
+def _incorrect_decimal_value_16(**kwargs):
+    """Decimal value outside boundaries for 8-bit binary number"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_not_allowed"])
+    msg.setText(names[language]["decimal_num_oor"])
+    return msg.exec()
+
+def _incorrect_binary_value_8(**kwargs):
+    """Binary number representing outside range of 00000000-11111111"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_not_allowed"])
+    msg.setText(names[language]["binary_num_oor_8"])
+    return msg.exec()
+
+def _incorrect_binary_value_16(**kwargs):
+    """Binary number representing outside range of 0000000000000000-1111111111111111"""
+    language = kwargs["language"]
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Warning)
+    msg.setWindowTitle(names[language]["value_not_allowed"])
+    msg.setText(names[language]["binary_num_oor_16"])
+    return msg.exec()
+
+
 
 def _cannot_edit_name(**kwargs):
     """It's not possible to edit name of variable at runtime"""

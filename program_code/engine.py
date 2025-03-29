@@ -11,7 +11,6 @@ from .flag_register import FlagRegister
 from .custom_message_boxes import *
 from .errors import DetailedException
 
-allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
 funtionNameLink = {k:v for k,v in locals().items() if k.isupper()}
 
 class Engine():
@@ -26,6 +25,8 @@ class Engine():
         self.FR = FlagRegister()
         self.DS = DataSegment()
         self.variables = []
+        self.allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
+        self.funtionNameLink = funtionNameLink
 
     def informAboutLabels(self, labels : list):
         """This method allow to pass labels to engine after successful preprocessing"""
@@ -39,8 +40,8 @@ class Engine():
         """This method sets engine to state after init"""
         self.HR.reset()
         self.FR.clearFlags()
-        self.DS.reset()
-        self.variables = []
+        # self.DS.reset()
+        # self.variables = []
 
     def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it cuts the line, extracting command
@@ -52,7 +53,7 @@ class Engine():
         self.warnings = []
 
         keyword, first_non_keyw_char = self._separate_keyword(command)
-        if keyword not in funtionNameLink:
+        if keyword not in self.funtionNameLink:
             raise DetailedException("unsuported_instruction")
         
         elements_in_line.append(keyword)
@@ -89,8 +90,18 @@ class Engine():
         
         resp = self._check_if_operation_allowed(keyword, args_types)
 
+        print(f"labels = {self.labels}",
+                f"destination = {destination}",
+                f"source_params = {elements_in_line[1:]}",
+                f"param_types = {args_types}",
+                f"final_size = {final_standardized_sizes}",
+                f"args_values_raw = {args_values_raw}",
+                f"args_values_int = {args_values_int}",
+                f"line = {line}",
+                sep="\n")
+
         try:
-            output = funtionNameLink[ keyword ](
+            output = self.funtionNameLink[ keyword ](
                 HR = self.HR,
                 FR = self.FR,
                 DS = self.DS,
@@ -163,7 +174,7 @@ class Engine():
                 else:
                     break
             
-            if first_word in allowed_data_types:
+            if first_word in self.allowed_data_types:
                 sizes.append(return_size_from_name(first_word))
                 args_no_sizes.append(arg[counter:].strip())
             else:
@@ -226,6 +237,9 @@ class Engine():
             elif is_allowed_arithmetic(e):
                 types.append(e)
                 values.append(e)
+            elif e in self.labels:
+                types.append("constant")
+                values.append(str(self.labels[e]))
             elif b16v := return_if_base_16_value(e):
                 types.append("constant")
                 values.append(b16v)
@@ -565,10 +579,10 @@ class Engine():
         amount of params passed - it assumes that each function defined and used
         in the program have """
 
-        if not len(params) in funtionNameLink[keyword].params_range:
+        if not len(params) in self.funtionNameLink[keyword].params_range:
             raise DetailedException("wrong_no_of_params", param_no=len(params))
         
-        if not tuple(params) in funtionNameLink[keyword].allowed_params_combinations:
+        if not tuple(params) in self.funtionNameLink[keyword].allowed_params_combinations:
             raise DetailedException("wrong_combination_params", params=params)
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
