@@ -155,6 +155,31 @@ def AAS(**kwargs):
                 "new_value" :       new_flags
             }
         }
+    else:
+        al_int ^= 15
+        AL_new = convert_number_to_bit_list(al_int, 8)
+        HR.writeIntoRegister(AL_new)
+
+        backup_flags = FR.readFlags()
+        
+        FR.setFlag("AF", 0)
+        FR.setFlag("CF", 0)
+
+        new_flags = FR.readFlags()
+
+        all_changes = {
+            "register" : [
+                {
+                    "location" :        "AL",
+                    "oryginal_value" :  list(map(int, AL_source)),
+                    "new_value" :       list(map(int, AL_new))
+                }
+            ],
+            "flags" : {
+                "oryginal_value" :  backup_flags,
+                "new_value" :       new_flags
+            }
+        }
 
     return all_changes
 
