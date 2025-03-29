@@ -52,6 +52,12 @@ class History():
         self._history.append(entry)
         self._current_instruction += 1
 
+    def clear_all_next_instrucitons(self):
+        """This keyword allows to clear all following instructions stored in history.
+        It's used in interactive mode, to always execute the current state of machine"""
+
+        self._history = self._history[:len(self._history)-1]
+
     def history_length(self):
         """Return number of all entries"""
         return len(self._history)
