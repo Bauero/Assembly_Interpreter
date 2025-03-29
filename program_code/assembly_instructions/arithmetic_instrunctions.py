@@ -211,54 +211,58 @@ def DAS(**kwargs):
     HR = kwargs["HR"]
     FR = kwargs["FR"]
     AF = FR.readFlag("AF")
+    CF = FR.readFlag("CF")
+    
+    backup_flags = FR.readFlags()
+    FR.setFlag("CF", 0)
 
-    all_changes = None
     AL_source = HR.readFromRegister("AL")
-    al_int = int("".join(AL_source), 2)
+    al_int_original = int("".join(AL_source), 2)
+    AL_after_sub = AL_source
 
-    if (al_int ^ 15) > 9 or AF:
-        backup_flags = FR.readFlags()
+    if (al_int_original ^ 15) > 9 or AF:
         six_in_binary = convert_number_to_bit_list(6, 8)
         minus_six_in_binary = inverse_Twos_Compliment_Number(six_in_binary)
 
         output, carry, auxiliary_carry = binary_addition(8, AL_source, 
                                                          minus_six_in_binary)
-
+        
         AL_after_add = output
-        al_int = convert_number_to_int_with_binary_capacity(output, 8)
+        FR.setFlag("CF", CF or carry)
         FR.setFlag("AF", 1)
+    else:
+        FR.setFlag("AF", 0)
 
-        if carry or al_int > 159:
-            ninety_six_in_binary = convert_number_to_bit_list(96, 8)
-            minus_ninety_six_in_binary = inverse_Twos_Compliment_Number(ninety_six_in_binary)
+    if al_int_original > 153 or CF:
+        ninety_six_in_binary = convert_number_to_bit_list(96, 8)
+        minus_ninety_six_in_binary = inverse_Twos_Compliment_Number(ninety_six_in_binary)
 
-            output, carry, auxiliary_carry = binary_addition(8, AL_after_add, 
-                                                         minus_ninety_six_in_binary)
+        output, carry, auxiliary_carry = binary_addition(8, AL_after_add, 
+                                                        minus_ninety_six_in_binary)
+        AL_after_add = output
+        FR.setFlag("CF", 1)
 
-            FR.setFlag("CF", 1)
+    FR.setFlag("ZF", not "1" in AL_after_sub)
+    FR.setFlag("SF", AL_after_sub[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(AL_after_sub))
 
-        FR.setFlag("ZF", not "1" in output)
-        FR.setFlag("SF", output[0] == "1")
-        FR.setFlag("PF", eval_no_of_1(output))
-        FR.setFlag("AF", auxiliary_carry)
+    new_flags = FR.readFlags()
 
-        new_flags = FR.readFlags()
-
-        all_changes = {
-            "register" : [
-                {
-                    "location" :        "AL",
-                    "oryginal_value" :  list(map(int, AL_source)),
-                    "new_value" :       list(map(int, output))
-                }
-            ],
-            "flags" : {
-                "oryginal_value" :  backup_flags,
-                "new_value" :       new_flags
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "AL",
+                "oryginal_value" :  list(map(int, AL_source)),
+                "new_value" :       list(map(int, AL_after_sub))
             }
+        ],
+        "flags" : {
+            "oryginal_value" :  backup_flags,
+            "new_value" :       new_flags
         }
+    }
 
-        return all_changes
+    return all_changes
 
 def DAA(**kwargs):
     """
@@ -288,52 +292,58 @@ def DAA(**kwargs):
     HR = kwargs["HR"]
     FR = kwargs["FR"]
     AF = FR.readFlag("AF")
+    CF = FR.readFlag("CF")
     
-    all_changes = None
-    AL_source = HR.readFromRegister("AL")
-    al_int = int("".join(AL_source), 2)
+    backup_flags = FR.readFlags()
+    FR.setFlag("CF", 0)
 
-    if (al_int ^ 15) > 9 or AF:
-        backup_flags = FR.readFlags()
+    AL_source = HR.readFromRegister("AL")
+    al_int_original = int("".join(AL_source), 2)
+    AL_after_add = AL_source
+
+    if (al_int_original ^ 15) > 9 or AF:
         six_in_binary = convert_number_to_bit_list(6, 8)
 
         output, carry, auxiliary_carry = binary_addition(8, AL_source, 
                                                          six_in_binary)
-
+        
         AL_after_add = output
-        al_int = convert_number_to_int_with_binary_capacity(output, 8)
+        FR.setFlag("CF", CF or carry)
         FR.setFlag("AF", 1)
+    else:
+        FR.setFlag("AF", 0)
 
-        if carry or al_int > 159:
-            ninety_six_in_binary = convert_number_to_bit_list(96, 8)
+    if al_int_original > 153 or CF:
+        ninety_six_in_binary = convert_number_to_bit_list(96, 8)
 
-            output, carry, auxiliary_carry = binary_addition(8, AL_after_add, 
-                                                         ninety_six_in_binary)
+        output, carry, auxiliary_carry = binary_addition(8, AL_after_add, 
+                                                        ninety_six_in_binary)
+        AL_after_add = output
+        FR.setFlag("CF", 1)
+    else:
+        FR.setFlag("CF", 0)
 
-            FR.setFlag("CF", 1)
+    FR.setFlag("ZF", not "1" in AL_after_add)
+    FR.setFlag("SF", AL_after_add[0] == "1")
+    FR.setFlag("PF", eval_no_of_1(AL_after_add))
 
-        FR.setFlag("ZF", not "1" in output)
-        FR.setFlag("SF", output[0] == "1")
-        FR.setFlag("PF", eval_no_of_1(output))
-        FR.setFlag("AF", auxiliary_carry)
+    new_flags = FR.readFlags()
 
-        new_flags = FR.readFlags()
-
-        all_changes = {
-            "register" : [
-                {
-                    "location" :        "AL",
-                    "oryginal_value" :  list(map(int, AL_source)),
-                    "new_value" :       list(map(int, output))
-                }
-            ],
-            "flags" : {
-                "oryginal_value" :  backup_flags,
-                "new_value" :       new_flags
+    all_changes = {
+        "register" : [
+            {
+                "location" :        "AL",
+                "oryginal_value" :  list(map(int, AL_source)),
+                "new_value" :       list(map(int, AL_after_add))
             }
+        ],
+        "flags" : {
+            "oryginal_value" :  backup_flags,
+            "new_value" :       new_flags
         }
+    }
 
-        return all_changes
+    return all_changes
 
 def AAM(**kwargs):
     """
