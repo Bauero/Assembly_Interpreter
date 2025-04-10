@@ -62,7 +62,6 @@ def JNE(**kwargs):
     LBL = kwargs['args_values_int'][0]
     
     if not FR.readFlag("ZF"):   return {"next_instruction" : LBL}
-    if not FR.readFlag("SF"):   return {"next_instruction" : LBL}
 
 def JA(**kwargs):
     """
@@ -76,7 +75,7 @@ def JA(**kwargs):
     CF  = FR.readFlag("CF")
     ZF  = FR.readFlag("ZF")
     
-    if not (CF or ZF):  return {"next_instruction" : LBL}
+    if CF == 0 and ZF == 0:  return {"next_instruction" : LBL}
 
 def JNBE(**kwargs):
     """
@@ -90,7 +89,7 @@ def JNBE(**kwargs):
     CF  = FR.readFlag("CF")
     ZF  = FR.readFlag("ZF")
     
-    if not (CF or ZF):  return {"next_instruction" : LBL}
+    if CF == 0 and ZF == 0:  return {"next_instruction" : LBL}
 
 def JAE(**kwargs):
     """
@@ -172,7 +171,7 @@ def JG(**kwargs):
     """
     # JUMP IF GREATER
     ## Description
-    Jump if greater -> SF=0F and ZF=0.
+    Jump if greater -> SF=0F or ZF=0.
     """
 
     FR  = kwargs["FR"]
@@ -181,7 +180,7 @@ def JG(**kwargs):
     OF  = bool(FR.readFlag("OF"))
     ZF  = FR.readFlag("ZF")
     
-    if SF == OF and ZF == 0:    return {"next_instruction" : LBL}
+    if SF == OF or ZF == 0:    return {"next_instruction" : LBL}
 
 def JNLE(**kwargs):
     """
@@ -202,7 +201,7 @@ def JGE(**kwargs):
     """
     # JUMP IF GREATER OR EQUAL
     ## Description
-    Jump if greater or equal -> SF=0F.
+    Jump if greater or equal -> SF!=OF.
     """
 
     FR  = kwargs["FR"]
@@ -210,7 +209,7 @@ def JGE(**kwargs):
     SF  = bool(FR.readFlag("SF"))
     OF  = bool(FR.readFlag("OF"))
     
-    if SF == OF:    return {"next_instruction" : LBL}
+    if SF != OF:    return {"next_instruction" : LBL}
 
 def JNL(**kwargs):
     """
@@ -230,7 +229,7 @@ def JL(**kwargs):
     """
     # JUMP LESS
     ## Description
-    Jump if less -> SF<=0F.
+    Jump if less -> SF==OF.
     """
 
     FR  = kwargs["FR"]
@@ -238,7 +237,7 @@ def JL(**kwargs):
     SF  = bool(FR.readFlag("SF"))
     OF  = bool(FR.readFlag("OF"))
     
-    if SF <= OF:    return {"next_instruction" : LBL}
+    if SF == OF:    return {"next_instruction" : LBL}
 
 def JNGE(**kwargs):
     """
