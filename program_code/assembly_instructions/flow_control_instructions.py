@@ -39,13 +39,12 @@ def LOOP(**kwargs):
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
-        
-        if CX_value > 0:
-            return { m[0] : [ m[1] ] }
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0:
+        return { m[0] : [ m[1] ] }
 
 def LOOPZ(**kwargs):
     """
@@ -78,22 +77,21 @@ def LOOPZ(**kwargs):
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and ZF:
-            return { m[0] : [ m[1] ] }
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 and ZF:
+        return { m[0] : [ m[1] ] }
 
 def LOOPE(**kwargs):
     """
     # LOOPE
     ## Description
-    This function perfoms jump to the specified location if value in CX>0 and ZF=1;
+    This function perfoms jump to the specified location if value in CX>0 or ZF=1;
     
     1. Subtracts 1 from CX
-    2. Compare if CX > 0 and ZF=1
+    2. Compare if CX > 0 or ZF=1
     3. If so, jump to label; if not, continue
     
     ## IMPORTANT:
@@ -112,18 +110,16 @@ def LOOPE(**kwargs):
     DS  = kwargs["DS"]
     CX  = HR.readFromRegister("CX")
     ZF  = FR.readFlag("ZF")
-    CRL = kwargs['line']
-    DSL = kwargs['args_values_raw'][0]
+    LBL = kwargs['args_values_int'][0]
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and ZF:
-            return { m[0] : [ m[1] ] }
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 or ZF:
+        return { m[0] : [ m[1] ] , "next_instruction" : LBL}
 
 def LOOPNZ(**kwargs):
     """
@@ -151,18 +147,16 @@ def LOOPNZ(**kwargs):
     DS  = kwargs["DS"]
     CX = HR.readFromRegister("CX")
     ZF = FR.readFlag("ZF")
-    CRL = kwargs['line']
-    DSL = kwargs['args_values_raw'][0]
+    LBL = kwargs['args_values_int'][0]
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and not ZF:
-            return { m[0] : [ m[1] ] }
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 and not ZF:
+        return { m[0] : [ m[1] ] , "next_instruction" : LBL}
 
 def LOOPNE(**kwargs):
     """
@@ -195,13 +189,12 @@ def LOOPNE(**kwargs):
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and not ZF:
-            return { m[0] : [ m[1] ] }
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 and not ZF:
+        return { m[0] : [ m[1] ] }
 
 def CALL(**kwargs):
     """
