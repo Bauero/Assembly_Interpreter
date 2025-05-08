@@ -33,7 +33,7 @@ class CodeHandler():
         raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
         
         if not any([line.strip() for line in raw_file]):
-            raise DetailedException("empty_file")
+            raise DetailedException("30")
 
         output = self.preprocessFile(path_to_file, raw_file)
         
@@ -90,7 +90,7 @@ class CodeHandler():
         code_lines = [line + "\n" for line in code.split("\n")]
         
         if not any([line.strip() for line in code_lines]):
-            raise DetailedException("empty_file")
+            raise DetailedException("30")
         
         previous_lines = self.rawfiles.get("interactive")
 

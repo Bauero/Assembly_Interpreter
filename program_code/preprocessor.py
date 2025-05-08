@@ -59,15 +59,15 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
         #   Detect identifiers (points where code could jump to)
         if re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
             values = line.split(':')
-            if len(values) == 0: raise DetailedException("unfinished_label", line_no + 1)
+            if len(values) == 0: raise DetailedException("4", line_no + 1)
             
             if not ' ' in values[0]:
-                if len(values) > 2: raise DetailedException("too_many_colons", line_no + 1)
+                if len(values) > 2: raise DetailedException("5", line_no + 1)
                 marker_in_line, line = values
                 
         #   Detect improper line with ":"
         if re.match(r"(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
-            raise DetailedException("improper_colon", line_no + 1)
+            raise DetailedException("6", line_no + 1)
 
         #   Save results
         if marker_in_line:
@@ -105,7 +105,7 @@ def _divideCodeToSection(assembly_code : list):
             case '.code':           current_section = ".code";      alaius = False
             case '.data':           current_section = ".data";      alaius = False
             case '_':
-                raise DetailedException("unrecognized_section", id + 1)
+                raise DetailedException("7", id + 1)
         
         assembly_code['lines'][id]["section"] = current_section
 
@@ -218,11 +218,11 @@ def _storeVariablesInData(assembly_code : list):
                 dtt = line_split[1]
                 end_of_dtt_in_line = line.find(dtt) + len(dtt)
         except Exception:
-            raise DetailedException("incorrect_variable_syntax", str(i + 1))
+            raise DetailedException("9", str(i + 1))
         
         proper_var_pattern = "^[a-zA-Z_@][a-zA-Z0-9_@]*$"
         if not re.match(proper_var_pattern, var_name):
-            raise DetailedException("incorrect_var_name", str(i + 1))
+            raise DetailedException("8", str(i + 1))
 
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()

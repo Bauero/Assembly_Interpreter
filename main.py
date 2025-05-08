@@ -9,7 +9,7 @@ def main():
     app = QApplication([])
     engine = Engine()
     code_handeler = CodeHandler(engine)
-    window = MainWindow(code_handeler)
+    gui = Gui(code_handeler)
     sys.exit(app.exec())
 
 if __name__ == "__main__":

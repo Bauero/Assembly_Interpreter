@@ -152,14 +152,14 @@ class MultipurposeRegister(QWidget):
         try:
             value = int(self.register_decimal_value.text())
         except Exception:
-            show_custom_popup(self.language, {"popup" : "invalid_decimal_value"})
+            show_custom_popup(self.language, {"popup" : "43"})
             self.update()
             self.register_decimal_value.clearFocus()
             self.register_decimal_value.blockSignals(False)
             return
 
         if value < 0 or value > (2**16 - 1):
-            show_custom_popup(self.language, {"popup" : "incorrect_decimal_value_16"})
+            show_custom_popup(self.language, {"popup" : "45"})
             self.update()
             self.register_decimal_value.clearFocus()
             self.register_decimal_value.blockSignals(False)
@@ -175,14 +175,14 @@ class MultipurposeRegister(QWidget):
         try:
             value = int(new_content.text(), 2)
         except Exception:
-            show_custom_popup(self.language, {"popup" : "invalid_binary_number"})
+            show_custom_popup(self.language, {"popup" : "42"})
             self.update()
             new_content.clearFocus()
             new_content.blockSignals(False)
             return
 
         if value < 0 or value > 255:
-            show_custom_popup(self.language, {"popup" : "incorrect_binary_value_8"})
+            show_custom_popup(self.language, {"popup" : "46"})
             self.update()
             new_content.clearFocus()
             new_content.blockSignals(False)
@@ -305,14 +305,14 @@ class FunctionalRegisters(QWidget):
         try:
             value = int(self.register_decimal_value.text())
         except Exception:
-            show_custom_popup(self.language, {"popup" : "invalid_decimal_value"})
+            show_custom_popup(self.language, {"popup" : "43"})
             self.update()
             self.register_decimal_value.clearFocus()
             self.register_decimal_value.blockSignals(False)
             return
 
         if value < 0 or value > (2**16 - 1):
-            show_custom_popup(self.language, {"popup" : "incorrect_decimal_value_16"})
+            show_custom_popup(self.language, {"popup" : "45"})
             self.update()
             self.register_decimal_value.clearFocus()
             self.register_decimal_value.blockSignals(False)
@@ -328,14 +328,14 @@ class FunctionalRegisters(QWidget):
         try:
             value = int(self.register_content.text(), 2)
         except Exception:
-            show_custom_popup(self.language, {"popup" : "invalid_binary_number"})
+            show_custom_popup(self.language, {"popup" : "42"})
             self.update()
             self.register_content.clearFocus()
             self.register_content.blockSignals(False)
             return
 
         if value < 0 or value > (2**16 - 1):
-            show_custom_popup(self.language, {"popup" : "incorrect_binary_value_16"})
+            show_custom_popup(self.language, {"popup" : "47"})
             self.update()
             self.register_content.clearFocus()
             self.register_content.blockSignals(False)
@@ -529,7 +529,7 @@ class Flags(QWidget):
     def _validate_register_content(self):
         text = self.register_content.text()
         if not set(text).issubset(('1','0')):
-            show_custom_popup(self.language, {"popup" : "improper_flags_value"})
+            show_custom_popup(self.language, {"popup" : "41"})
             source_value = self.FR.readFlags()
             self._setRegisterValue(source_value)
         else:
@@ -772,16 +772,16 @@ class StackTable(QTableWidget):
 
         match column:
             case 0:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_address"})
+                show_custom_popup(self.language, {"popup" : "49"})
                 self._restorePreviousValue(row)
             case 1:
                 if not all(c in '01' for c in value):
-                    show_custom_popup(self.language, {"popup" : "invalid_binary_number"})
+                    show_custom_popup(self.language, {"popup" : "42"})
                     self._restorePreviousValue(row)
                 else:
                     decimal_value = int(value, 2)
                     if decimal_value > 255 or decimal_value < 0:
-                        show_custom_popup(self.language, {"popup" : "incorrect_binary_value_8"})
+                        show_custom_popup(self.language, {"popup" : "46"})
                         self._restorePreviousValue(row)
                         return
                     self.setItem(row, 1, QTableWidgetItem(value.zfill(8)))
@@ -790,12 +790,12 @@ class StackTable(QTableWidget):
                     self.data.modify_data(address, list(bin(decimal_value)[2:].zfill(8)[:8]))
             case 2:
                 if not value.isdigit():
-                    show_custom_popup(self.language, {"popup" : "invalid_decimal_value"})
+                    show_custom_popup(self.language, {"popup" : "43"})
                     self._restorePreviousValue(row)
                 else:
                     decimal_value = int(value)
                     if decimal_value > 255 or decimal_value < 0:
-                        show_custom_popup(self.language, {"popup" : "incorrect_decimal_value_8"})
+                        show_custom_popup(self.language, {"popup" : "44"})
                         self._restorePreviousValue(row)
                         return
                     binary_value = bin(decimal_value)[2:].zfill(8)
@@ -968,20 +968,20 @@ class VariableTable(QTableWidget):
 
         match column:
             case 0:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_name"})
+                show_custom_popup(self.language, {"popup" : "48"})
                 self._restorePreviousValue(row)
             case 1:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_address"})
+                show_custom_popup(self.language, {"popup" : "49"})
                 self._restorePreviousValue(row)
             case 2:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_size"})
+                show_custom_popup(self.language, {"popup" : "50"})
                 self._restorePreviousValue(row)
             case 3:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_format"})
+                show_custom_popup(self.language, {"popup" : "51"})
                 self._restorePreviousValue(row)
             case 4:
                 if not all(c in '01' for c in value):
-                    show_custom_popup(self.language, {"popup" : "invalid_binary_number"})
+                    show_custom_popup(self.language, {"popup" : "42"})
                     self._restorePreviousValue(row)
                 else:
                     length = (len(value)//8 + 1) * 8 if len(value)//8 < len(value)/8 else len(value)//8

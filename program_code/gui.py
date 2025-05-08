@@ -12,7 +12,7 @@ from .errors import (
     FileDoesntExist, FileSizeMightBeTooBig)
 from .code_handler import CodeHandler
 from .custom_message_boxes import show_custom_popup
-from .errors import DetailedException
+from .errors import DetailedException, FileTypeNotAllowed
 from screeninfo import get_monitors
 
 with open('program_code/configs/color_palette.json') as f:  colors = json.load(f)
@@ -181,19 +181,19 @@ class Gui(QWidget):
 
         self.nextLineButton         = QPushButton(self.names_lang["next_button"])
         self.previousLineButton     = QPushButton(self.names_lang["prev_button"])
-        self.saveStateButton        = QPushButton(self.names_lang["save_state"])
+        # self.saveStateButton        = QPushButton(self.names_lang["save_state"])
         self.startAutoExecCheckbox  = QCheckBox(self.names_lang["auto_button"])
         self.startExecutionButton   = QPushButton(self.names_lang["start_stop_1"])
         
         self.nextLineButton.        setEnabled(self.interactive_mode)
         self.previousLineButton.    setEnabled(self.interactive_mode)
-        self.saveStateButton.       setEnabled(self.interactive_mode)
+        # self.saveStateButton.       setEnabled(self.interactive_mode)
         self.startAutoExecCheckbox. setEnabled(True)
 
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
         self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
-        self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
+        # self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
 
         self.startExecutionButton.setStyleSheet(
             f'color: {colors[self.theme]["start_stop_button_running"]}')
@@ -218,7 +218,7 @@ class Gui(QWidget):
 
         row_2 = QHBoxLayout()
         row_2.addWidget(self.startExecutionButton)
-        row_2.addWidget(self.saveStateButton)
+        # row_2.addWidget(self.saveStateButton)
 
         row_3 = QHBoxLayout()
         row_3.addWidget(self.startAutoExecCheckbox)
@@ -356,19 +356,19 @@ class Gui(QWidget):
                 self.code_field.setHighlight(lines)
                 self.code_field.setEditable(False)
             except FileDoesntExist:
-                ans = self._show_popup({"popup" : "file_doesnt_exist_popup"})
+                ans = self._show_popup({"popup" : "1"})
                 if ans == cancel_button.value:  return
                 file_path = ''
                 continue
             except FileSizeMightBeTooBig:
-                ans = self._show_popup({"popup" : "file_size_too_big"})
+                ans = self._show_popup({"popup" : "2"})
                 match ans:
                     case 2: ignore_size_limit = True ; file_path = ''
                     case 3: ignore_size_limit = True
                     case 4: return
                 continue
             except FileTypeNotAllowed:
-                ans = self._show_popup({"popup" : "improper_file_type"})
+                ans = self._show_popup({"popup" : "3"})
                 match ans:
                     case 2: ignore_file_type = True ; file_path = ''
                     case 3: self._load_file_to_interactive(file_path)
@@ -381,8 +381,7 @@ class Gui(QWidget):
                     ans = self._show_popup(response)
                     if ans == 2:    self._load_file_to_interactive(file_path)
                 else:
-                    self._show_popup({"popup" : "unrecognized_error_popup",
-                                            "source_error" : e})
+                    self._show_popup({"popup" : "60", "source_error" : e})
                 return
             break
 
@@ -445,7 +444,7 @@ class Gui(QWidget):
             response = {
                 "status" : 1,
                 "error" : {
-                    "popup" : "unrecognized_error_popup",
+                    "popup" : "60",
                     "line" : self.code_handler.get_curr_exec_line(),
                     "param_no" : None,
                     "params" : None,
@@ -453,10 +452,6 @@ class Gui(QWidget):
                 }
             }
             self._act_on_response(response)
-
-
-
-
 
     @pyqtSlot()
     def _start_stop_program(self):
@@ -505,7 +500,7 @@ class Gui(QWidget):
                     response = {
                             "status" : 1,
                             "error" : {
-                                "popup" : "unrecognized_error_popup",
+                                "popup" : "60",
                                 "line" : self.code_handler.get_curr_exec_line(),
                                 "param_no" : None,
                                 "params" : None,
@@ -550,7 +545,7 @@ class Gui(QWidget):
                 response = {"status" : 1, "error" : e.get_details()}
                 self._act_on_response(response)
             else:
-                self._show_popup({"popup" : "unrecognized_error_popup",
+                self._show_popup({"popup" : "60",
                                         "source_error" : e})
 
     @pyqtSlot()
@@ -574,7 +569,7 @@ class Gui(QWidget):
                 response = {"status" : 1, "error" : e.get_details()}
                 self._act_on_response(response)
             else:
-                self._show_popup({"popup" : "unrecognized_error_popup",
+                self._show_popup({"popup" : "60",
                                         "source_error" : e})
 
     @pyqtSlot()
@@ -741,7 +736,7 @@ class Gui(QWidget):
             self.previousLineButton.setText(self.names_lang['prev_button'])
             self.startAutoExecCheckbox.setText(self.names_lang['auto_button'])
             self.startExecutionButton.setText(self.names_lang['start_stop_1'])
-            self.saveStateButton.setText(self.names_lang["save_state"])
+            # self.saveStateButton.setText(self.names_lang["save_state"])
             self.comboBoxLabel.setText(self.names_lang['interval'])
             
             # Program - Names in tables and register hints

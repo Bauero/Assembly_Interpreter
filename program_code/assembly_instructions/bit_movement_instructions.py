@@ -5,6 +5,7 @@ This file contains operations which perform logical operations
 from program_code.helper_functions import (convert_number_to_bit_list,
                                            save_value_in_destination,
                                            eval_no_of_1)
+from ..errors import DetailedException
 
 def SHL(**kwargs):
     """
@@ -34,11 +35,9 @@ def SHL(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -106,11 +105,9 @@ def SHR(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -178,11 +175,9 @@ def SAL(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -250,11 +245,9 @@ def SAR(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -325,11 +318,9 @@ def ROL(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -394,11 +385,9 @@ def ROR(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -468,11 +457,9 @@ def RCL(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS
@@ -542,11 +529,9 @@ def RCR(**kwargs):
     INT = kwargs["args_values_int"][1]
 
     if PT[1] == "register" and SOP[1].upper() != "CL":
-        return {"error" : {
-            "popup" : "incorrect_param_bit_movement",
-            "line" : kwargs["line"] + 1,
-            "source_error" : None
-        }}
+        raise DetailedException("31", line = kwargs["line"] + 1)
+    elif PT[1] == "value" and SOP[1] != "1":
+        raise DetailedException("32", line = kwargs["line"] + 1)
 
     value_to_shift = convert_number_to_bit_list(RAW, FS)
     rotation_counter = INT % FS

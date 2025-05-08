@@ -25,6 +25,7 @@ class Engine():
         self.FR = FlagRegister()
         self.DS = DataSegment()
         self.variables = []
+        self.labels = []
         self.allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
         self.funtionNameLink = funtionNameLink
 
@@ -54,7 +55,7 @@ class Engine():
 
         keyword, first_non_keyw_char = self._separate_keyword(command)
         if keyword not in self.funtionNameLink:
-            raise DetailedException("unsuported_instruction")
+            raise DetailedException("10")
         
         elements_in_line.append(keyword)
         arguments = command[first_non_keyw_char:].strip().split(",")
@@ -69,7 +70,7 @@ class Engine():
             pairs = list(filter(lambda x: x[1] == "undefined", zip(args_cleaned, args_types)))
             wrong_params = "' '".join([x[0] for x in pairs])
             wrong_params = f"'{wrong_params}'"
-            raise DetailedException("unrecognized_argument", values=wrong_params)
+            raise DetailedException("11", values=wrong_params)
         
         args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, 
                                                                             args_types)
@@ -114,8 +115,9 @@ class Engine():
                 args_values_int = args_values_int,
                 line = line
             )
+        except DetailedException as e:  raise e
         except Exception as e:
-            raise DetailedException("instruction_error", e)
+            raise DetailedException("29", e)
 
         if self.warnings:
             if not output.get("warnings"):
@@ -234,24 +236,24 @@ class Engine():
             elif e.upper() in self.HR.listRegisters():
                 types.append("register")
                 values.append(str(int(self.HR.readFromRegister(e), 2)))
-            elif is_allowed_arithmetic(e):
-                types.append(e)
-                values.append(e)
             elif e in self.labels:
                 types.append("constant")
                 values.append(str(self.labels[e]))
+            elif e in ['+','-','/','*','^']:
+                types.append('arithmetic_sign')
+                values.append(e)
             elif b16v := return_if_base_16_value(e):
                 types.append("constant")
-                values.append(b16v)
+                values.append(str(int(b16v, 16)))
             elif b10v := return_if_base_10_value(e):
                 types.append("constant")
                 values.append(b10v)
             elif b8v := return_if_base_8_value(e):
                 types.append("constant")
-                values.append(b8v)
+                values.append(str(int(b8v, 8)))
             elif b2v := return_if_base_2_value(e):
                 types.append("constant")
-                values.append(b2v)
+                values.append(str(int(b2v, 2)))
             else:
                 return
 
@@ -261,12 +263,9 @@ class Engine():
         """This function standardizes call for memory localtion, analyzes it's syntax for
         errors and if everything is fine, then returns standardized argument"""
         
-        processed = mem_call.replace("[", "+").replace("]","").replace(" ","").replace("\t","")
-        if processed.startswith("+"):   processed = processed[1:]
-        
         elements = []
         tmp = ""
-        for c in processed:
+        for c in mem_call:
             if c.isalnum():             tmp += c
             elif is_white_char(c):      continue
             else:
@@ -280,45 +279,34 @@ class Engine():
 
         response = self._define_arg_types_and_value(elements)
         if response == None:
-            raise DetailedException("unrecognized_elem_mem_call")
+            raise DetailedException("12")
         else:
             types, values = response
 
         if types.count("var") > 1:
-            raise DetailedException("double_memory_reference")
+            raise DetailedException("13")
         
         if types.count("register") > 2:
-            raise DetailedException("multiple_register_reference")
+            raise DetailedException("14")
 
         if types.count("register") == 1:
             first_reg = elements[v1a := types.index("register")].upper()
-            first_reg_type = self.HR.getRegisterType(first_reg)
-
-            if first_reg_type == "multipurpose" and first_reg != "BX":
-                raise DetailedException("first_reg_must_be_bx")
-
-            if first_reg_type == "pointer" and first_reg == "SP":
-                raise DetailedException("cant_use_sp")
+            
+            if first_reg not in ["BX", "BP", "DI", "SI"]:
+                raise DetailedException("16")
 
         if types.count("register") == 2:
             first_reg = elements[v1a := types.index("register")].upper()
             second_reg = elements[types.index("register", v1a + len(first_reg))].upper()
             
             if first_reg == second_reg:
-                raise DetailedException("register_called_twice")
+                raise DetailedException("15")
             
             first_reg_type = self.HR.getRegisterType(first_reg)
             second_reg_type = self.HR.getRegisterType(second_reg)
             
             if first_reg_type == second_reg_type:
-                raise DetailedException("reg_same_type")
-            
-            if first_reg_type == "multipurpose" and first_reg != "BX":
-                raise DetailedException("first_reg_must_be_bx")
-            
-            if (first_reg_type == "pointer" and first_reg == "SP") or \
-               (second_reg_type == "pointer" and second_reg == "SP"):
-                raise DetailedException("cant_use_sp")
+                raise DetailedException("17")
         
         standardized = "".join(values)
 
@@ -348,9 +336,9 @@ class Engine():
         time"""
 
         response = self._define_arg_types_and_value(elements)
-        
+
         if response == None:
-            raise DetailedException("unrecognized_value_compl_val")
+            raise DetailedException("18")
         else:
             _, values = response
 
@@ -480,11 +468,11 @@ class Engine():
             case ["memory", "value"]:
                 size = None
                 if all(expli_sizes) and expli_sizes[0] != expli_sizes[1]:
-                    raise DetailedException("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 if expli_sizes[0]:      size = expli_sizes[0]
                 elif expli_sizes[1]:    size = expli_sizes[1]
                 else:
-                    raise DetailedException("no_explicite_size")
+                    raise DetailedException("24")
                 return size
                 
             case ['memory', 'register']:
@@ -498,12 +486,12 @@ class Engine():
                 final_reg_size = max(reg_exp_size, reg_det_size) if reg_exp_size else reg_det_size
 
                 if mem_exp_size and mem_exp_size < final_reg_size:
-                    raise DetailedException("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 
                 return final_reg_size
             
             case ['memory', 'memory']:
-                raise DetailedException("cant_call_mem_twice")
+                raise DetailedException("25")
             
             case ["register", "value"]:
                 reg_exp_size = expli_sizes[0]
@@ -516,7 +504,7 @@ class Engine():
                     self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if var_exp_size and reg_det_size > var_exp_size:
-                    raise DetailedException("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 
                 if max(var_exp_size or 0, var_det_size or 0) > reg_det_size:
                     self.warnings.append(self._gen_warn("value_exceeds_bound"))
@@ -536,22 +524,22 @@ class Engine():
                     self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if mem_exp_size and reg_det_size != mem_exp_size:
-                    raise DetailedException("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 
                 return reg_det_size
             
             case ['value', 'value']:
-                raise DetailedException("cant_call_mem_twice")
+                raise DetailedException("26")
             
             case ['value', 'register']:
-                raise DetailedException("cant_call_mem_twice")
+                raise DetailedException("26")
             
             case ['value', 'memory']:
-                raise DetailedException("cant_call_mem_twice")
+                raise DetailedException("26")
             
             case ['memory']:
                 if expli_sizes[0] == None:
-                    raise DetailedException("no_explicite_size")
+                    raise DetailedException("24")
                 
                 return expli_sizes[0]
 
@@ -580,10 +568,10 @@ class Engine():
         in the program have """
 
         if not len(params) in self.funtionNameLink[keyword].params_range:
-            raise DetailedException("wrong_no_of_params", param_no=len(params))
+            raise DetailedException("27", param_no=len(params))
         
         if not tuple(params) in self.funtionNameLink[keyword].allowed_params_combinations:
-            raise DetailedException("wrong_combination_params", params=params)
+            raise DetailedException("28", params=params)
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
         """This function ensures that all calls for register are in capital names"""

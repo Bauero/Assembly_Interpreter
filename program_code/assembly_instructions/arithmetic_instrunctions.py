@@ -10,6 +10,7 @@ from program_code.helper_functions import (eval_no_of_1,
                                            save_value_in_destination, 
                                            convert_number_to_bit_list, 
                                            convert_number_to_int_with_binary_capacity)
+from ..errors import DetailedException
 
 def AAA(**kwargs):
     """
@@ -1201,17 +1202,17 @@ def IDIV(**kwargs):
     ready_reminder = bin(converted_reminder)[2:].zfill(FS)
 
     if not n1_neg and not n2_neg:
-        if ready_quotient[0] == "1":    Exception() # ready_quotient = inverse_Twos_Compliment_Number(ready_quotient)
-        if ready_reminder[0] == "1":    Exception() # ready_reminder = inverse_Twos_Compliment_Number(ready_reminder)
+        if ready_quotient[0] == "1":    DetailedException("30")
+        if ready_reminder[0] == "1":    DetailedException("30")
     elif n1_neg and not n2_neg:
-        if ready_quotient[0] == "0":    Exception() # ready_quotient = inverse_Twos_Compliment_Number(ready_quotient)
-        if ready_reminder[0] == "0":    Exception() # ready_reminder = inverse_Twos_Compliment_Number(ready_reminder)
+        if ready_quotient[0] == "0":    DetailedException("30")
+        if ready_reminder[0] == "0":    DetailedException("30")
     elif not n1_neg and n2_neg:
-        if ready_quotient[0] == "0":    Exception() # ready_quotient = inverse_Twos_Compliment_Number(ready_quotient)
-        if ready_reminder[0] == "1":    Exception() # ready_reminder = inverse_Twos_Compliment_Number(ready_reminder)
+        if ready_quotient[0] == "0":    DetailedException("30")
+        if ready_reminder[0] == "1":    DetailedException("30")
     elif n1_neg and n2_neg:
-        if ready_quotient[0] == "1":    Exception() # ready_quotient = inverse_Twos_Compliment_Number(ready_quotient)
-        if ready_reminder[0] == "0":    Exception() # ready_reminder = inverse_Twos_Compliment_Number(ready_reminder)
+        if ready_quotient[0] == "1":    DetailedException("30")
+        if ready_reminder[0] == "0":    DetailedException("30")
 
     HR.writeIntoRegister(upper, converted_reminder)
     HR.writeIntoRegister(lower, converted_quotient)
