@@ -170,7 +170,7 @@ Analiza kodu, odbywa się tak samo jak w trybie analizy, z wyjątkiem dwóch kwe
 
 ### W skrócie
 
-Ogólna lista obsługiwanych poleceń widoczna jest w sekcji [Układ plików programu (Program's files organization)](#Uklad-plikow-programu-(Program's-files-organization)), w folderze `Extras/Instructions and descriptions/`. Każde obsługiwane polcenie, zapisane jest jako oddzielny plik `.md`, z nazwą będącą obsługiwanym poleceniem.
+Ogólna lista obsługiwanych poleceń widoczna jest w sekcji [Układ plików programu](#układ-plików-programu-programs-files-organization), w folderze `Extras/Instructions and descriptions/`. Każde obsługiwane polcenie, zapisane jest jako oddzielny plik `.md`, z nazwą będącą obsługiwanym poleceniem.
 
 ### Szczegółowo
 
@@ -362,7 +362,7 @@ Code analysis is carried out the same way as in analysis mode, with two exceptio
 
 #### Summary
 
-The general list of supported commands is visible in the section [Program's files organization](#Uklad-plikow-programu-(Program's-files-organization)), in the folder `Extras/Instructions and descriptions/`. Each supported command is saved as a separate `.md` file named after the supported instruction.
+The general list of supported commands is visible in the section [Program's files organization](#układ-plików-programu-programs-files-organization), in the folder `Extras/Instructions and descriptions/`. Each supported command is saved as a separate `.md` file named after the supported instruction.
 
 #### Details
 
