@@ -1,4 +1,4 @@
-> <b>For English 🇬🇧 scroll down or click link [here](#About)</b>
+> <b>For English 🇬🇧 scroll down or click [here](#About)</b>
 
 # O projekcie
 
