@@ -155,7 +155,7 @@ Po załadowaniu i wstępnym sprawdzeniu pliku, możliwe jest wykonywanie kolejny
 Podczas uruchamiania trybu interakywnego zostajemy powitani przez puste okno, gdzie należy wprowadzić kod, który chcemy zasymulować (wyjątkiem jest otworzenie pliku, którego nie udało się uruchomić w trybie Analizy - zawartość pliku jest wtedy wczytana automatycznie):
 
 <div align="center">
-   <img src="./readme_pictures/Tryb interaktywny.png" alt="Welcome Screen GUI" style="max-height: 500px;">
+   <img src="readme_pictures/interactive_mode.png" alt="Welcome Screen GUI" style="max-height: 500px;">
 </div>
 
 Analiza kodu, odbywa się tak samo jak w trybie analizy, z wyjątkiem dwóch kwestii:
@@ -347,7 +347,7 @@ After loading and initially checking the file, it is possible to execute further
 When starting interactive mode, we are greeted by a blank window where we need to enter the code we want to simulate (the exception is opening a file that could not be run in Analysis mode — in that case, the file’s contents are loaded automatically).
 
 <div align="center">
-   <img src="./readme_pictures/Tryb interaktywny.png" alt="Welcome Screen GUI" style="max-height: 500px;">
+   <img src="./readme_pictures/interactive_mode.png" alt="Welcome Screen GUI" style="max-height: 500px;">
 </div>
 
 Code analysis is carried out the same way as in analysis mode, with two exceptions:
@@ -537,7 +537,7 @@ Assembly_interpreter
 │  ├─ history.py
 │  └─ preprocessor.py
 ├─ readme_pictures
-│  ├─ Tryb Interaktywny.png
+│  ├─ interactive_mode.png
 │  ├─ analiza_pliku.png
 │  ├─ ekran_powitalny_gui.png
 │  ├─ podpowiedzi.png
