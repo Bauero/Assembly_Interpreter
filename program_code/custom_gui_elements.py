@@ -1,5 +1,5 @@
 """
-This file containst gustom GUI structures which are then later used in main gui
+This file contains custom GUI structures which are then later used in main gui
 file
 """
 
@@ -10,8 +10,7 @@ from .helper_functions import return_name_from_size, color_txt
 from .custom_message_boxes import show_custom_popup
 from PyQt6.QtCore import Qt, QRect, QTimer, pyqtSignal, QEventLoop
 from PyQt6.QtGui import (
-    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette,
-    QKeyEvent)
+    QFont, QTextCursor, QPainter, QColor, QTextFormat, QKeySequence, QPalette)
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QFormLayout, QLabel, QHBoxLayout, QLineEdit, QTextEdit,
     QMessageBox, QPlainTextEdit, QTableWidget, QHeaderView, QTableWidgetItem, 
@@ -41,6 +40,7 @@ font_15 = QFont() ; font_15.setPointSize(15)
 register_text_style = "QLineEdit { letter-spacing: 1px; }"
 table_grid = "QTableWidget {gridline-color: #606060; letter-spacing: 1px; font-size: 13px}"
 input_mask_8 = "BBBBBBBB"
+input_mask_16 = "BBBBBBBBBBBBBBBB"
 width_int = 60
 width_8_bit = 90
 width_16_bit = 2 * width_8_bit
@@ -48,8 +48,38 @@ register_height = 20
 reg_label_width = 30
 no_spacing = 0
 
+# class CustomLineEdit(QLineEdit):
+#     def __init__(self, parent=None, on_confirm=None):
+#         super().__init__(parent)
+#         self.on_confirm = on_confirm
+#         self._skip_next_focus_out = True
+
+#     def focusOutEvent(self, event):
+#         super().focusOutEvent(event)
+#         if self._skip_next_focus_out:   self._skip_next_focus_out = False
+#         else:
+#             if self.on_confirm:
+#                 self.on_confirm()
+#                 self._skip_next_focus_out = True
+#         print("hi")
+
+#     def confirm(self):
+#         if self.on_confirm:
+#             self.on_confirm()
+#         # Prevent focusOutEvent from firing validation again
+#         self._skip_next_focus_out = True
+#         self.clearFocus()
+
+class CustomLineEdit(QLineEdit):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def focusOutEvent(self, event):
+        self.returnPressed.emit()
+        super().focusOutEvent(event)
+
 class MultipurposeRegister(QWidget):
-    """This class creates a widget for displaying multipurpose register, splited into
+    """This class creates a widget for displaying multipurpose register, splitted into
     high and low bits as well as a dedicated field for displaying decimal value of register
     """
 
@@ -73,17 +103,15 @@ class MultipurposeRegister(QWidget):
         self.register_label.setFixedWidth(reg_label_width)
         self.register_label.setFixedHeight(register_height)
 
-        self.register_high_bits = QLineEdit()
+        self.register_high_bits = CustomLineEdit()
         self.register_high_bits.setStyleSheet(register_text_style)
-        self.register_high_bits.setInputMask(input_mask_8)
         self.register_high_bits.setFixedWidth(width_8_bit)
         self.register_high_bits.setFixedHeight(register_height)
         self.register_high_bits.setReadOnly(True)
         self.register_high_bits.setAlignment(alg_cent)
 
-        self.register_low_bits = QLineEdit()
+        self.register_low_bits = CustomLineEdit()
         self.register_low_bits.setStyleSheet(register_text_style)
-        self.register_low_bits.setInputMask(input_mask_8)
         self.register_low_bits.setFixedWidth(width_8_bit)
         self.register_low_bits.setFixedHeight(register_height)
         self.register_low_bits.setReadOnly(True)
@@ -92,11 +120,15 @@ class MultipurposeRegister(QWidget):
         equals_label = QLabel("=")
         equals_label.setFixedHeight(register_height)
 
-        self.register_decimal_value = QLineEdit()
+        self.register_decimal_value = CustomLineEdit()
         self.register_decimal_value.setFixedWidth(width_int)
         self.register_decimal_value.setFixedHeight(register_height)
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
+
+        self.register_high_bits.returnPressed.connect(lambda: self.verify_binary_input(self.register_high_bits))
+        self.register_low_bits.returnPressed.connect(lambda: self.verify_binary_input(self.register_low_bits))
+        self.register_decimal_value.returnPressed.connect(self.verify_decimal_input)
         
         split_reg_layout.addWidget(self.register_high_bits)
         split_reg_layout.addWidget(self.register_low_bits)
@@ -112,21 +144,81 @@ class MultipurposeRegister(QWidget):
         row_layout.insertSpacing(4,1)
         
         self.setLayout(row_layout)
+        self.blockSignals(True)
         self.update()
 
-    def _setRegisterValue(self, value : str):
+    def verify_decimal_input(self):
+        self.register_decimal_value.blockSignals(True)
+        try:
+            value = int(self.register_decimal_value.text())
+        except Exception:
+            show_custom_popup(self.language, {"popup" : "43"})
+            self.update()
+            self.register_decimal_value.clearFocus()
+            self.register_decimal_value.blockSignals(False)
+            return
+
+        if value < 0 or value > (2**16 - 1):
+            show_custom_popup(self.language, {"popup" : "45"})
+            self.update()
+            self.register_decimal_value.clearFocus()
+            self.register_decimal_value.blockSignals(False)
+            return
+        
+        self.HR.writeIntoRegister(self.get_name(), value)
+        self.update()
+        self.register_decimal_value.clearFocus()
+        self.register_decimal_value.blockSignals(False)
+
+    def verify_binary_input(self, new_content):
+        new_content.blockSignals(True)
+        try:
+            value = int(new_content.text(), 2)
+        except Exception:
+            show_custom_popup(self.language, {"popup" : "42"})
+            self.update()
+            new_content.clearFocus()
+            new_content.blockSignals(False)
+            return
+
+        if value < 0 or value > 255:
+            show_custom_popup(self.language, {"popup" : "46"})
+            self.update()
+            new_content.clearFocus()
+            new_content.blockSignals(False)
+            return
+        
+        self.HR.writeIntoRegister(self.get_name(), value)
+        self.update()
+        new_content.clearFocus()
+        new_content.blockSignals(False)
+
+    def _setRegisterValue(self, value: str):
         value = value.zfill(16)[-16:]
+        
+        self.register_high_bits.blockSignals(True)
         self.register_high_bits.setText(value[-16:-8])
+        self.register_high_bits.blockSignals(False)
+
+        self.register_low_bits.blockSignals(True)
         self.register_low_bits.setText(value[-8:])
+        self.register_low_bits.blockSignals(False)
+
+        self.register_decimal_value.blockSignals(True)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
+        self.register_decimal_value.blockSignals(False)
 
     def update(self):
+        """Refresh displayed value of the regiter"""
         self._setRegisterValue(self.HR.readFromRegister(self.register_name))
 
     def get_name(self) -> str:
+        """Return name of the register which content should be diplayed"""
         return self.register_name
     
     def set_interactive(self, value : bool = False):
+        """Set MultipurposeRegister objece, as editable"""
+        self.blockSignals(not value)
         self.register_high_bits.setReadOnly(not value)
         self.register_low_bits.setReadOnly(not value)
         self.register_decimal_value.setReadOnly(not value)
@@ -169,7 +261,7 @@ class FunctionalRegisters(QWidget):
         self.register_label.setFixedWidth(reg_label_width)
         self.register_label.setFixedHeight(register_height)
 
-        self.register_content = QLineEdit()
+        self.register_content = CustomLineEdit()
         self.register_content.setFixedWidth(width_16_bit)
         self.register_content.setFixedHeight(register_height)
         self.register_content.setStyleSheet(register_text_style)
@@ -179,11 +271,14 @@ class FunctionalRegisters(QWidget):
         equals_label = QLabel("=")
         equals_label.setFixedHeight(register_height)
 
-        self.register_decimal_value = QLineEdit()
+        self.register_decimal_value = CustomLineEdit()
         self.register_decimal_value.setFixedWidth(width_int)
         self.register_decimal_value.setFixedHeight(register_height)
         self.register_decimal_value.setReadOnly(True)
         self.register_decimal_value.setAlignment(alg_cent)
+
+        self.register_content.returnPressed.connect(self.verify_binary_input)
+        self.register_decimal_value.returnPressed.connect(self.verify_decimal_input)
 
         row_layout.addWidget(self.register_label)
         row_layout.addWidget(self.register_content)
@@ -191,12 +286,65 @@ class FunctionalRegisters(QWidget):
         row_layout.addWidget(self.register_decimal_value)
 
         self.setLayout(row_layout)
+        self.blockSignals(True)
         self.update()
 
     def _setRegisterValue(self, value : str):
         value = value.zfill(16)[-16:]
+        
+        self.register_content.blockSignals(True)
         self.register_content.setText(value)
+        self.register_content.blockSignals(False)
+        
+        self.register_decimal_value.blockSignals(True)
         self.register_decimal_value.setText(f"{int(value, base=2)}")
+        self.register_decimal_value.blockSignals(False)
+
+    def verify_decimal_input(self):
+        self.register_decimal_value.blockSignals(True)
+        try:
+            value = int(self.register_decimal_value.text())
+        except Exception:
+            show_custom_popup(self.language, {"popup" : "43"})
+            self.update()
+            self.register_decimal_value.clearFocus()
+            self.register_decimal_value.blockSignals(False)
+            return
+
+        if value < 0 or value > (2**16 - 1):
+            show_custom_popup(self.language, {"popup" : "45"})
+            self.update()
+            self.register_decimal_value.clearFocus()
+            self.register_decimal_value.blockSignals(False)
+            return
+        
+        self.HR.writeIntoRegister(self.get_name(), value)
+        self.update()
+        self.register_decimal_value.clearFocus()
+        self.register_decimal_value.blockSignals(False)
+
+    def verify_binary_input(self):
+        self.register_content.blockSignals(True)
+        try:
+            value = int(self.register_content.text(), 2)
+        except Exception:
+            show_custom_popup(self.language, {"popup" : "42"})
+            self.update()
+            self.register_content.clearFocus()
+            self.register_content.blockSignals(False)
+            return
+
+        if value < 0 or value > (2**16 - 1):
+            show_custom_popup(self.language, {"popup" : "47"})
+            self.update()
+            self.register_content.clearFocus()
+            self.register_content.blockSignals(False)
+            return
+        
+        self.HR.writeIntoRegister(self.get_name(), value)
+        self.update()
+        self.register_content.clearFocus()
+        self.register_content.blockSignals(False)
 
     def update(self):
         self._setRegisterValue(self.HR.readFromRegister(self.register_name))
@@ -206,6 +354,7 @@ class FunctionalRegisters(QWidget):
 
     def set_interactive(self, value : bool = False):
         self.register_content.setReadOnly(not value)
+        self.register_decimal_value.setReadOnly(not value)
 
     def set_hint(self, language : str):
         self.language = language
@@ -260,7 +409,7 @@ class CustomIndicator(QLabel):
 
 class Flags(QWidget):
     """
-    This class is responsible for display of flag register = it containts a text
+    This class is responsible for display of flag register = it contains a text
     field with source value, and below it, there are checkbox'es working like 
     indicators for all flags which are important for the user
     """
@@ -380,7 +529,7 @@ class Flags(QWidget):
     def _validate_register_content(self):
         text = self.register_content.text()
         if not set(text).issubset(('1','0')):
-            show_custom_popup(self.language, {"popup" : "improper_flags_value"})
+            show_custom_popup(self.language, {"popup" : "41"})
             source_value = self.FR.readFlags()
             self._setRegisterValue(source_value)
         else:
@@ -418,7 +567,7 @@ class LineNumberArea(QWidget):
 
 class CodeEditor(QPlainTextEdit):
     """This class is responsible for creation of code field, which allows for display of 
-    custom text field, with numered lines, and option to highlight a certain line"""
+    custom text field, with numbered lines, and option to highlight a certain line"""
 
     def __init__(self, language : str, theme : str):
         super().__init__()
@@ -455,13 +604,17 @@ class CodeEditor(QPlainTextEdit):
         extraSelections = []
 
         if not line_numbers:
-            self.highlighted_lines = line_numbers
+            self.highlighted_lines = []
             self.setExtraSelections(extraSelections)
+            return
+
+        if type(line_numbers) == int:   line_numbers = [line_numbers]
 
         if not background_color:    background_color = colors[self.theme]["line_highlight"]
         if not text_color:  text_color = colors[self.theme]["code_text"]
 
         for line_number in line_numbers:
+            line_number = int(line_number)
             if line_number <= 0:    continue
             cursor = QTextCursor(self.document().findBlockByLineNumber(line_number - 1))
             selection = QTextEdit.ExtraSelection()
@@ -477,7 +630,7 @@ class CodeEditor(QPlainTextEdit):
         self.setExtraSelections(extraSelections)
 
         if line_numbers:
-            target_line = line_numbers[0]
+            target_line = int(line_numbers[0])
             block = self.document().findBlockByLineNumber(target_line - 1)
             if block.isValid():
                 cursor = QTextCursor(block)
@@ -535,6 +688,8 @@ class StackTable(QTableWidget):
     This class allows to display Stack as a table with option to easily change
     content
     """
+
+    changed = pyqtSignal()
     
     def __init__(self, data: DataSegment, language : str, theme : str):
         super().__init__()
@@ -617,37 +772,38 @@ class StackTable(QTableWidget):
 
         match column:
             case 0:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_address"})
+                show_custom_popup(self.language, {"popup" : "49"})
                 self._restorePreviousValue(row)
             case 1:
                 if not all(c in '01' for c in value):
-                    show_custom_popup(self.language, {"popup" : "invalid_binary_number"})
+                    show_custom_popup(self.language, {"popup" : "42"})
                     self._restorePreviousValue(row)
                 else:
                     decimal_value = int(value, 2)
                     if decimal_value > 255 or decimal_value < 0:
-                        show_custom_popup(self.language, {"popup" : "incorrect_decimal_value"})
+                        show_custom_popup(self.language, {"popup" : "46"})
                         self._restorePreviousValue(row)
                         return
                     self.setItem(row, 1, QTableWidgetItem(value.zfill(8)))
                     self.setItem(row, 2, QTableWidgetItem(str(decimal_value)))
-                    self._highlightChange(row, 1)
-                    self._highlightChange(row, 2)
+                    address = int(self.item(row, 0).text(), 16)
+                    self.data.modify_data(address, list(bin(decimal_value)[2:].zfill(8)[:8]))
             case 2:
                 if not value.isdigit():
-                    show_custom_popup(self.language, {"popup" : "incorrect_decimal_value"})
+                    show_custom_popup(self.language, {"popup" : "43"})
                     self._restorePreviousValue(row)
                 else:
                     decimal_value = int(value)
                     if decimal_value > 255 or decimal_value < 0:
-                        show_custom_popup(self.language, {"popup" : "incorrect_decimal_value"})
+                        show_custom_popup(self.language, {"popup" : "44"})
                         self._restorePreviousValue(row)
                         return
                     binary_value = bin(decimal_value)[2:].zfill(8)
                     self.setItem(row, 1, QTableWidgetItem(binary_value))
-                    self._highlightChange(row, 1)
-                    self._highlightChange(row, 2)
+                    address = int(self.item(row, 0).text(), 16)
+                    self.data.modify_data(address, list(binary_value))
 
+        self.changed.emit()
         self.blockSignals(False)
 
     def keyPressEvent(self, event):
@@ -713,6 +869,9 @@ class StackTable(QTableWidget):
 class VariableTable(QTableWidget):
     """This class allows to display Stack as a table with option to easily change
     content"""
+
+    changed = pyqtSignal()
+
     def __init__(self, engine : Engine, language : str, theme : str):
         super().__init__()
         self.language = language
@@ -809,26 +968,29 @@ class VariableTable(QTableWidget):
 
         match column:
             case 0:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_name"})
+                show_custom_popup(self.language, {"popup" : "48"})
                 self._restorePreviousValue(row)
             case 1:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_address"})
+                show_custom_popup(self.language, {"popup" : "49"})
                 self._restorePreviousValue(row)
             case 2:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_size"})
+                show_custom_popup(self.language, {"popup" : "50"})
                 self._restorePreviousValue(row)
             case 3:
-                show_custom_popup(self.language, {"popup" : "cannot_edit_format"})
+                show_custom_popup(self.language, {"popup" : "51"})
                 self._restorePreviousValue(row)
             case 4:
                 if not all(c in '01' for c in value):
-                    show_custom_popup(self.language, {"popup" : "invalid_binary_number"})
+                    show_custom_popup(self.language, {"popup" : "42"})
                     self._restorePreviousValue(row)
                 else:
                     length = (len(value)//8 + 1) * 8 if len(value)//8 < len(value)/8 else len(value)//8
-                    self.setItem(row, 4, QTableWidgetItem(value.zfill(length)))
-                    self._highlightChange(row, 4)
+                    adjusted_value = value.zfill(length)[:length]
+                    self.setItem(row, 4, QTableWidgetItem(adjusted_value))
+                    address = int(self.item(row, 1).text())
+                    self.engine.DS.modify_data(address, list(adjusted_value))
 
+        self.changed.emit()
         self.blockSignals(False)
 
     def keyPressEvent(self, event):

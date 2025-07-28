@@ -1,5 +1,5 @@
 """
-This file contains functions which purpose is to read, and preprocess file to 
+This file contains functions which purpose is to read, and process file to 
 allow for it's further use inside program.
 """
 
@@ -11,31 +11,30 @@ from .helper_functions import (return_size_from_name,
                                return_if_base_8_value,
                                return_if_base_2_value,
                                return_size_from_name)
-from .errors import ImproperJumpMarker, ImproperDataDefiniton, ImproperVariableName
+from .errors import DetailedException
 
 def loadMainFile(raw_file : list, Data : DataSegment) -> tuple:
     """
-    This function tries to read and load file specified in the path - this is main funciton
-    responsible for reading code - executing it with success, shoudl allow to run code from
+    This function tries to read and load file specified in the path - this is main function
+    responsible for reading code - executing it with success, should allow to run code from
     file.
     """
-
+    
     assembly_code = _initialLoadAndCleanup(raw_file, Data)
     assembly_code = _divideCodeToSection(assembly_code)
     assembly_code = _replaceEquateValues(assembly_code)
     assembly_code = _replaceTimesValues(assembly_code)
-    assembly_code = _storeVariablesInData(assembly_code)
-    
+    assembly_code = _storeVariablesInData(assembly_code)    
     start = _decideWhereExecutioinStarts(assembly_code)
 
     return start, assembly_code
 
 def _initialLoadAndCleanup(file : list, Data : DataSegment):
     """
-    Remove comments and empty lines - ignore directives and secitons
+    Remove comments and empty lines - ignore directives and sections
     """
     
-    allowed_sections = ['code', 'stack', 'data', 'text']
+    allowed_sections = ['code', 'data']
 
     assembly_code = {
         'lines' : [],
@@ -44,7 +43,7 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
         'data' : Data
     }
 
-    for number, line in enumerate(file, 1):
+    for line_no, line in enumerate(file, 1):
 
         marker_in_line = None
 
@@ -57,18 +56,18 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
         if line.startswith('.') and line[1:].split(" ")[0].lower() not in allowed_sections:
             continue
 
-        #   Detect indentifiers (points where code could jump to)
+        #   Detect identifiers (points where code could jump to)
         if re.match(r"^[a-zA-Z_][a-zA-Z0-9_]*:", line):
             values = line.split(':')
-            assert len(values) > 0, 'Empty ":" in line - did you forget the identifier?'
+            if len(values) == 0: raise DetailedException("4", line_no + 1)
             
             if not ' ' in values[0]:
-                assert len(values) < 3, 'Multiple ":" in one line detected'
+                if len(values) > 2: raise DetailedException("5", line_no + 1)
                 marker_in_line, line = values
                 
-        #   Detect imporper line with ":"
+        #   Detect improper line with ":"
         if re.match(r"(?<!\S)(\d\w*:|[^a-zA-Z_][\w]*:|[a-zA-Z_]\w*[^a-zA-Z0-9_\s]+.*:|:\s.*)", line):
-            raise ImproperJumpMarker(number, f"\nIncorrect line with \":\" -> [{line}]'")
+            raise DetailedException("6", line_no + 1)
 
         #   Save results
         if marker_in_line:
@@ -77,7 +76,7 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
         
         assembly_code['lines'].append(
             {
-                "lines" : [number],
+                "lines" : [line_no],
                 "marker": marker_in_line,
                 "content": line
             }
@@ -87,7 +86,7 @@ def _initialLoadAndCleanup(file : list, Data : DataSegment):
 
 def _divideCodeToSection(assembly_code : list):
     """
-    This command will limit the subset of lines in code for execution, by spliting code
+    This command will limit the subset of lines in code for execution, by splitting code
     into sections. This is done to allow for initial preprocessing of functions and
     variables
     """
@@ -105,8 +104,8 @@ def _divideCodeToSection(assembly_code : list):
         match line_beginning:
             case '.code':           current_section = ".code";      alaius = False
             case '.data':           current_section = ".data";      alaius = False
-            case '.text':           current_section = ".code";      alaius = False
-            case '_':               current_section = '.code'
+            case '_':
+                raise DetailedException("7", id + 1)
         
         assembly_code['lines'][id]["section"] = current_section
 
@@ -130,11 +129,11 @@ def _replaceEquateValues(assembly_code : list):
         line = list(filter(lambda x: x > "", line['content'].split(" ")))
         if len(line) == 3 and line[1].lower() == 'equ':
             symbol_value[line[0]] = {
-            'number' : line[2],
+            'line_no' : line[2],
             'matches' : 0
         }
 
-    #   if no values were found for replacement end funciton here
+    #   if no values were found for replacement end function here
     if not symbol_value:    return  assembly_code
     
     filter_pattern = lambda x: fr'(?<!["\'])(\b{x}\b)(?!["\'])'
@@ -148,13 +147,13 @@ def _replaceEquateValues(assembly_code : list):
             if does_it_match:
                 symbol_value[name]['matches'] += 1
             if symbol_value[name]['matches'] > 1:
-                output = re.sub(filter_pattern(name), symbol_value[name]['number'], content)
+                output = re.sub(filter_pattern(name), symbol_value[name]['line_no'], content)
                 assembly_code['lines'][id]['content'] = output
 
     return assembly_code
 
 def _replaceTimesValues(assembly_code : list):
-    """This funciton replaces values which are multiplied using `times` directive.
+    """This function replaces values which are multiplied using `times` directive.
     ```
     INPUT:      var times 4 db "Value"
     OUTPUT:     var db "ValueValueValueValue"
@@ -182,101 +181,6 @@ def _replaceTimesValues(assembly_code : list):
             text = text * rep
             new_line = content[:start] + size + " " + text
             assembly_code['lines'][id]['content'] = new_line
-
-    return assembly_code
-
-def _replaceCharWithInt(assembly_code : list):
-    """This function parses values in code, and substitues each """
-    
-    
-    ...
-
-def _replaceDUPValues(assembly_code : list):
-    """
-    Within .data section it is possible to define variable with 'DUP' directive which 
-    will duplicate value provided within paranthesis:
-
-    EX.
-
-    10 DUP (*) -> **********
-    """
-
-    #   Filter values like "number DUP (some_value)"
-    pattern = r"\b\d+\s+[dD][uU][pP]\s*\(\s*([\da-fA-F]+|\?|[a-zA-Z]|\W)\s*\)"
-    
-    #   Filter all rows with data
-    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
-
-    for id in data_rows:
-        
-        content = assembly_code['lines'][id]['content']
-        matched = re.search(pattern, content)
-        
-        if matched:
-        
-            start   = matched.start()
-            end     = matched.end()
-            value   = matched.group()
-
-            repeat, _, what = value.split(" ")
-            new_line_part = "".join((what[1:-1] for _ in range(int(repeat))))
-            assembly_code['lines'][id]['content'] = content[:start] + new_line_part + content[end:]
-
-    return assembly_code
-
-def _wrapMultiLineData(assembly_code : list):
-    """
-    This function would 'unwrap' multiline data definitions
-    ### EX:
-    ```
-    example BYTE    "Line 1", cr, Lf,
-                    "Line 2", cr, Lf,
-                    "Line 3"
-    ```
-    will be transformed to:
-    ```
-    example BYTE    "Line 1", cr, Lf, "Line 2", cr, Lf, "Line 3"
-    ```
-    """
-
-    inside_multiline = False
-    all_lines = []
-    current_multiline = []
-    data_rows = [no for no, line in enumerate(assembly_code['lines']) if line['section'] == ".data"]
-
-    #   Analyze which lines are multiline, and which lines belongs to one variable
-    for row in data_rows:
-        if assembly_code['lines'][row]['content'].strip().endswith(','):
-            if inside_multiline:
-                current_multiline.append(row)
-            else:
-                current_multiline.append(row)
-                inside_multiline = True
-        else:
-            if inside_multiline:
-                current_multiline.append(row)
-                all_lines.append(current_multiline)
-                current_multiline = []
-                inside_multiline = False
-            else:
-                all_lines.append([row])
-
-    lines_to_remove = []
-
-    #   Add content from other lined to the first line, and mark other lines for removal
-    for ml in filter(lambda l: len(l) > 1, all_lines):
-        main_line, *other_lines = ml
-        for l in other_lines:
-            assembly_code['lines'][main_line]['content'] += \
-                assembly_code['lines'][l]['content'].strip()
-            assembly_code['lines'][main_line]['lines'].append(
-                assembly_code['lines'][l]['lines'][0]
-            )
-        lines_to_remove.extend(other_lines)
-
-    #   Remove lines with content which was moved to first line of multiline variable
-    for l in range(len(lines_to_remove)-1, -1, -1):
-        assembly_code['lines'].pop(lines_to_remove[l])
 
     return assembly_code
 
@@ -314,11 +218,11 @@ def _storeVariablesInData(assembly_code : list):
                 dtt = line_split[1]
                 end_of_dtt_in_line = line.find(dtt) + len(dtt)
         except Exception:
-            raise ImproperDataDefiniton(i + 1, line)
+            raise DetailedException("9", str(i + 1))
         
         proper_var_pattern = "^[a-zA-Z_@][a-zA-Z0-9_@]*$"
         if not re.match(proper_var_pattern, var_name):
-            raise ImproperVariableName(i + 1, line)
+            raise DetailedException("8", str(i + 1))
 
         #   Slice line:     {v1 BYTE "A","B"} -> {"A","B"}
         var_content = line[end_of_dtt_in_line:].strip()
@@ -405,9 +309,9 @@ def _decideWhereExecutioinStarts(assembly_code : dict) -> tuple:
     # Case 1
     for label in assembly_code['labels']:
         if label.lower().endswith('start'):
-            line_number = assembly_code['labels'][label]
-            if assembly_code['lines'][line_number]['section'] == '.code':
-                return (line_number, assembly_code['lines'][line_number]['lines'])
+            line_line_no = assembly_code['labels'][label]
+            if assembly_code['lines'][line_line_no]['section'] == '.code':
+                return (line_line_no, assembly_code['lines'][line_line_no]['lines'])
     
     # Case 2
     for n, line in enumerate(assembly_code['lines']):

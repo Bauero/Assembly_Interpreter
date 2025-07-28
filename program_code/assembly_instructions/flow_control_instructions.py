@@ -9,27 +9,29 @@ from program_code.helper_functions import (save_value_in_destination,
                                            convert_number_to_int_with_binary_capacity)
 
 def LOOP(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0;
+    """
+    # LOOP
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
-    `... where statementLabel is the label of a statement that is a short displacement (128 bytes backward or 
-    127 bytes forward) from the loop instruction.`
+    ## IMPORTANT:
+    `... where statementLabel is the label of a statement that is a short displacement
+    (128 bytes backward or 127 bytes forward) from the loop instruction.`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX = HR.readFromRegister("CX")
     CRL = kwargs['line']
     DSL = kwargs['args_values_raw'][0]
@@ -37,28 +39,30 @@ def LOOP(**kwargs):
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
-        
-        if CX_value > 0:
-            return { m[0] : [ m[1] ] }
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0:
+        return { m[0] : [ m[1] ] }
 
 def LOOPZ(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=1;
+    """
+    # LOOPZ
+    ## Description
+    # This function perfoms jump to the specified location if value in CX>0 and ZF=1;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=1
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopz/loope instruction jumps if the new value in ECX is nonzero and the zero flag is set (ZF=1).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -66,7 +70,6 @@ def LOOPZ(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX  = HR.readFromRegister("CX")
     ZF  = FR.readFlag("ZF")
     CRL = kwargs['line']
@@ -74,28 +77,30 @@ def LOOPZ(**kwargs):
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and ZF:
-            return { m[0] : [ m[1] ] }
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 and ZF:
+        return { m[0] : [ m[1] ] }
 
 def LOOPE(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=1;
+    """
+    # LOOPE
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0 or ZF=1;
     
-    1. Substract 1 from CX
-    2. Compare if CX > 0 and ZF=1
+    1. Subtracts 1 from CX
+    2. Compare if CX > 0 or ZF=1
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopz/loope instruction jumps if the new value in ECX is nonzero and the zero flag is set (ZF=1).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -103,36 +108,36 @@ def LOOPE(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX  = HR.readFromRegister("CX")
     ZF  = FR.readFlag("ZF")
-    CRL = kwargs['line']
-    DSL = kwargs['args_values_raw'][0]
+    LBL = kwargs['args_values_int'][0]
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and ZF:
-            return { m[0] : [ m[1] ] }
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 or ZF:
+        return { m[0] : [ m[1] ] , "next_instruction" : LBL}
 
 def LOOPNZ(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=0;
+    """
+    # LOOPNZ
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=0
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopnz/loopne instruction jumps if the new value in ECX is nonzero and the zero flag is clear (ZF=0).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -140,36 +145,36 @@ def LOOPNZ(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX = HR.readFromRegister("CX")
     ZF = FR.readFlag("ZF")
-    CRL = kwargs['line']
-    DSL = kwargs['args_values_raw'][0]
+    LBL = kwargs['args_values_int'][0]
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and not ZF:
-            return { m[0] : [ m[1] ] }
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 and not ZF:
+        return { m[0] : [ m[1] ] , "next_instruction" : LBL}
 
 def LOOPNE(**kwargs):
-    """This function perfoms jump to the specified location if value in CX>0 and ZF=0;
+    """
+    # LOOPNE
+    ## Description
+    This function perfoms jump to the specified location if value in CX>0 and ZF=0;
     
-    1. Substract 1 from CX
+    1. Subtracts 1 from CX
     2. Compare if CX > 0 and ZF=0
     3. If so, jump to label; if not, continue
     
-    IMPORTANT:
+    ## IMPORTANT:
     `The loopnz/loopne instruction jumps if the new value in ECX is nonzero and the zero flag is clear (ZF=0).`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
-    IMPLEMENTATION:
+    ## IMPLEMENTATION:
     - Label points to instruction which is outside those boundaries, jump won't be
     executed, and value in CX won't change
     """
@@ -177,7 +182,6 @@ def LOOPNE(**kwargs):
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     CX = HR.readFromRegister("CX")
     ZF = FR.readFlag("ZF")
     CRL = kwargs['line']
@@ -185,18 +189,20 @@ def LOOPNE(**kwargs):
 
     CX_value = convert_number_to_int_with_binary_capacity(CX, 16)
 
-    if CRL - DSL <= 128 and CRL - DSL >= -127:
-        CX_value -= 1
-        CX_binary = convert_number_to_bit_list(CX_value, 16)
-        m = save_value_in_destination(HR, DS, VAR, CX_binary, 3, "CX")
-        
-        if CX_value > 0 and not ZF:
-            return { m[0] : [ m[1] ] }
+    CX_value -= 1
+    CX_binary = convert_number_to_bit_list(CX_value, 16)
+    m = save_value_in_destination(HR, DS, CX_binary, 3, "CX")
+    
+    if CX_value > 0 and not ZF:
+        return { m[0] : [ m[1] ] }
 
 def CALL(**kwargs):
-    
-    """This instructions perfoms call, which is quite similar to unconditional jump
-    with push SP - instructions backups last line """
+    """
+    # CALL
+    ## Description
+    This instructions perfoms call, which is quite similar to unconditional jump
+    with push SP - instructions backups last line. It doesn't affect any flags.
+    """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]

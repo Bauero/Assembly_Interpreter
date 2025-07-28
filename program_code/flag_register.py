@@ -1,6 +1,6 @@
 """
 This module define class representing flag register - it allows to perform read and 
-write operations to flag register, and holds definions for meaning of each flag
+write operations to flag register, and holds definitions for meaning of each flag
 """
 
 class FlagRegister():
@@ -8,7 +8,7 @@ class FlagRegister():
     representing internal state of processor"""
     
     def __init__(self):
-        """Initialization of ther flag register"""
+        """Initialization of the flag register"""
         self.list_of_flags = ["MD", "NT", "IO"," PL", "OF", "DF", "IF", "TF", "SF", "ZF", "PF", "CF"]
         self.FLAGS = [0 for _ in range(16)]
         self.clearFlags()

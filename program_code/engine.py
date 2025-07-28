@@ -1,5 +1,5 @@
 """
-This file contains Engine Class, which is responsible for simluation of operations on memory
+This file contains Engine Class, which is responsible for simulation of operations on memory
 """
 
 from simpleeval import simple_eval
@@ -9,14 +9,14 @@ from .hardware_memory import DataSegment
 from .hardware_registers import HardwareRegisters
 from .flag_register import FlagRegister
 from .custom_message_boxes import *
+from .errors import DetailedException
 
-allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
 funtionNameLink = {k:v for k,v in locals().items() if k.isupper()}
 
 class Engine():
     """
     This class is responsible for execution of instructions within program. It has access
-    to virutal hardware, and given the instruction, it executes it, and modifies the registers
+    to virtual hardware, and given the instruction, it executes it, and modifies the registers
     and flags accordingly
     """
 
@@ -25,6 +25,9 @@ class Engine():
         self.FR = FlagRegister()
         self.DS = DataSegment()
         self.variables = []
+        self.labels = []
+        self.allowed_data_types = ['BYTE', 'WORD', 'DWORD', 'QWORD']
+        self.funtionNameLink = funtionNameLink
 
     def informAboutLabels(self, labels : list):
         """This method allow to pass labels to engine after successful preprocessing"""
@@ -38,8 +41,8 @@ class Engine():
         """This method sets engine to state after init"""
         self.HR.reset()
         self.FR.clearFlags()
-        self.DS.reset()
-        self.variables = []
+        # self.DS.reset()
+        # self.variables = []
 
     def executeInstruction(self, line : int, command : str):
         """This function is responsible for command execution - it cuts the line, extracting command
@@ -51,8 +54,8 @@ class Engine():
         self.warnings = []
 
         keyword, first_non_keyw_char = self._separate_keyword(command)
-        if keyword not in funtionNameLink:
-            return self._gen_err("unsuported_instruction")
+        if keyword not in self.funtionNameLink:
+            raise DetailedException("10")
         
         elements_in_line.append(keyword)
         arguments = command[first_non_keyw_char:].strip().split(",")
@@ -67,11 +70,10 @@ class Engine():
             pairs = list(filter(lambda x: x[1] == "undefined", zip(args_cleaned, args_types)))
             wrong_params = "' '".join([x[0] for x in pairs])
             wrong_params = f"'{wrong_params}'"
-            return self._gen_err("unrecognized_argument", values=wrong_params)
+            raise DetailedException("11", values=wrong_params)
         
         args_checked = self._check_validity_of_arguments_return_stadardized(args_cleaned, 
                                                                             args_types)
-        if type(args_checked) == dict:  return args_checked
         
         extracted = self._extract_argument_value_and_size(args_checked, args_types, 
                                                           explicite_sizes)
@@ -86,18 +88,24 @@ class Engine():
                                                                           final_sizes, 
                                                                           explicite_sizes,
                                                                           args_values_int)
-        if type(final_standardized_sizes) == dict:
-            return final_standardized_sizes
         
         resp = self._check_if_operation_allowed(keyword, args_types)
-        if resp:    return resp
+
+        print(f"labels = {self.labels}",
+                f"destination = {destination}",
+                f"source_params = {elements_in_line[1:]}",
+                f"param_types = {args_types}",
+                f"final_size = {final_standardized_sizes}",
+                f"args_values_raw = {args_values_raw}",
+                f"args_values_int = {args_values_int}",
+                f"line = {line}",
+                sep="\n")
 
         try:
-            output = funtionNameLink[ keyword ](
+            output = self.funtionNameLink[ keyword ](
                 HR = self.HR,
                 FR = self.FR,
                 DS = self.DS,
-                variables = self.variables,
                 labels = self.labels,
                 destination = destination,
                 source_params = elements_in_line[1:],
@@ -107,17 +115,22 @@ class Engine():
                 args_values_int = args_values_int,
                 line = line
             )
+        except DetailedException as e:  raise e
         except Exception as e:
-            return self._gen_err("instruction_error", e)
+            raise DetailedException("29", e)
 
-        if self.warnings:   output["warnings"] = self.warnings
+        if self.warnings:
+            if not output.get("warnings"):
+                output["warnings"] = self.warnings
+            else:
+                output["warnings"].extend(self.warnings)
 
         return output
 
     def load_new_state_after_change(self, change : dict, forward : bool):
         """The purpose of this method is to directly change state of the simulated
         HR, FR, DATA or manipulate date, allowing to undo/redo instruction, and
-        ommit resource-intensive processing, when running already processed instructions
+        omit resource-intensive processing, when running already processed instructions
         """
 
         source = "new_value" if forward else "oryginal_value"
@@ -163,7 +176,7 @@ class Engine():
                 else:
                     break
             
-            if first_word in allowed_data_types:
+            if first_word in self.allowed_data_types:
                 sizes.append(return_size_from_name(first_word))
                 args_no_sizes.append(arg[counter:].strip())
             else:
@@ -211,7 +224,7 @@ class Engine():
         return types_of_args
     
     def _define_arg_types_and_value(self, elements : list):
-        """This funciton parses list with elements detected in expression, 
+        """This function parses list with elements detected in expression, 
         assigns types to elements, and extract values stores in elements"""
 
         types, values = [], []
@@ -223,36 +236,36 @@ class Engine():
             elif e.upper() in self.HR.listRegisters():
                 types.append("register")
                 values.append(str(int(self.HR.readFromRegister(e), 2)))
-            elif is_allowed_arithmetic(e):
-                types.append(e)
+            elif e in self.labels:
+                types.append("constant")
+                values.append(str(self.labels[e]))
+            elif e in ['+','-','/','*','^']:
+                types.append('arithmetic_sign')
                 values.append(e)
             elif b16v := return_if_base_16_value(e):
                 types.append("constant")
-                values.append(b16v)
+                values.append(str(int(b16v, 16)))
             elif b10v := return_if_base_10_value(e):
                 types.append("constant")
                 values.append(b10v)
             elif b8v := return_if_base_8_value(e):
                 types.append("constant")
-                values.append(b8v)
+                values.append(str(int(b8v, 8)))
             elif b2v := return_if_base_2_value(e):
                 types.append("constant")
-                values.append(b2v)
+                values.append(str(int(b2v, 2)))
             else:
                 return
 
         return types, values
 
     def _check_standardize_mem_call(self, mem_call : str) -> str:
-        """This funciton standardizes call for memory localtion, anlayzes it's syntax for
+        """This function standardizes call for memory localtion, analyzes it's syntax for
         errors and if everything is fine, then returns standardized argument"""
-        
-        processed = mem_call.replace("[", "+").replace("]","").replace(" ","").replace("\t","")
-        if processed.startswith("+"):   processed = processed[1:]
         
         elements = []
         tmp = ""
-        for c in processed:
+        for c in mem_call:
             if c.isalnum():             tmp += c
             elif is_white_char(c):      continue
             else:
@@ -266,45 +279,34 @@ class Engine():
 
         response = self._define_arg_types_and_value(elements)
         if response == None:
-            return self._gen_err("unrecognized_elem_mem_call")
+            raise DetailedException("12")
         else:
             types, values = response
 
         if types.count("var") > 1:
-            return self._gen_err("double_memory_reference")
+            raise DetailedException("13")
         
         if types.count("register") > 2:
-            return self._gen_err("multiple_register_reference")
+            raise DetailedException("14")
 
         if types.count("register") == 1:
             first_reg = elements[v1a := types.index("register")].upper()
-            first_reg_type = self.HR.getRegisterType(first_reg)
-
-            if first_reg_type == "multipurpose" and first_reg != "BX":
-                return self._gen_err("first_reg_must_be_bx")
-
-            if first_reg_type == "pointer" and first_reg == "SP":
-                return self._gen_err("cant_use_sp")
+            
+            if first_reg not in ["BX", "BP", "DI", "SI"]:
+                raise DetailedException("16")
 
         if types.count("register") == 2:
             first_reg = elements[v1a := types.index("register")].upper()
             second_reg = elements[types.index("register", v1a + len(first_reg))].upper()
             
             if first_reg == second_reg:
-                return self._gen_err("register_called_twice")
+                raise DetailedException("15")
             
             first_reg_type = self.HR.getRegisterType(first_reg)
             second_reg_type = self.HR.getRegisterType(second_reg)
             
             if first_reg_type == second_reg_type:
-                return self._gen_err("reg_same_type")
-            
-            if first_reg_type == "multipurpose" and first_reg != "BX":
-                return self._gen_err("first_reg_must_be_bx")
-            
-            if (first_reg_type == "pointer" and first_reg == "SP") or \
-               (second_reg_type == "pointer" and second_reg == "SP"):
-                return self._gen_err("cant_use_sp")
+                raise DetailedException("17")
         
         standardized = "".join(values)
 
@@ -334,9 +336,9 @@ class Engine():
         time"""
 
         response = self._define_arg_types_and_value(elements)
-        
+
         if response == None:
-            return self._gen_err("unrecognized_value_compl_val")
+            raise DetailedException("18")
         else:
             _, values = response
 
@@ -351,11 +353,9 @@ class Engine():
         for arg, atype in zip(arguments, types):
             if atype == "memory call":
                 response = self._check_standardize_mem_call(arg)
-                if type(response) == dict:  return response
                 validated_args.append(response)
             elif atype == "complex value":
                 response = self._check_standardize_complex_value(arg)
-                if type(response) == dict:  return response
                 validated_args.append(response)
             else:
                 validated_args.append(arg)
@@ -366,7 +366,7 @@ class Engine():
             self, args : list,
             args_types : list,
             sizes : list) -> tuple[list[str], list[int]]:
-        """This function read arguments and gets their values. As an output it returns oryginal
+        """This function read arguments and gets their values. As an output it returns original
         values, and values converted to int, as well as sizes"""
 
         source_values = []
@@ -383,16 +383,16 @@ class Engine():
                     final_sizes.append(size if size else 16)
                 case "value":
                     if sv := return_if_base_16_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv, 16))
                     elif sv := return_if_base_10_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv))
                     elif sv := return_if_base_8_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv, 8))
                     elif sv := return_if_base_2_value(arg):
-                        source_values.append(sv)
+                        source_values.append(arg)
                         converted_values.append(int(sv, 2))
                     if size:
                         final_sizes.append(size)
@@ -444,9 +444,9 @@ class Engine():
     def _standardise_sizes_check_if_legal(self, arg_types : list, sizes : list, expli_sizes : list,
                                           args_values_int : list) -> list:
         """This function asks for list with detected sizes and list with detected types and
-        werifies that sizes are correctly defined (should be equal)
+        verifies that sizes are correctly defined (should be equal)
 
-        Posible combinations, and general ideas:
+        possible combinations, and general ideas:
 
         - memory, value   -   [memory, ____ value] : explicite size diff. req. in ____
         - memory, reg     -   allowed regardless of reg value
@@ -468,11 +468,11 @@ class Engine():
             case ["memory", "value"]:
                 size = None
                 if all(expli_sizes) and expli_sizes[0] != expli_sizes[1]:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 if expli_sizes[0]:      size = expli_sizes[0]
                 elif expli_sizes[1]:    size = expli_sizes[1]
                 else:
-                    return self._gen_err("no_explicite_size")
+                    raise DetailedException("24")
                 return size
                 
             case ['memory', 'register']:
@@ -486,12 +486,12 @@ class Engine():
                 final_reg_size = max(reg_exp_size, reg_det_size) if reg_exp_size else reg_det_size
 
                 if mem_exp_size and mem_exp_size < final_reg_size:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 
                 return final_reg_size
             
             case ['memory', 'memory']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("25")
             
             case ["register", "value"]:
                 reg_exp_size = expli_sizes[0]
@@ -504,7 +504,7 @@ class Engine():
                     self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if var_exp_size and reg_det_size > var_exp_size:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 
                 if max(var_exp_size or 0, var_det_size or 0) > reg_det_size:
                     self.warnings.append(self._gen_warn("value_exceeds_bound"))
@@ -524,22 +524,22 @@ class Engine():
                     self.warnings.append(self._gen_warn("explicite_size_ignored"))
                 
                 if mem_exp_size and reg_det_size != mem_exp_size:
-                    return self._gen_err("explicite_sizes_mismatch")
+                    raise DetailedException("23")
                 
                 return reg_det_size
             
             case ['value', 'value']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("26")
             
             case ['value', 'register']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("26")
             
             case ['value', 'memory']:
-                return self._gen_err("cant_call_mem_twice")
+                raise DetailedException("26")
             
             case ['memory']:
                 if expli_sizes[0] == None:
-                    return self._gen_err("no_explicite_size")
+                    raise DetailedException("24")
                 
                 return expli_sizes[0]
 
@@ -564,17 +564,17 @@ class Engine():
 
     def _check_if_operation_allowed(self, keyword : str, params : list):
         """This operation would ensure that function have the required
-        amount of params passed - it assumes that each funciton defined and used
+        amount of params passed - it assumes that each function defined and used
         in the program have """
 
-        if not len(params) in funtionNameLink[keyword].params_range:
-            return self._gen_err("wrong_no_of_params", param_no=len(params))
+        if not len(params) in self.funtionNameLink[keyword].params_range:
+            raise DetailedException("27", param_no=len(params))
         
-        if not tuple(params) in funtionNameLink[keyword].allowed_params_combinations:
-            return self._gen_err("wrong_combination_params", params=params)
+        if not tuple(params) in self.funtionNameLink[keyword].allowed_params_combinations:
+            raise DetailedException("28", params=params)
 
     def _standardize_case_for_register_names(self, elements : list, mapped_params : list):
-        """This funciton ensures that all calls for register are in capital names"""
+        """This function ensures that all calls for register are in capital names"""
 
         for i in range(len(elements)):
             mp = mapped_params[i]
@@ -583,32 +583,9 @@ class Engine():
 
         return elements
     
-    def _gen_err(self, 
-                 name : str, 
-                 param_no : int | None = None, 
-                 params : list | None = None,
-                 values : str | None = None,
-                 exc : Exception | None = None) -> dict:
-        return {"error" : {
-            "popup" : name,
-            "line" : self.curr_line + 1,
-            "param_no" : param_no,
-            "params" : params,
-            "values" : values,
-            "source_error" : exc
-        }}
-    
-    def _gen_warn(self, 
-                 name : str, 
-                 param_no : int | None = None, 
-                 params : list | None = None,
-                 values : str | None = None,
-                 exc : Exception | None = None) -> dict:
-        return {
-            "popup" : name,
-            "line" : self.curr_line + 1,
-            "param_no" : param_no,
-            "params" : params,
-            "values" : values,
-            "source_error" : exc
-        }
+    def _gen_warn(self,  name : str,  param_no : int | None = None, params : list | None = None,
+                 values : str | None = None, exc : Exception | None = None) -> dict:
+        """This is class funciton which calls `generate_warning` funciton with default
+        param - line - stored in class"""
+
+        return generate_warning(name, self.curr_line + 1, param_no, params, values, exc)

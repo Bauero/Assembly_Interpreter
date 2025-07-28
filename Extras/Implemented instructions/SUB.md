@@ -1,1 +1,0 @@
-This function performs substraction (A - B)

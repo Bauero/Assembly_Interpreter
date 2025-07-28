@@ -1,28 +1,29 @@
 """
-This file is responsible for managing opened file - loading it, and then passin instruction
-to engine. It can communicate with engine to provide functionali like calling functions,
-or jumps. It is also responible for managing history or operations done by program
+This file is responsible for managing opened file - loading it, and then passing instruction
+to engine. It can communicate with engine to provide functionality like calling functions,
+or jumps. It is also responsible for managing history or operations done by program
 """
 
 from .preprocessor import loadMainFile
 from .helper_functions import loadFileFromPath
 from .history import History
 from .engine import Engine
+from .errors import DetailedException
 import pickle
 
 class CodeHandler():
     """
-    This class is responsible for handlind opened files - it passes lines for execution, 
-    handles opened file and loades instruction for engine
+    This class is responsible for handling opened files - it passes lines for execution, 
+    handles opened file and loads instruction for engine
     """
 
     def __init__(self, engine : Engine):
+        self.engine = engine
         self.openFiles = []
         self.rawfiles = {}
         self.files = {}
         self.currentlyExecutedFile = ""
         self.currentlyExecutedLine = {}
-        self.engine = engine
         self.working_in_interactive_mode = False
 
     def readPrepareFile(self, path_to_file : str, ignore_size_limit : bool, 
@@ -30,6 +31,10 @@ class CodeHandler():
         """This function, reads file and prepare it's content for processing"""
 
         raw_file = loadFileFromPath(path_to_file, ignore_size_limit, ignore_file_type)
+        
+        if not any([line.strip() for line in raw_file]):
+            raise DetailedException("30")
+
         output = self.preprocessFile(path_to_file, raw_file)
         
         self.history = History(
@@ -41,52 +46,58 @@ class CodeHandler():
         return output
 
     def load_file_interactive(self, file_path : str) -> list[int]:
-        """This funciton """
+        """This function """
 
         raw_file = loadFileFromPath(file_path, True, True)
         
         self.rawfiles["interactive"] = raw_file
         start = -1
-        preprocessed_instrucitons = []
+        preprocessed_instructions = []
 
         self.currentlyExecutedFile = "interactive"
         self.currentlyExecutedLine["interactive"] = start
         self.openFiles.append("interactive")
-        self.files["interactive"] = preprocessed_instrucitons
+        self.files["interactive"] = preprocessed_instructions
         
         self.history = History(
             "interactive",
             raw_file,
-            preprocessed_instrucitons
+            preprocessed_instructions
         )
         
         return start, raw_file
 
     def preprocessFile(self, path_to_file : str, raw_file : list):
         self.rawfiles[path_to_file] = raw_file
-        start, preprocessed_instrucitons = loadMainFile(raw_file, self.engine.DS)
-        self.pass_variable_to_engine(preprocessed_instrucitons)
+        main_file_loaded = loadMainFile(raw_file, self.engine.DS)
+        start, preprocessed_instructions = main_file_loaded
+        self.pass_variable_to_engine(preprocessed_instructions)
 
         self.currentlyExecutedFile = path_to_file
         self.currentlyExecutedLine[path_to_file] = start
         self.openFiles.append(path_to_file)
-        self.files[path_to_file] = preprocessed_instrucitons
+        self.files[path_to_file] = preprocessed_instructions
 
         output = start[1] if start != (-1, [-1]) else [0]
 
         return output
 
-    def startInteractive(self, code : str):
+    def startInteractive(self, code : str, force_reload : bool):
         """This function is run, when program is activated. It checks if the 
         code is valid, are there any changes, and returns None or list with new
         lines for highlight"""
 
         code_lines = [line + "\n" for line in code.split("\n")]
+        
+        if not any([line.strip() for line in code_lines]):
+            raise DetailedException("30")
+        
         previous_lines = self.rawfiles.get("interactive")
 
-        if not previous_lines or code_lines != previous_lines:
+        if not previous_lines or code_lines != previous_lines or force_reload:
 
             start = self.preprocessFile("interactive", code_lines)
+            
             self.history = History(
                 "interactive",
                 code_lines,
@@ -95,19 +106,18 @@ class CodeHandler():
 
             return start
 
-    def pass_variable_to_engine(self, preprocessed_instrucitons):
-        assert type(preprocessed_instrucitons) == dict
-        self.engine.informAboutLabels(preprocessed_instrucitons['labels'])
+    def pass_variable_to_engine(self, preprocessed_instructions):
+        self.engine.informAboutLabels(preprocessed_instructions['labels'])
         self.engine.informAboutVariables(
-            preprocessed_instrucitons['variables'],
+            preprocessed_instructions['variables'],
         )
 
     def executeCommand(self, command, **kwargs):
         """
         This function is like transition layer between Engine and Gui - from Gui, user
-        orders line exeuction, code handler passes appriopriate line to engine, and controls
-        that the excution was correct. This function is responsible for catching any errors
-        and passing appriopriate info to Gui, which would then handle notifying user about
+        orders line exeuction, code handler passes appropriate line to engine, and controls
+        that the execution was correct. This function is responsible for catching any errors
+        and passingg appropriate info to Gui, which would then handle notifying user about
         what went wrong
         """
 
@@ -141,14 +151,14 @@ class CodeHandler():
         and press 'next instruction' button, state after the instruction is executed,
         will be loaded from history - otherwise, instruction will be executed by engine.
         """
-        
+
         already_executed = self.history.load_next_instruction_if_executed()
 
         if already_executed:
             next_line, change = already_executed
+            self.engine.load_new_state_after_change(change, forward = True)
             if next_line == None:
                 return {"status" : -1, "highlight" : []}
-            self.engine.load_new_state_after_change(change, forward = True)
             self.engine.HR.writeIntoRegister("IP", next_line)
             lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][next_line]['lines']
             self.currentlyExecutedLine[self.currentlyExecutedFile] = \
@@ -161,13 +171,9 @@ class CodeHandler():
             line_content = curr_inst['content']
             output = self.engine.executeInstruction(curr_line, line_content)
             
-            if output and output.get("error", None):
-                output["status"] = 1
-                return output
-            
-            elif "next_instruction" in output:
+            if "next_instruction" in output:
                 next_line = output["next_instruction"]
-            
+                output["status"] = 0
             else:
                 if curr_line + 1 < len(self.files[self.currentlyExecutedFile]['lines']):
                     next_line = curr_line + 1
@@ -178,6 +184,8 @@ class CodeHandler():
                     if exec_with_warnings:
                         self.currentlyExecutedLine[self.currentlyExecutedFile] = -1
                         output["status"] = -12
+                        lines = self.files[self.currentlyExecutedFile][curr_line]["lines"]
+                        output["error"]["line"] = lines
                     else:
                         output["status"] = -1
 
@@ -197,9 +205,9 @@ class CodeHandler():
 
     def _run_previous_instruction(self, **kwargs):
         """
-        Handles action when user presses "previous instruciton" button. Regarding on the
+        Handles action when user presses "previous instruction" button. Regarding on the
         state, it load state when previous instruction was about to be executed, if, 
-        of course, we have any previous instruciton stored in history
+        of course, we have any previous instruction stored in history
         """
 
         try:
@@ -212,6 +220,9 @@ class CodeHandler():
                 lines_in_source_file = self.files[self.currentlyExecutedFile]['lines'][previous_line]['lines']
                 self.currentlyExecutedLine[self.currentlyExecutedFile] = [previous_line, lines_in_source_file]
                 status = {"status" : 0, "highlight" : lines_in_source_file}
+
+                if kwargs.get("interactive"):
+                    self.history.clear_all_next_instrucitons()
 
             #   Notify user, that there aren't any previous instructions
             else:

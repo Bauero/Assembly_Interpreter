@@ -62,10 +62,11 @@ def return_if_base_2_value(element: str) -> None | str:
     
     if " " in element[-2:] or "\t" in element[-2:]: return
     element = element.replace(" ", "").replace("\t", "")
-    if re.fullmatch(r"(-?[ \t]?[1][01]*|0)[bB]", element):
+    if re.fullmatch(r"-?[ \t]*[01]+[bB]", element):
         return element[:-1]
 
-def return_size_from_name(name : str):
+def return_size_from_name(name : str) -> None | int:
+    """This function takes name (like db) as an argument, and returns size as an int"""
 
     match name.lower():
         case "byte":    return 8
@@ -76,16 +77,23 @@ def return_size_from_name(name : str):
         case 'dd':      return 32
         case "qword":   return 64
         case 'dq':      return 64
-        case _:         return -1
+        case _:         return
 
-def return_name_from_size(size : int) -> str:
+def return_name_from_size(size : int) -> None | str:
+    """
+    This function takes int as an argument, and returns corresponding size:
+    - 8  -> `byte`
+    - 16 -> `word`
+    - 32 -> `dword`
+    - 64 -> `qword`
+    """
 
     match size:
         case 8:     return "byte"
         case 16:    return "word"
         case 32:    return "dword"
         case 64:    return "qword"
-        case _:     return ""
+        case _:     return
 
 def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     """This function converts number to list of bits. It accepts either str, int or list
@@ -95,20 +103,21 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
     """
     
     assert size > 0, f"Cannot convert number to size which is less or equal to 0"
-    assert size % 8 == 0, f"Cannot convert number, as the specified size is not mutiple of 8"
+    assert size % 8 == 0, f"Cannot convert number, as the specified size is not multiple of 8"
  
     negative_value = False
 
     def _convert_str(value):
         if new_value := return_if_base_16_value(value):
-            conv_value = bin(int(new_value, base=16))[2:]
-        elif return_if_base_10_value(value):
-            conv_value = bin(int(value))[2:]
+            conv_value = bin(int(new_value, 16))[2:]
+        elif new_value := return_if_base_10_value(value):
+            conv_value = bin(int(new_value))[2:]
+        elif new_value := return_if_base_8_value(value):
+            conv_value = bin(int(new_value, 8))[2:]
         elif  new_value := return_if_base_2_value(value):
-            conv_value = new_value[2:]
+            conv_value = new_value
         else:
-            raise WrongNumberBase(f"Number '{value}' seems to not belong to binary," +\
-                                " decimal or hexadecimal numbers")
+            raise WrongNumberBase()
         return conv_value
 
     converted_value = []
@@ -123,7 +132,7 @@ def convert_number_to_bit_list(value : str | int | list, size : int = 8):
         value = abs(value)
         converted_value = bin(value)[2:]
     elif type(value) == list:
-        value = [str(e) for e in value] # ensure all elemetns in value are str
+        value = [str(e) for e in value] # ensure all elements in value are str
         for bit in value:
             if bit not in ['0', '1']:
                 raise IncorectValueInListOfBits(f"Bit '{bit}' in list '{value}' is not '1' or '0'")
@@ -148,9 +157,9 @@ def convert_number_to_bits_in_str(value : str | int | list, size = 8):
 
 def convert_number_to_int_with_binary_capacity(value : str | int | list, size = 8):
     """
-    This funciton returns int which is converted after directly translating either str, 
-    int or list, to bits. This operation, although sligthly inefficent for int input
-    or deicmal string, allows to confirm, that resulted value would fit in bit limit.
+    This function returns int which is converted after directly translating either str, 
+    int or list, to bits. This operation, although slightly inefficient for int input
+    or decimal string, allows to confirm, that resulted value would fit in bit limit.
     """
 
     return int(convert_number_to_bits_in_str(value, size), base = 2)
@@ -159,12 +168,12 @@ def loadFileFromPath(path_to_file : str,
               ignore_size_limit : bool = False,
               ignore_file_type : bool = False) -> list | Exception:
     """
-    This function loads file (if one exist) and returns loaded file as subscribtable
+    This function loads file (if one exist) and returns loaded file as subscriptable
     object for further processing.
 
     :param:
     - `ignore_size_limit` : bool - allow to process file above 1MB
-    - `ignore_file_type` : bool - allow to process file with extenstion other than .s or .asm
+    - `ignore_file_type` : bool - allow to process file with extension other than .s or .asm
     """
 
     if not os.path.exists(path_to_file):
@@ -178,8 +187,7 @@ def loadFileFromPath(path_to_file : str,
     raw_file = []
 
     with open(path_to_file) as file:
-        for line in file:
-            raw_file.append(line)
+        raw_file = file.readlines()
 
     return raw_file
 
@@ -200,8 +208,9 @@ def inverse_Twos_Compliment_Number(value : str):
 
     return output
 
-def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, Variables : dict,
-                              value : list, destination_type : str, destination_value : str = ""):
+def save_value_in_destination(HardwareRegister : HardwareRegisters, Data, value : list, 
+                              destination_type : str, destination_value : str = ""):
+    """This function saves value in destinaiton, and prepares response with change made"""
 
     oryginal_val : list | str = []
 
@@ -232,7 +241,7 @@ def sign_changed(n1 : str, n2 : str, output : list):
     return False
 
 def binary_addition(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
-    """This funciton performs binary addition of two numbers, and returns result with values of 
+    """This function performs binary addition of two numbers, and returns result with values of 
     carry flag and auxiliary carry flag after addition"""
     
     output = []
@@ -241,16 +250,15 @@ def binary_addition(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxilia
         b1 = int(n1[bit])
         b2 = int(n2[bit])
         result = b1 + b2 + carry
-        carry = result > 1
+        carry = int(result > 1)
         output.insert(0, str(result % 2))
         if abs(bit) == 4:   auxiliary_carry = carry
-
-    output = output[-bit_no:]
+        output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
 
 def binary_or(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
-    """This funciton performs binary OR of two numbers, and returns result with values of 
+    """This function performs binary OR of two numbers, and returns result with values of 
     carry flag and auxiliary carry flag after addition"""
     
     output = []
@@ -262,13 +270,12 @@ def binary_or(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_car
         carry = result == 1
         output.insert(0, str(result))
         if abs(bit) == 4:   auxiliary_carry = carry
-
-    output = output[-bit_no:]
+        output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
 
 def binary_xor(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_carry : int = 0):
-    """This funciton performs binary XOR of two numbers, and returns result with values of 
+    """This function performs binary XOR of two numbers, and returns result with values of 
     carry flag and auxiliary carry flag after addition"""
     
     output = []
@@ -280,7 +287,34 @@ def binary_xor(bit_no : int, n1 : list, n2 : list, carry : int = 0, auxiliary_ca
         carry = b1 and b2
         output.insert(0, str(result))
         if abs(bit) == 4:   auxiliary_carry = carry
-
-    output = output[-bit_no:]
+        output = output[-bit_no:]
 
     return output, carry, auxiliary_carry
+
+# def generate_error(name : str, line : int | None = None, param_no : int | None = None, 
+#                    params : list | None = None, values : str | None = None, 
+#                    exc : Exception | None = None) -> dict:
+#     """This is general funciton which produces error in standard format"""
+    
+#     return {"error" : {
+#         "popup" : name,
+#         "line" : line,
+#         "param_no" : param_no,
+#         "params" : params,
+#         "values" : values,
+#         "source_error" : exc
+#     }}
+
+def generate_warning(name : str, line : int | None = None, param_no : int | None = None, 
+                   params : list | None = None, values : str | None = None, 
+                   exc : Exception | None = None) -> dict:
+    """This is general funciton which produces warning in standard format"""
+    
+    return {"error" : {
+        "popup" : name,
+        "line" : line,
+        "param_no" : param_no,
+        "params" : params,
+        "values" : values,
+        "source_error" : exc
+    }}

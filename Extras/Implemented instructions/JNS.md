@@ -1,1 +1,0 @@
-Jump if sign flag is inactive -> SF=0

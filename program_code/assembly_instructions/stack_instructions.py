@@ -1,6 +1,6 @@
 """
-This file contains instrucitons which are available to user to put or remove data from 
-stack - all typical pop / push instructions which are avaialbe in assembly
+This file contains instructions which are available to user to put or remove data from 
+stack - all typical pop / push instructions which are available in assembly
 """
 
 from program_code.helper_functions import (convert_number_to_bit_list,
@@ -9,7 +9,10 @@ from program_code.helper_functions import (convert_number_to_bit_list,
 list_of_registers = ['AX', 'CX', 'DX', 'BX', 'SP', 'BP', 'SI', 'DI']
 
 def PUSH(**kwargs):
-    """This function is responsible for writing value to stack. It works like this:
+    """
+    # PUSH VALUE TO STACK
+    ## Description
+    This function is responsible for writing value to stack. It works like this:
     
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write byte of data
@@ -80,11 +83,14 @@ def PUSH(**kwargs):
     return output
 
 def PUSHF(**kwargs):
-    """This function is responsible for writing flag register to stack. It works like this:
-    
+    """
+    # PUSH VALUE OF FLAG REGISTER TO STACK
+    ## Description
+    This function is responsible for writing flag register to stack. It works like this:
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write flag register into stack
-    3. Decrement SP by one (2 bytes in total)"""
+    3. Decrement SP by one (2 bytes in total)
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -124,18 +130,22 @@ def PUSHF(**kwargs):
     return output
 
 def PUSHA(**kwargs):
-    """This function is responsible for writing all registers to stack. It works like this:
+    """
+    # PUSH VALUE OF ALL REGISTERS TO STACK
+    ## Description
+    This function is responsible for writing all registers to stack. It works like this:
     
     IMPORTANT:
     `The pushad instruction pushes EAX, ECX, EDX, EBX, ESP, EBP, ESI and EDI, in this order ...
-    the push all and pop all instructions, including the pusha and popa instructions that push and pop the 16-bit registers.`
+    the push all and pop all instructions, including the pusha and popa instructions that 
+    push and pop the 16-bit registers.`
     - Introduction to 80x86 Assembly Language and Computer Architecture
     - Chapter: 5.4 for Loops in Assembly Language
     - ISBN 0-7637-1773-8
 
     -> This means, that register are pushed to the stack in the following order:
 
-    AX, CX, DX, BX, SP, BP, SI, DI - SP, contains value it had before PUSHA instruction was executed
+    AX, CX, DX, BX, SP, BP, SI, DI - SP, contains value it had before PUSHA was executed
 
     1. Decrement SP by one - moves to next byte where content will be stored
     2. Write flag register into stack
@@ -183,29 +193,30 @@ def PUSHA(**kwargs):
     return output
 
 def POP(**kwargs):
-    """This functins pops value from stack. Inside it does the following:
+    """
+    # POP VALUE FROM STACK
+    ## Description
+    This function pops value from stack. Inside it does the following:
     
     1. Read x bytes from the top of the stack (x, as it depends on the destinaiton)
     2. Store this value in the destination
-    3. Incremenet value of the SP, by the amount of bytes red - this instruction
-    doesn't "DELETE" the data - those bits are still phisically on the stack, but they
-    are considered empty
+    3. Increment value of the SP, by the amount of bytes red - this instruction
+    doesn't "DELETE" the data - those bits are still physically on the stack
     
-    IMPORTANT
+    ## IMPORTANT
 
     Based on my experience with NASM, when we are POP'ing value from stack we need to store
     it in any place which would accept 16 bits - if we put in memory, in place where we
-    store 8 bit variable, pop would return and store 16 bit, effectively ovverrriting any
+    store 8 bit variable, pop would return and store 16 bit, effectively overwriting any
     byte which is stored in memory after the initial byte. Doing so in this simulator, if
-    we push to 8 bit variable which is last in our data, would propably throw an error, as
+    we push to 8 bit variable which is last in our data, would probably throw an error, as
     (in terms of memory) program reserves only the space which is declared by variables, while
-    doing so in NASM for .COM program would *propably* just override any byte which is first
+    doing so in NASM for .COM program would *probably* just override any byte which is first
     in segment !
     """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
-    VAR = kwargs["variables"]
     PT  = kwargs['param_types'][0]
     DST = kwargs["destination"]
     SP = HR.readFromRegister("SP")
@@ -219,7 +230,7 @@ def POP(**kwargs):
     procc = map(lambda z: z.zfill(8), map(lambda x: x[2:], map(bin, values)))
     comb_value = list("".join(procc))
     
-    m = save_value_in_destination(HR, DS, VAR, comb_value, PT, DST)
+    m = save_value_in_destination(HR, DS, comb_value, PT, DST)
     
     SP_value += no_of_bytes
     HR.writeIntoRegister("SP", SP_value)
@@ -249,7 +260,13 @@ def POP(**kwargs):
     return all_changes
 
 def POPF(**kwargs):
-    """This functins pops last to bits from stack, and stores it in flag register"""
+    """
+    # POP VALUE FROM STACK TO FLAG REGISTER
+    ## Description
+    This function reads first two bytes starting from the byte to which SP is currently
+    pointing, and store those value in flag register. Flags are set according to values
+    of corresponding bits.
+    """
 
     HR  = kwargs["HR"]
     FR  = kwargs["FR"]
@@ -286,8 +303,19 @@ def POPF(**kwargs):
     return all_changes
 
 def POPA(**kwargs):
-    """This functins pops top 16 bits of data into the registers in this order:
-    'DI', 'SI', 'BP', 'SP', 'BX', 'DX', 'CX', 'AX' """
+    """
+    # POP STACK VALUES INTO REGISTERS
+    ## Description
+    This function pops top 16 bits of data into the registers in this order:
+    1. DI
+    2. SI
+    3. BP
+    4. SP
+    5. BX
+    6. DX
+    7. CX
+    8. AX
+    """
 
     HR  = kwargs["HR"]
     DS  = kwargs["DS"]
@@ -295,7 +323,7 @@ def POPA(**kwargs):
     
     SP_value = int(SP, base=2)
 
-    register_backups = [HR.readFromRegister(r) for r in list_of_registers][-1:]
+    register_backups = [HR.readFromRegister(r) for r in list_of_registers][-1::-1]
 
     all_bytes = DS.get_data(SP_value, 16)
     new_registers_values = []
@@ -310,7 +338,7 @@ def POPA(**kwargs):
         "register" : []
     }
 
-    for n, register in enumerate(list_of_registers[-1:]):
+    for n, register in enumerate(list_of_registers[-1::-1]):
         all_changes["register"].append(
             {
                 "location" :        register,
@@ -321,20 +349,16 @@ def POPA(**kwargs):
 
     return all_changes
 
+#
+#   Assign params range and allowed params combination for functions
+#
+
 PUSH.params_range = [1]
 PUSH.allowed_params_combinations = [ ("memory",), ("register",), ("value",)]
-
-PUSHF.params_range = [0]
-PUSHF.allowed_params_combinations = [()]
-
-PUSHA.params_range = [0]
-PUSHA.allowed_params_combinations = [()]
 
 POP.params_range = [1]
 POP.allowed_params_combinations = [ ("memory",), ("register",) ]
 
-POPF.params_range = [0]
-POPF.allowed_params_combinations = [()]
-
-POPA.params_range = [0]
-POPA.allowed_params_combinations = [()]
+for fn in [PUSHF, PUSHA, POPF, POPA]:
+    fn.params_range = [0]
+    fn.allowed_params_combinations = [ tuple() ]

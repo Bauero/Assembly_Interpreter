@@ -1,1 +1,0 @@
-This function performs unconditional jump to label

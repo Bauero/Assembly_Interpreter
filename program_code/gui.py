@@ -1,5 +1,5 @@
 """
-This file contains main funciton responsible for handling a gui app
+This file contains main function responsible for handling a gui app
 """
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont
@@ -9,12 +9,10 @@ from PyQt6.QtWidgets import (
 )
 from .custom_gui_elements import *
 from .errors import (
-    FileDoesntExist, FileSizeMightBeTooBig, FileTypeNotAllowed, ImproperJumpMarker,
-    ImproperDataDefiniton
-    )
-from .helper_functions import loadFileFromPath
+    FileDoesntExist, FileSizeMightBeTooBig)
 from .code_handler import CodeHandler
 from .custom_message_boxes import show_custom_popup
+from .errors import DetailedException, FileTypeNotAllowed
 from screeninfo import get_monitors
 
 with open('program_code/configs/color_palette.json') as f:  colors = json.load(f)
@@ -33,7 +31,7 @@ min_reg_row_height = 50
 max_reg_row_height = 120
 max_flags_height = 130
 
-class MainWindow(QWidget):
+class Gui(QWidget):
     """
     This class represents the main window. It stores all information about layout and functions
     which update the app depending on action by the user.
@@ -57,7 +55,7 @@ class MainWindow(QWidget):
         self.welcomeScreen.show()
 
     def _createUserInterface(self):
-        """This funciton creates whole UI interface"""
+        """This function creates whole UI interface"""
 
         self._createMainMenuPage()
         self._createMainProgramPage()
@@ -73,7 +71,7 @@ class MainWindow(QWidget):
         self.programScreen.setGeometry(pos_x, pos_y, monitor_width, monitor_height)
 
     def _createMainMenuPage(self):
-        """Defines Main Menu page visible when user lanuches program"""
+        """Defines Main Menu page visible when user launches program"""
 
         self.welcomeScreen = QWidget()
         welcomeLayout = QVBoxLayout()
@@ -183,19 +181,19 @@ class MainWindow(QWidget):
 
         self.nextLineButton         = QPushButton(self.names_lang["next_button"])
         self.previousLineButton     = QPushButton(self.names_lang["prev_button"])
-        self.saveStateButton        = QPushButton(self.names_lang["save_state"])
+        # self.saveStateButton        = QPushButton(self.names_lang["save_state"])
         self.startAutoExecCheckbox  = QCheckBox(self.names_lang["auto_button"])
         self.startExecutionButton   = QPushButton(self.names_lang["start_stop_1"])
         
         self.nextLineButton.        setEnabled(self.interactive_mode)
         self.previousLineButton.    setEnabled(self.interactive_mode)
-        self.saveStateButton.       setEnabled(self.interactive_mode)
+        # self.saveStateButton.       setEnabled(self.interactive_mode)
         self.startAutoExecCheckbox. setEnabled(True)
 
         self.nextLineButton.clicked.        connect(lambda: self._executeCommand('next_instruction'))
         self.previousLineButton.clicked.    connect(lambda: self._executeCommand('previous_instruction'))
         self.startExecutionButton.clicked.  connect(lambda: self._executeCommand('start_stop'))
-        self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
+        # self.saveStateButton.clicked.       connect(lambda: self._executeCommand('save_state'))
 
         self.startExecutionButton.setStyleSheet(
             f'color: {colors[self.theme]["start_stop_button_running"]}')
@@ -206,7 +204,7 @@ class MainWindow(QWidget):
         self.executionFrequencyList = QComboBox()
         self.executionFrequencyList.addItems(['0.25s', '0.5s', '1s', '2s', '5s'])
         self.executionFrequencyList.setCurrentIndex(2)
-        self.executionFrequencyList.currentIndexChanged.connect(self.on_frequency_change)
+        self.executionFrequencyList.currentIndexChanged.connect(self._on_frequency_change)
         
         box = QWidget()
         frequencyBox = QHBoxLayout()
@@ -220,7 +218,7 @@ class MainWindow(QWidget):
 
         row_2 = QHBoxLayout()
         row_2.addWidget(self.startExecutionButton)
-        row_2.addWidget(self.saveStateButton)
+        # row_2.addWidget(self.saveStateButton)
 
         row_3 = QHBoxLayout()
         row_3.addWidget(self.startAutoExecCheckbox)
@@ -278,6 +276,10 @@ class MainWindow(QWidget):
         self.terminal_widget.setMaximumHeight(300)
 
         #
+        #   Make Stack and Variable synchronize
+        #
+
+        #
         #   Add elements to central layout
         #
 
@@ -304,21 +306,21 @@ class MainWindow(QWidget):
 
         self.terminal_widget.setDisabled(not state)
         self.startExecutionButton.setDisabled(False)
-        self.registers_label.setDisabled(False)
         self.terminal_label.setDisabled(False)
         self.registers_label.setDisabled(False)
         self.terminal_label.setVisible(True)
         self.terminal_label.setEnabled(True)
-        
 
     @pyqtSlot()
     def _set_interactive_mode(self):
         for element in self.register_section_elements:
-            setattr(self, element.get_name(), element)
-            element.set_interactive(self.interactive_mode)
+            if element.get_name() != "IP":
+                element.set_interactive(self.interactive_mode)
+        self.stackSection.set_allow_change_content(self.interactive_mode)
+        self.variableSection.set_allow_change_content(self.interactive_mode)
 
     @pyqtSlot()
-    def on_frequency_change(self):
+    def _on_frequency_change(self): 
         selected_value = self.executionFrequencyList.currentIndex()
         interval = 0
         match selected_value:
@@ -350,41 +352,36 @@ class MainWindow(QWidget):
                 lines = self.code_handler.readPrepareFile(file_path,
                                                           ignore_size_limit,
                                                           ignore_file_type)
-                self.code_field.setText( self.code_handler.gcefat() )
+                self.code_field.setText( self.code_handler.gcefat())
                 self.code_field.setHighlight(lines)
                 self.code_field.setEditable(False)
             except FileDoesntExist:
-                ans = self._show_popup({"popup" : "file_doesnt_exist_popup"})
+                ans = self._show_popup({"popup" : "1"})
                 if ans == cancel_button.value:  return
                 file_path = ''
                 continue
             except FileSizeMightBeTooBig:
-                ans = self._show_popup({"popup" : "file_size_too_big"})
+                ans = self._show_popup({"popup" : "2"})
                 match ans:
                     case 2: ignore_size_limit = True ; file_path = ''
-                    case 3: ignore_file_type = True
+                    case 3: ignore_size_limit = True
                     case 4: return
                 continue
             except FileTypeNotAllowed:
-                ans = self._show_popup({"popup" : "improper_file_type"})
+                ans = self._show_popup({"popup" : "3"})
                 match ans:
-                    case 2: ignore_size_limit = True ; file_path = ''
-                    case 3: ignore_file_type = True
+                    case 2: ignore_file_type = True ; file_path = ''
+                    case 3: self._load_file_to_interactive(file_path)
                     case 4: return
                 continue
-            except ImproperDataDefiniton as e:
-                ans = self._show_popup({"popup" : "data_section_error"})
-                if ans == 2:
-                    self._load_file_to_interactive(file_path)
-                return
-            except ImproperJumpMarker as e:
-                ans = self._show_popup({"popup" : "improper_label_error"})
-                if ans == 2:
-                    self._load_file_to_interactive(file_path)
-                return
             except Exception as e:
-                ans = self._show_popup({"popup" : "unrecognized_error_popup",
-                                        "source_error" : e})
+                if isinstance(e, DetailedException):
+                    response = e.get_details()
+                    response["popup"] += "_question"
+                    ans = self._show_popup(response)
+                    if ans == 2:    self._load_file_to_interactive(file_path)
+                else:
+                    self._show_popup({"popup" : "60", "source_error" : e})
                 return
             break
 
@@ -394,18 +391,19 @@ class MainWindow(QWidget):
         self.programScreen.show()
         self._set_active_state(False)
         self.programScreen.showMaximized()
-        self.nextLineButton.setFocus()
+        self.startExecutionButton.setFocus()
 
     @pyqtSlot()
     def _load_file_to_interactive(self, file_path : str):
         start, raw_file = self.code_handler.load_file_interactive(file_path)
+        self._open_interactive_mode()
         self.code_field.setText("".join(raw_file))
         self.code_field.setHighlight([start])
-        self._open_interactive_mode()
+        self.code_field.setDisabled(False)
 
+    @pyqtSlot()
     def _highlight_problematic_line(self, lines : list):
-        self.code_field.setHighlight(lines,
-                                     colors[self.theme]["error_in_line"])
+        self.code_field.setHighlight(lines, colors[self.theme]["error_in_line"])
 
     @pyqtSlot()
     def _open_interactive_mode(self):
@@ -429,56 +427,155 @@ class MainWindow(QWidget):
     
     @pyqtSlot()
     def _run_next_instruction_or_stop(self):
-        if self.program_running and self.startAutoExecCheckbox.isChecked() and \
-            not self.program_finished:
+        if self.program_running and self.startAutoExecCheckbox.isChecked():
             self._executeCommand("next_instruction")
             self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
 
     @pyqtSlot()
     def _executeCommand(self, command):
+        """This function perfoms context action when user perfoms operations using central buttons"""
     
-        match command:
-            case 'start_stop':
-                if self.program_running:
-                    self._suspend_program()
-                else:
-                    self._start_program()
-                self.program_running = not self.program_running
-                if self.startAutoExecCheckbox.isChecked():
-                    self.internal_timer.singleShot(self.timer_interval,
-                                                   self._run_next_instruction_or_stop)
-            case 'next_instruction':
-                try:
-                    response = self.code_handler.executeCommand('next_instruction')
-                    self._act_on_response(response)
-                    self.instructionCounter += 1
+        try:
+            match command:
+                case 'start_stop':              self._start_stop_program()
+                case 'next_instruction':        self._next_instruction()
+                case 'previous_instruction':    self._previous_instruciton()
+        except Exception as e:
+            response = {
+                "status" : 1,
+                "error" : {
+                    "popup" : "60",
+                    "line" : self.code_handler.get_curr_exec_line(),
+                    "param_no" : None,
+                    "params" : None,
+                    "source_error" : e
+                }
+            }
+            self._act_on_response(response)
+
+    @pyqtSlot()
+    def _start_stop_program(self):
+        if self.program_running:    self._suspend_program()
+        else:                       self._start_program()
+
+    @pyqtSlot()
+    def _start_program(self):
+        
+        if self.interactive_mode:   self.code_field.setEditable(False)
+        self._set_active_state(True)
+        
+        if self.interactive_mode:
+            try:
+                force_reload = self.program_finished
+                response = self.code_handler.startInteractive(self.code_field.toPlainText(),
+                                                              force_reload)
+                if response:
+                    new_lines = response
+                    self.terminal.clear()
+                    self.code_field.setEditable(False)
+                    self.code_field.setHighlight(new_lines)
+                    if new_lines:
+                        self.instructionCounter = 0
+                        self.code_handler.engine.reset()
+                        self.variableSection.generate_table()
+                        self._refresh()
+                        self.previousLineButton.setDisabled(True)
+                        self.nextLineButton.setEnabled(True)
                     if self.instructionCounter > 0: self.previousLineButton.setEnabled(True)
-                except Exception as e: 
+                    self.nextLineButton.setEnabled(True)
+                    self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+                    self.startExecutionButton.setStyleSheet(
+                        f'color: {colors[self.theme]["start_stop_button_stopped"]};')
+                    self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
+                    self.program_running = True
+            except Exception as e:
+                if isinstance(e, DetailedException):
+                    response = {"status" : 1, "error" : e.get_details()}
+                    self._act_on_response(response)
+                    self.previousLineButton.setDisabled(True)
+                    self.startExecutionButton.setText(self.names_lang["start_stop_1"])
+                    self.startExecutionButton.setStyleSheet(
+                        f'color: {colors[self.theme]["start_stop_button_running"]};')
+                else:
                     response = {
-                        "status" : 1,
-                        "error" : {
-                            "popup" : "unrecognized_error_popup",
-                            "line" : self.code_handler.get_curr_exec_line(),
-                            "param_no" : None,
-                            "params" : None,
-                            "source_error" : e
+                            "status" : 1,
+                            "error" : {
+                                "popup" : "60",
+                                "line" : self.code_handler.get_curr_exec_line(),
+                                "param_no" : None,
+                                "params" : None,
+                                "source_error" : e
                         }
                     }
                     self._act_on_response(response)
-            case 'previous_instruction':
-                if not self.program_running:
-                    self.program_running= True
-                    self._set_active_state(True)
-                response = self.code_handler.executeCommand('previous_instruction')
-                self.instructionCounter -= 1
-                if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
+                self._set_active_state(False)
+                self.code_field.setEditable(True)
+                self.code_field.setDisabled(False)
+                self.program_running = False
+        else:
+            if self.instructionCounter > 0: self.previousLineButton.setEnabled(True)
+            self.nextLineButton.setEnabled(True)
+            self.startExecutionButton.setText(self.names_lang["start_stop_2"])
+            self.startExecutionButton.setStyleSheet(
+                f'color: {colors[self.theme]["start_stop_button_stopped"]};')
+            self.internal_timer.singleShot(self.timer_interval, self._run_next_instruction_or_stop)
+            self.program_running = True
+
+    @pyqtSlot()
+    def _suspend_program(self):
+        self.program_running = False
+        self._set_active_state(False)
+        self.nextLineButton.setDisabled(True)
+        self.previousLineButton.setEnabled(False)
+        self.startExecutionButton.setText(self.names_lang["start_stop_1"])
+        self.startExecutionButton.setStyleSheet(
+            f'color: {colors[self.theme]["start_stop_button_running"]};')
+        
+        if self.interactive_mode:
+            self.code_field.setDisabled(False)
+            self.code_field.setEditable(True)
+
+    @pyqtSlot()
+    def _next_instruction(self):
+        try:
+            response = self.code_handler.executeCommand('next_instruction')
+            self._act_on_response(response)
+        except Exception as e:
+            if isinstance(e, DetailedException):
+                response = {"status" : 1, "error" : e.get_details()}
                 self._act_on_response(response)
-                self.nextLineButton.setDisabled(False)
+            else:
+                self._show_popup({"popup" : "60",
+                                        "source_error" : e})
+
+    @pyqtSlot()
+    def _previous_instruciton(self):
+        
+        try:
+            self.program_finished = False
+            if not self.program_running:
+                self.program_running= True
+                self._set_active_state(True)
+                self._toggle_automatic_execution()
+                if self.interactive_mode:   self.code_field.setEditable(False)
+            response = self.code_handler.executeCommand('previous_instruction',
+                                                        interactive = self.interactive_mode)
+            self.instructionCounter -= 1
+            if self.instructionCounter == 0: self.previousLineButton.setEnabled(False)
+            self._act_on_response(response)
+            self.nextLineButton.setDisabled(False)
+        except Exception as e:
+            if isinstance(e, DetailedException):
+                response = {"status" : 1, "error" : e.get_details()}
+                self._act_on_response(response)
+            else:
+                self._show_popup({"popup" : "60",
+                                        "source_error" : e})
 
     @pyqtSlot()
     def _act_on_response(self, response : dict):
         """
-        This funciton is suppose to handle answers from CodeHandler - when we request to
+        This function is suppose to handle answers from CodeHandler - when we request to
         perform some action with code, CodeHandler, tries to do it using Engine, and 
         returns status of this action
         ```
@@ -493,15 +590,24 @@ class MainWindow(QWidget):
 
         match response['status']:
 
-            case 0: ...
+            case 0:
+                self.instructionCounter += 1
+                if self.instructionCounter > 0:
+                    self.previousLineButton.setEnabled(True)
 
             case 1:
+                self.program_running = False
+                self.program_finished = True
                 self.internal_timer.stop()
-                self._set_active_state(False)
                 self.nextLineButton.setDisabled(True)
                 self.previousLineButton.setEnabled(True)
+                self._highlight_problematic_line(response["error"]["line"])
                 self._show_popup(response["error"])
-                self.program_running = False
+                self._set_active_state(False)
+                if self.interactive_mode:
+                    self._set_active_state(False)
+                    self.code_field.setEditable(True)
+                    self.code_field.setEnabled(True)
                 return
 
             case 2:
@@ -509,6 +615,9 @@ class MainWindow(QWidget):
                 if timer_active:    self.internal_timer.stop()
                 for warn in response.get("warnings"):    self._show_popup(warn)
                 if timer_active:    self.internal_timer.start()
+                self.instructionCounter += 1
+                if self.instructionCounter > 0:
+                    self.previousLineButton.setEnabled(True)
 
             case -1:
                 self.internal_timer.stop()
@@ -520,30 +629,36 @@ class MainWindow(QWidget):
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
                 self.program_finished = True
+                if self.interactive_mode:
+                    self.code_field.setEditable(True)
+                    self.code_field.setEnabled(True)
                 return
             
             case -12:
-                if timer_active:    self.internal_timer.stop()
-                for warn in response.get("warnings"):    self._show_popup(warn)
+                self.internal_timer.stop()
+                for warn in response.get("warnings"):
+                    self._show_popup(warn)
                 self.code_field.setHighlight([])
                 self.nextLineButton.setDisabled(True)
                 self.startExecutionButton.setText(self.names_lang["start_stop_1"])
                 self.startExecutionButton.setStyleSheet(
                     f'color: {colors[self.theme]["start_stop_button_stopped"]};')
                 self.program_running = False
+                self.program_finished = True
                 self.code_field.setHighlight([])
-                if timer_active:    self.internal_timer.start()
+                if self.interactive_mode:
+                    self.code_field.setEditable(True)
+                    self.code_field.setEnabled(True)
                 return
 
         terminal_operation = response.get("terminal", None)
-        if terminal_operation:
-            self._perform_terminal_aciton(terminal_operation)
+        if terminal_operation: self._perform_terminal_aciton(terminal_operation)
         self.code_field.setHighlight(response["highlight"])
         self._refresh()
 
     @pyqtSlot()
     def _perform_terminal_aciton(self, request : dict):
-        """This method performs aciton requireing user interaction with terminal"""
+        """This method performs action requiring user interaction with terminal"""
         
         match request.get("action"):
             
@@ -557,6 +672,10 @@ class MainWindow(QWidget):
                 self.code_handler.engine.DS.modify_data(dest, raw_bits)
                 self._set_active_state(True)
 
+            case "write_char_to_terminal":
+                char = request.get("char", "")
+                self.terminal.write_char(char)
+
     @pyqtSlot()
     def _show_popup(self, dialog : dict):
         """This method request showing popup for the current language and message"""
@@ -565,7 +684,7 @@ class MainWindow(QWidget):
 
     @pyqtSlot()
     def _refresh(self):
-        """This method refreshes elemetns in the main program"""
+        """This method refreshes elements in the main program"""
 
         for element in self.register_section_elements:
             element.update()    
@@ -573,42 +692,8 @@ class MainWindow(QWidget):
         self.variableSection.refresh_table()
 
     @pyqtSlot()
-    def _start_program(self):
-        if not self.program_finished:
-            self.nextLineButton.setEnabled(True)
-        self._set_active_state(True)
-        if self.instructionCounter > 0:
-            self.previousLineButton.setEnabled(True)
-        self.startExecutionButton.setText(self.names_lang["start_stop_2"])
-        self.startExecutionButton.setStyleSheet(
-            f'color: {colors[self.theme]["start_stop_button_stopped"]};')
-
-        if self.interactive_mode:
-            self.terminal.clear()
-            self.code_field.setEditable(False)
-            new_lines = self.code_handler.startInteractive(self.code_field.toPlainText())
-            self.code_field.setHighlight(new_lines)
-            if new_lines:
-                self.instructionCounter = 0
-                self.code_handler.engine.reset()
-                self._refresh()
-
-    @pyqtSlot()
-    def _suspend_program(self):
-        self._set_active_state(False)
-        self.nextLineButton.setDisabled(True)
-        self.previousLineButton.setEnabled(False)
-        self.startExecutionButton.setText(self.names_lang["start_stop_1"])
-        self.startExecutionButton.setStyleSheet(
-            f'color: {colors[self.theme]["start_stop_button_running"]};')
-        
-        if self.interactive_mode:
-            self.code_field.setDisabled(False)
-            self.code_field.setEditable(True)
-
-    @pyqtSlot()
     def _lang_change(self):
-        """This method is repsonsible for reloading elements in GUI to show
+        """This method is responsible for reloading elements in GUI to show
         test in selected language"""
         
         option = self.toggle_language.currentIndex()
@@ -651,7 +736,7 @@ class MainWindow(QWidget):
             self.previousLineButton.setText(self.names_lang['prev_button'])
             self.startAutoExecCheckbox.setText(self.names_lang['auto_button'])
             self.startExecutionButton.setText(self.names_lang['start_stop_1'])
-            self.saveStateButton.setText(self.names_lang["save_state"])
+            # self.saveStateButton.setText(self.names_lang["save_state"])
             self.comboBoxLabel.setText(self.names_lang['interval'])
             
             # Program - Names in tables and register hints
