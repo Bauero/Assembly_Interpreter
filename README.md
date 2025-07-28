@@ -110,7 +110,7 @@ Po uruchomieniu, powinniśmy zobaczyć menu główne:
 </div>
 
 ## Tryby Pracy
-### <span style="color: #DA8D00">Analizuj plik</span>
+### Analizuj plik
 
 W tym trybie zakładamy iż mamy plik, który normalnie kompiluje się, ale nie działa tak jak byśmy oczekiwali. Jeśli spróbujemy uruchomić plik, który zawiera błędy składniowe, zostanie wyświetlony komunikat o błędzie i pojawi się opcja uruchoimenia pliku w trybie interaktywnym.
 
@@ -150,7 +150,7 @@ Zaznaczenie tego polecenia spowoduje automatyczneg przechodzenie przez kolejne p
 
 Po załadowaniu i wstępnym sprawdzeniu pliku, możliwe jest wykonywanie kolejnych polceń a także powrót do stanu sprzed egzekucji polcecenia. Możliwy jest podgląd stanu stosu i rejestrów, co umożliwa prześledzenie zmian i porównanie działania z przewidywanym sposobem wykonania programu. Po zakończeniu programu, konieczne jest ponowne uruchomienie by załadować ponownie kod (np. po wprowadzeniu zmian).
 
-## <span style="color: #0075DA">Tryb interaktywny</span>
+## Tryb interaktywny
 
 Podczas uruchamiania trybu interakywnego zostajemy powitani przez puste okno, gdzie należy wprowadzić kod, który chcemy zasymulować (wyjątkiem jest otworzenie pliku, którego nie udało się uruchomić w trybie Analizy - zawartość pliku jest wtedy wczytana automatycznie):
 
@@ -166,7 +166,7 @@ Analiza kodu, odbywa się tak samo jak w trybie analizy, z wyjątkiem dwóch kwe
 
 ## Obsługiwane polecenia i ograniczenia
 
-<b>==Z uwagi na rozległość tematu jakim jest interpretacja poleceń asemblerowych, wprowadzone zostały pewne ograniczenia natury technicznej i logistycznej do programu ! <u>Oznacza to że nie każdy program, napisany w Asemblerze jest możliwy do uruchomienia i interpretacji !==</u></b>
+<b><mark>Z uwagi na rozległość tematu jakim jest interpretacja poleceń asemblerowych, wprowadzone zostały pewne ograniczenia natury technicznej i logistycznej do programu ! <u>Oznacza to że nie każdy program, napisany w Asemblerze jest możliwy do uruchomienia i interpretacji !</u></mark></b>
 
 ### W skrócie
 
@@ -176,8 +176,8 @@ Ogólna lista obsługiwanych poleceń widoczna jest w sekcji [Układ plików pro
 
 Wszystkie szczegóły nt. projektu, ograniczeń, implementacji i filozofii pracy programu można znaleźć w mojej pracy inżynierskiej:
 
-- [[./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf|Interpreter Asemblera 16bit]] - wersja Polska
-- [[./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf|16bit Assembly Interpreter]] - wersja Angielska (przetłumaczona z pomocą ChatGPT)
+- [Interpreter Asemblera 16bit](./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf) - wersja Polska
+- [16bit Assembly Interpreter](./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf) - wersja Angielska (przetłumaczona z pomocą ChatGPT)
 
 
 
@@ -298,7 +298,7 @@ After launching, you should see the main menu:
 > Program is available in English, but screenshots depict version in Polish lanuguage
 
 ## Working Modes
-### <span style="color: #DA8D00">Analyze File</span> (PL. *Analizuj Plik*)
+### Analyze File
 
 In this mode, we assume that we have a file which normally compiles but does not work as expected. If we try to run a file containing syntax errors, an error message will be displayed, and an option to run the file in interactive mode will appear.
 
@@ -342,7 +342,7 @@ Checking this option will cause automatic progression through subsequent instruc
 After loading and initially checking the file, it is possible to execute further commands as well as return to the state before the command was executed. It is possible to view the state of the stack and registers, which allows tracking changes and comparing the behavior with the expected execution of the program. After the program finishes, it is necessary to restart it in order to reload the code (e.g., after making changes).
 
 
-## <span style="color: #0075DA">Interactive Mode</span>
+## Interactive Mode
 
 When starting interactive mode, we are greeted by a blank window where we need to enter the code we want to simulate (the exception is opening a file that could not be run in Analysis mode — in that case, the file’s contents are loaded automatically).
 
@@ -358,7 +358,7 @@ Code analysis is carried out the same way as in analysis mode, with two exceptio
 
 ## Supported Commands and Limitations
 
-<b>==Due to the complexity of interpreting assembly instructions, certain technical and logistical limitations have been introduced into the program! This means that not every program written in Assembly can be run or interpreted.==</b>
+<b><mark>Due to the complexity of interpreting assembly instructions, certain technical and logistical limitations have been introduced into the program ! <u>This means that not every program written in Assembly can be run or interpreted !</u></mark></b>
 
 #### Summary
 
@@ -368,8 +368,8 @@ The general list of supported commands is visible in the section [Program's file
 
 All details regarding the project, limitations, implementation, and the program's operating philosophy can be found in my engineering thesis:
 
-[[./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf|Interpreter Asemblera 16bit]] – source file (PL)
-[[./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf|16bit Assembly Interpreter]] – english version (translated from the original using ChatGPT)
+- [Interpreter Asemblera 16bit](./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf) - source file (PL)
+- [16bit Assembly Interpreter](./Extras/Instructions%20and%20descriptions/_%20Interpreter%20Asemblera%2016%20bit.pdf) - english version (translated from the original using ChatGPT)
 
 
 <hr style="height:5px;border-width:0;color:gray;background-color:gray">
